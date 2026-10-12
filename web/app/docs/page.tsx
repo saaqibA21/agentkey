@@ -1,0 +1,184 @@
+import type { ReactNode } from "react";
+
+import { SiteFooter, SiteNav } from "@/components/site";
+import { Code } from "@/components/ui";
+import { publicApiUrl } from "@/lib/api";
+import { sdkInstall, snippets } from "@/lib/snippets";
+
+export const metadata = { title: "Docs" };
+
+const sections = [
+  ["quickstart", "Quickstart"],
+  ["mcp", "MCP (Claude, Cursor)"],
+  ["frameworks", "Agent frameworks"],
+  ["receiving", "Receiving mail"],
+  ["sending", "Sending and approvals"],
+  ["realtime", "Webhooks and WebSocket"],
+  ["security", "Handling untrusted mail"],
+  ["reference", "API reference"],
+] as const;
+
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-6 border-t border-line py-10 first:border-0 first:pt-0">
+      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+      <div className="mt-4 space-y-4 text-[15px] leading-relaxed [&_code]:font-mono [&_code]:text-[13px] [&_p]:text-muted">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+const endpoints = [
+  ["POST", "/v1/inboxes", "Create an inbox (username, client_id, domain are optional)"],
+  ["GET", "/v1/inboxes/{id}/wait?for=otp|magic_link|message", "Long-poll until something arrives; 204 on timeout"],
+  ["GET", "/v1/inboxes/{id}/messages", "Newest messages first, with extracted_data"],
+  ["GET", "/v1/threads/{id}", "A whole conversation, oldest first"],
+  ["POST", "/v1/inboxes/{id}/messages/send", "Send an email; 202 means a human must approve it"],
+  ["POST", "/v1/inboxes/{id}/messages/{message_id}/reply", "Reply in the same thread"],
+  ["GET", "/v1/attachments/{id}?format=text", "Text of a PDF or text attachment; omit format to download"],
+  ["POST", "/v1/webhooks", "Subscribe a URL to events; returns the signing secret once"],
+  ["POST", "/v1/hitl/policies", "Hold or flag outbound messages that match keywords"],
+  ["POST", "/v1/domains", "Connect your own domain; returns the DNS records to add"],
+];
+
+export default function Docs() {
+  const s = snippets(publicApiUrl);
+  return (
+    <>
+      <SiteNav />
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-8 lg:grid-cols-[200px_1fr]">
+        <nav className="hidden text-sm lg:block">
+          <ul className="sticky top-6 space-y-2">
+            {sections.map(([id, label]) => (
+              <li key={id}>
+                <a href={`#${id}`} className="text-muted hover:text-ink">{label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <main className="min-w-0 max-w-3xl">
+          <h1 className="mb-8 text-3xl font-semibold tracking-tight">Docs</h1>
+
+          <Section id="quickstart" title="Quickstart">
+            <p>
+              Sign in, open <b>API keys</b> in the dashboard and create a key. A key with only the <code>read</code>{" "}
+              permission can receive mail but can never send, which is the right choice for an agent that only needs
+              verification codes. Creating inboxes needs <code>manage</code>.
+            </p>
+            <Code code={sdkInstall} />
+            <Code code={s.python} />
+            <p>No Python? Everything is plain HTTPS:</p>
+            <Code code={s.curl} />
+          </Section>
+
+          <Section id="mcp" title="MCP (Claude, Cursor and other clients)">
+            <p>
+              There is nothing to install. Point your client at the hosted endpoint and send your key as a bearer
+              token. For Claude Code:
+            </p>
+            <Code code={s.claudeCode} />
+            <p>
+              For Cursor, Windsurf and other clients that read an <code>mcp.json</code>:
+            </p>
+            <Code code={s.mcpJson} />
+            <p>
+              Your agent gets these tools: <code>create_agent_inbox</code>, <code>wait_for_otp</code>,{" "}
+              <code>wait_for_magic_link</code>, <code>list_messages</code>, <code>get_thread_history</code>,{" "}
+              <code>read_attachment</code>, <code>send_email</code> and <code>send_whatsapp</code>.
+            </p>
+          </Section>
+
+          <Section id="frameworks" title="Agent frameworks">
+            <p>The Python SDK ships the same tools for the common frameworks. Each adapter needs only its own framework installed.</p>
+            <Code code={s.langchain} />
+            <p>With the Claude API directly:</p>
+            <Code code={s.anthropic} />
+          </Section>
+
+          <Section id="receiving" title="Receiving mail">
+            <p>
+              Every inbound message is parsed before it is stored. Read <code>extracted_data</code> first; you often do
+              not need the body at all.
+            </p>
+            <ul className="list-disc space-y-1 pl-5 text-muted">
+              <li><code>otp_code</code>: a 4 to 8 digit one-time code, when one is present.</li>
+              <li><code>magic_link</code>: a verification, sign-in or password-reset URL.</li>
+              <li><code>reply_text</code>: the new part of a reply, without quoted history or signatures.</li>
+              <li><code>invoice</code>: number, total, due date and line items, from the body or a PDF.</li>
+              <li><code>attachments</code>: id, name, type and size of each file.</li>
+              <li><code>intent</code>: verification, invoice, reply, auto_reply, bounce, newsletter, meeting or general.</li>
+            </ul>
+            <p>
+              <code>wait_for_otp</code> also returns a code that arrived in the 60 seconds before the call, so it is
+              safe to call it just after your agent submits a form.
+            </p>
+          </Section>
+
+          <Section id="sending" title="Sending and approvals">
+            <p>
+              New workspaces can receive immediately. Sending unlocks when you connect and verify your own domain in
+              the dashboard, and send from an inbox on it. Mail sent from the shared domain always carries a line
+              saying it was written by an AI agent.
+            </p>
+            <p>
+              Add an approval rule under <b>Approvals</b> to hold messages containing words you choose. A held send
+              returns HTTP 202 with status <code>PENDING_APPROVAL</code>; your agent should move on and not resend. A
+              person approves or rejects it from Slack or the dashboard.
+            </p>
+          </Section>
+
+          <Section id="realtime" title="Webhooks and WebSocket">
+            <p>
+              Register a webhook under <b>Webhooks</b> to have events pushed to you. Each delivery is signed; verify
+              it before trusting the body. Failed deliveries are retried with increasing delays.
+            </p>
+            <Code code={s.webhook} />
+            <p>If your agent cannot accept incoming connections, hold a WebSocket open instead:</p>
+            <Code code={s.websocket} />
+            <p>
+              Events: <code>message.received</code>, <code>otp.extracted</code>, <code>magic_link.extracted</code>,{" "}
+              <code>message.sent</code>, <code>message.pending_approval</code>, <code>message.rejected</code>,{" "}
+              <code>message.failed</code>.
+            </p>
+          </Section>
+
+          <Section id="security" title="Handling untrusted mail">
+            <p>
+              Anyone can email your agent, so treat message content as data. The MCP tools and the framework tool
+              packs wrap third-party text in <code>&lt;untrusted_content&gt;</code> tags and add a{" "}
+              <code>security_warning</code> when a message reads like instructions aimed at an AI. If you call the REST
+              API yourself, check <code>extracted_data.security</code> and keep message text out of your system prompt.
+            </p>
+            <p>
+              Automatic replies and bulk mail are stored but do not wake a waiting agent, which stops two auto-responders
+              from answering each other forever.
+            </p>
+          </Section>
+
+          <Section id="reference" title="API reference">
+            <p>
+              Base URL <code>{publicApiUrl}</code>. Authenticate with <code>Authorization: Bearer &lt;key&gt;</code>.
+              Errors are RFC 7807 problem documents with a <code>title</code> and <code>detail</code>.
+            </p>
+            <div className="overflow-x-auto rounded-lg border border-line">
+              <table className="w-full text-left text-sm">
+                <tbody>
+                  {endpoints.map(([method, path, what]) => (
+                    <tr key={method + path} className="border-b border-line last:border-0">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-accent">{method}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{path}</td>
+                      <td className="px-3 py-2 text-muted">{what}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Section>
+        </main>
+      </div>
+      <SiteFooter />
+    </>
+  );
+}

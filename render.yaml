@@ -30,6 +30,26 @@ services:
         generateValue: true
       - key: INGEST_SECRET
         generateValue: true
+      - key: DASHBOARD_SECRET
+        generateValue: true
+      - key: DASHBOARD_URL
+        sync: false
+      - key: STORAGE_BACKEND
+        value: s3
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      - key: DOMAIN_PROVIDER
+        value: ses
+      - key: SES_INBOUND_TOPIC_ARN
+        sync: false
       - key: PUBLIC_BASE_URL
         sync: false
       - key: MAIL_DOMAIN

@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --subtle: #f1f1ef;
+  --line: #e4e4e0;
+  --ink: #18181b;
+  --muted: #6b6b70;
+  --accent: #0f766e;
+  --accent-strong: #0b5c56;
+  --warn: #d97706;
+  --warn-strong: #92400e;
+  --danger: #b91c1c;
+  --code: #17181c;
+  --code-ink: #e7e7ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0f11;
+    --surface: #16171a;
+    --subtle: #1f2024;
+    --line: #2a2b30;
+    --ink: #ededf0;
+    --muted: #9a9aa2;
+    --accent: #2dd4bf;
+    --accent-strong: #5eead4;
+    --warn: #f59e0b;
+    --warn-strong: #fbbf24;
+    --danger: #f87171;
+    --code: #0a0a0c;
+    --code-ink: #e7e7ea;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-warn: var(--warn);
+  --color-warn-strong: var(--warn-strong);
+  --color-danger: var(--danger);
+  --color-code: var(--code);
+  --color-code-ink: var(--code-ink);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* On dark backgrounds the accent is light, so buttons filled with it need dark text. */
+  .bg-accent.text-white {
+    color: #06201d;
+  }
+}
