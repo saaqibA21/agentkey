@@ -139,6 +139,49 @@ class AccessRequest(Base):
     created_at: Mapped[datetime] = _created()
 
 
+class OAuthClient(Base):
+    """An app (ChatGPT, Claude, an MCP client) that registered itself to request access."""
+
+    __tablename__ = "oauth_clients"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), default="")
+    redirect_uris: Mapped[list] = mapped_column(JSONType, default=list)
+    created_at: Mapped[datetime] = _created()
+
+
+class OAuthCode(Base):
+    __tablename__ = "oauth_codes"
+
+    code_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    client_id: Mapped[str] = mapped_column(String(64))
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    redirect_uri: Mapped[str] = mapped_column(String(1024))
+    code_challenge: Mapped[str] = mapped_column(String(128))
+    scopes: Mapped[list] = mapped_column(JSONType, default=list)
+    used: Mapped[bool] = mapped_column(Boolean, default=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class OAuthToken(Base):
+    """Access granted by a person to an app. Only hashes of the tokens are stored."""
+
+    __tablename__ = "oauth_tokens"
+
+    id: Mapped[uuid.UUID] = _pk()
+    access_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    refresh_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    client_id: Mapped[str] = mapped_column(String(64), index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid, index=True)
+    scopes: Mapped[list] = mapped_column(JSONType, default=list)
+    access_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    refresh_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
 class ApiKey(Base):
     """Scoped credentials: a read-only key can be handed to an agent that must never send."""
 

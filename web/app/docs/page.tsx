@@ -85,6 +85,12 @@ export default function Docs() {
             </p>
             <Code code={s.mcpJson} />
             <p>
+              <b>ChatGPT and Claude apps.</b> These do not take an API key. In the app&apos;s settings, add a custom
+              connector (the menu is called Connectors or Apps, depending on the app and plan) and paste{" "}
+              <code>{publicApiUrl}/mcp</code>. The app opens an AIgent page where you sign in, tick what it may do,
+              and press Allow. You can remove an app again under <b>Identity</b> in the dashboard.
+            </p>
+            <p>
               Your agent gets these tools: <code>create_agent_inbox</code>, <code>wait_for_otp</code>,{" "}
               <code>wait_for_magic_link</code>, <code>list_messages</code>, <code>get_thread_history</code>,{" "}
               <code>read_attachment</code>, <code>send_email</code> and <code>send_whatsapp</code>.

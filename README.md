@@ -77,6 +77,17 @@ key cannot, whatever its scopes. Every use is written to the audit log.
 
 MCP tools: `list_identities`, `account_request`, `get_git_credentials`, `get_site_login`.
 
+**Connecting from ChatGPT, Claude and other apps (no API key).** The hosted MCP endpoint is also an
+OAuth 2.1 server (`app/api/oauth.py`): discovery at `/.well-known/oauth-protected-resource` and
+`/.well-known/oauth-authorization-server`, dynamic client registration at `/oauth/register`,
+PKCE-only authorization at `/oauth/authorize`, and rotating refresh tokens at `/oauth/token`. The
+user adds `https://<api-host>/mcp` as a custom connector in the app; the app sends them to the
+dashboard's approval screen (`/connect/authorize`), where they sign in and tick the permissions
+(read, manage, send, connect). The app's token carries only those permissions and can never do
+what requires a signed-in person. Apps are listed, and can be removed, under Identity. For this to
+work the API and dashboard must be deployed on public HTTPS URLs with `PUBLIC_BASE_URL` and
+`DASHBOARD_URL` set correctly.
+
 What this does not do: it does not run a browser for the agent, and it does not solve CAPTCHAs or
 get around a site's bot detection or new-device checks. The agent brings its own browser (Claude
 in Chrome, a computer-use agent, Playwright); this supplies the identity.
@@ -170,6 +181,8 @@ client.messages.send(inbox_id=inbox.id, to="client@example.com", subject="Quote 
   documented APIs and mocked or bypassed locally.
 - Schema is created with `create_all`; there are no versioned migrations (add Alembic before the
   first schema change in production).
+- The sign-in-and-approve flow for ChatGPT/Claude is tested with a stand-in app locally. It has not
+  been connected from the real ChatGPT or Claude apps, which requires a public deployment first.
 - Identity: the GitHub/Google connect flow is tested against a faked provider, not the real ones.
   A password released from the vault enters the agent's context, so a compromised or tricked agent
   could misuse it on the right site; prefer connected accounts, and keep vault items on "ask".

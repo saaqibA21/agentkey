@@ -1,9 +1,9 @@
 import { ActionForm } from "@/components/client";
 import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, publicApiUrl } from "@/lib/api";
 
 import {
-  addLogin, connectProvider, decideAccess, deleteLogin, disconnect, setLoginApproval, updateConnection,
+  addLogin, connectProvider, decideAccess, deleteLogin, disconnect, revokeApp, setLoginApproval, updateConnection,
 } from "../actions";
 
 type Connection = {
@@ -35,8 +35,9 @@ function Toggle({ id, field, on, label, help }: { id: string; field: string; on:
 export default async function IdentityPage({
   searchParams,
 }: { searchParams: Promise<{ connected?: string; error?: string }> }) {
-  const [{ connected, error }, providers, connections, logins, requests] = await Promise.all([
+  const [{ connected, error }, apps, providers, connections, logins, requests] = await Promise.all([
     searchParams,
+    api<{ data: { client_id: string; client_name: string; redirect_host: string; scopes: string[]; last_authorized_at: string }[] }>("/oauth/grants"),
     api<{ data: { id: string; name: string }[] }>("/connections/providers"),
     api<{ data: Connection[] }>("/connections"),
     api<{ data: Login[] }>("/vault/items"),
@@ -47,7 +48,7 @@ export default async function IdentityPage({
     <>
       <PageHeader
         title="Identity"
-        lead="Let your agent act as you on other services. Only API keys with the Connect permission can use anything on this page, and you decide how far each one goes."
+        lead="Let your agent act as you on other services. Only apps and API keys you gave the Connect permission can use your accounts and logins, and you decide how far each one goes."
       />
       {connected && <p className="mb-4 rounded-lg bg-accent/10 px-4 py-2 text-sm">Connected {connected}.</p>}
       {error && (
@@ -81,6 +82,31 @@ export default async function IdentityPage({
           ))}
         </section>
       )}
+
+      <h2 className="mb-1 font-semibold">AI apps with access</h2>
+      <p className="mb-3 max-w-2xl text-sm text-muted">
+        Apps such as ChatGPT and Claude that you connected by signing in. To add one, paste{" "}
+        <code className="font-mono text-xs">{publicApiUrl}/mcp</code> as a new connector in the app, then approve here.
+      </p>
+      <div className="mb-10 space-y-2">
+        {apps.data.length === 0 && <Empty title="No apps connected yet" />}
+        {apps.data.map((a) => (
+          <Card key={a.client_id} className="flex flex-wrap items-center gap-3 !py-3">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{a.client_name}</p>
+              <p className="text-xs text-muted">{a.redirect_host} · approved {timeAgo(a.last_authorized_at)}</p>
+            </div>
+            <div className="flex gap-1">
+              {a.scopes.map((s) => (
+                <Badge key={s} tone={s === "send" || s === "connect" ? "warn" : "neutral"}>{s}</Badge>
+              ))}
+            </div>
+            <ActionForm action={revokeApp} submit="Remove access" variant="danger" confirm={`Remove ${a.client_name}'s access?`}>
+              <input type="hidden" name="client_id" value={a.client_id} />
+            </ActionForm>
+          </Card>
+        ))}
+      </div>
 
       <h2 className="mb-1 font-semibold">Connected accounts</h2>
       <p className="mb-3 max-w-2xl text-sm text-muted">

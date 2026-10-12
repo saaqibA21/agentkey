@@ -9,7 +9,9 @@ from app.core.config import get_settings
 from app.core.exceptions import ProblemError
 from app.core.rate_limiter import allow_request
 from app.core.security import SCOPES, SESSION_PREFIX, constant_time_equals, hash_api_key, verify_session_token
-from app.db.models import ApiKey, Inbox, User, Workspace
+from app.db.models import ApiKey, Inbox, OAuthToken, User, Workspace, utcnow
+
+OAUTH_ACCESS_PREFIX = "ai_oat_"
 from app.db.session import get_session
 
 
@@ -41,6 +43,16 @@ async def authenticate_api_key(session: AsyncSession, api_key: str | None) -> Pr
             return None
         workspace = await session.get(Workspace, user.workspace_id)
         return Principal(workspace=workspace, scopes=frozenset(SCOPES), key_id=user.id, kind="user")
+    if api_key.startswith(OAUTH_ACCESS_PREFIX):
+        # Access a person granted to an app (ChatGPT, Claude...) through the OAuth consent screen.
+        grant = await session.scalar(select(OAuthToken).where(
+            OAuthToken.access_hash == hash_api_key(api_key), OAuthToken.revoked_at.is_(None),
+            OAuthToken.access_expires_at > utcnow(),
+        ))
+        workspace = await session.get(Workspace, grant.workspace_id) if grant else None
+        if workspace is None or await session.get(User, grant.user_id) is None:
+            return None
+        return Principal(workspace=workspace, scopes=frozenset(grant.scopes or []), key_id=grant.id, kind="oauth")
     row = (
         await session.execute(
             select(ApiKey, Workspace)

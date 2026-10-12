@@ -182,6 +182,33 @@ export async function decideAccess(_: ActionState, form: FormData): Promise<Acti
   });
 }
 
+// ---- apps connected through "sign in and approve" (ChatGPT, Claude...) ----
+
+export async function decideConsent(_: ActionState, form: FormData): Promise<ActionState> {
+  let target: string;
+  try {
+    const result = await api<{ redirect_to: string }>("/oauth/decision", {
+      method: "POST",
+      body: JSON.stringify({
+        request: text(form, "request"),
+        approve: text(form, "verdict") === "approve",
+        scopes: ["read", "send", "manage", "connect"].filter((s) => form.get(`scope_${s}`) === "on"),
+      }),
+    });
+    target = result.redirect_to;
+  } catch (err) {
+    if (err instanceof ApiError) return { error: err.detail ?? err.title };
+    throw err;
+  }
+  redirect(target);
+}
+
+export async function revokeApp(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    await api(`/oauth/grants/${encodeURIComponent(text(form, "client_id"))}`, { method: "DELETE" });
+  });
+}
+
 // ---- webhooks -------------------------------------------------------------
 
 export async function createWebhook(_: ActionState, form: FormData): Promise<ActionState> {

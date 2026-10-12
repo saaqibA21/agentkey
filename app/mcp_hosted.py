@@ -54,7 +54,11 @@ class HostedMCP:
         async with get_sessionmaker()() as session:
             principal = await authenticate_api_key(session, api_key)
         if principal is None:
-            return await self._reject(send, 401, "Unauthorized", ((b"www-authenticate", b"Bearer"),))
+            # Pointing at the metadata is what lets ChatGPT, Claude and other apps start the sign-in flow.
+            from app.api.oauth import resource_metadata_url
+
+            challenge = f'Bearer resource_metadata="{resource_metadata_url()}"'.encode()
+            return await self._reject(send, 401, "Unauthorized", ((b"www-authenticate", challenge),))
         if not await allow_request(str(principal.key_id)):
             return await self._reject(send, 429, "Rate limit exceeded", ((b"retry-after", b"1"),))
         token = mcp_server.request_api_key.set(api_key)
