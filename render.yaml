@@ -34,6 +34,13 @@ services:
         generateValue: true
       - key: DASHBOARD_URL
         sync: false
+      # Must be a Fernet key (see .env.example); a random string will not work.
+      - key: VAULT_KEY
+        sync: false
+      - key: GITHUB_OAUTH_CLIENT_ID
+        sync: false
+      - key: GITHUB_OAUTH_CLIENT_SECRET
+        sync: false
       - key: STORAGE_BACKEND
         value: s3
       - key: S3_BUCKET

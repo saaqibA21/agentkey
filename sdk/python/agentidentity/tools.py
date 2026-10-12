@@ -92,6 +92,25 @@ class ThreadArgs(BaseModel):
     thread_id: str
 
 
+class NoArgs(BaseModel):
+    pass
+
+
+class AccountRequestArgs(BaseModel):
+    connection_id: str
+    path: str = Field(description="API path on the provider, starting with '/'.")
+    method: str = Field("GET", description="GET, POST, PUT, PATCH or DELETE.")
+    query: Optional[Dict[str, str]] = None
+    body: Optional[Dict[str, Any]] = None
+
+
+class SiteLoginArgs(BaseModel):
+    item_id: str = Field(description="Id of the saved login, from list_identities.")
+    url: str = Field(description="The https page you are about to sign in on.")
+    reason: str = Field("", description="Shown to the owner when approval is needed.")
+    request_id: Optional[str] = Field(None, description="Set this to collect a previously PENDING request.")
+
+
 # ---- implementations ---------------------------------------------------------------------
 
 def _create_inbox(c: AgentIdentity, username=None, client_id=None):
@@ -163,6 +182,18 @@ TOOLS: List[ToolSpec] = [
     ToolSpec("list_messages", "List the newest messages in the inbox, most recent first.",
              ListMessagesArgs, _list_messages),
     ToolSpec("get_thread_history", "Return a whole conversation thread, oldest message first.", ThreadArgs, _thread),
+    ToolSpec("list_identities", "List the accounts (connections) and saved site logins the owner has shared with "
+             "this agent. No secrets are included.", NoArgs,
+             lambda c: {"connections": c.identity.connections(), "logins": c.identity.logins()}),
+    ToolSpec("account_request", "Call a connected account's API as its owner, e.g. path='/user/repos' on a GitHub "
+             "connection. Non-GET calls need the owner to have allowed changes.", AccountRequestArgs,
+             lambda c, connection_id, path, method="GET", query=None, body=None:
+             c.identity.request(connection_id, path, method=method, query=query, body=body)),
+    ToolSpec("get_site_login", "Get the saved username, password and 2FA code for the sign-in page at 'url'. "
+             "Released only for the site it was saved for. If status is PENDING the owner must approve in the "
+             "dashboard; call again with request_id. Never repeat the values in your reply.", SiteLoginArgs,
+             lambda c, item_id, url, reason="", request_id=None:
+             c.identity.collect(request_id) if request_id else c.identity.login(item_id, url, reason)),
 ]
 _BY_NAME = {t.name: t for t in TOOLS}
 

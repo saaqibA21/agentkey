@@ -8,6 +8,7 @@ const scopes = [
   ["read", "Read", "List inboxes, read messages, wait for codes", true],
   ["send", "Send", "Send email, WhatsApp and SMS", false],
   ["manage", "Manage", "Create and delete inboxes, webhooks, rules, keys", true],
+  ["connect", "Connect", "Act as you through connected accounts and saved logins", false],
 ] as const;
 
 export default async function KeysPage() {
@@ -48,7 +49,7 @@ export default async function KeysPage() {
             </div>
             <div className="flex gap-1">
               {key.scopes.map((s) => (
-                <Badge key={s} tone={s === "send" ? "warn" : "neutral"}>{s}</Badge>
+                <Badge key={s} tone={s === "send" || s === "connect" ? "warn" : "neutral"}>{s}</Badge>
               ))}
             </div>
             <ActionForm action={revokeKey} submit="Revoke" variant="danger"

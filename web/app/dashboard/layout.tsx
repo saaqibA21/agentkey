@@ -11,6 +11,7 @@ const nav = [
   ["/dashboard", "Overview"],
   ["/dashboard/inboxes", "Inboxes"],
   ["/dashboard/keys", "API keys"],
+  ["/dashboard/identity", "Identity"],
   ["/dashboard/domains", "Domains"],
   ["/dashboard/approvals", "Approvals"],
   ["/dashboard/webhooks", "Webhooks"],

@@ -213,10 +213,44 @@ class _HITL:
         return Message(**self._c._request("POST", f"/hitl/reject/{message_id}"))
 
 
+class _Identity:
+    """The owner's connected accounts and saved site logins. Needs a key with the ``connect`` scope."""
+
+    def __init__(self, client: "AgentIdentity"):
+        self._c = client
+
+    def connections(self) -> List[Dict[str, Any]]:
+        return self._c._request("GET", "/connections")["data"]
+
+    def logins(self) -> List[Dict[str, Any]]:
+        """Saved site logins (metadata only; secrets are never listed)."""
+        return self._c._request("GET", "/vault/items")["data"]
+
+    def request(self, connection_id: str, path: str, method: str = "GET",
+                query: Optional[Dict[str, str]] = None, body: Any = None) -> Dict[str, Any]:
+        """Call the provider's API as the connected account. Returns ``{"status": ..., "body": ...}``."""
+        payload = _clean({"method": method, "path": path, "query": query or {}, "body": body})
+        return self._c._request("POST", f"/connections/{connection_id}/request", json=payload)
+
+    def git_credentials(self, connection_id: str) -> Dict[str, Any]:
+        """Token for git over HTTPS. Only when the owner allowed token export for the connection."""
+        return self._c._request("POST", f"/connections/{connection_id}/token")
+
+    def login(self, item_id: str, url: str, reason: str = "") -> Dict[str, Any]:
+        """Ask for a saved login for the page at ``url``. ``status`` is GRANTED (with username,
+        password and totp_code) or PENDING (with request_id) when the owner must approve first."""
+        return self._c._request("POST", f"/vault/items/{item_id}/login", json={"url": url, "reason": reason})
+
+    def collect(self, request_id: str) -> Dict[str, Any]:
+        """Pick up a login once its request has been approved. Works a single time."""
+        return self._c._request("POST", f"/vault/requests/{request_id}/collect")
+
+
 class AgentIdentity:
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, timeout: float = 30.0,
                  http_client: Optional[httpx.Client] = None):
         self._http = http_client or httpx.Client(timeout=timeout, **_config(api_key, base_url))
+        self.identity = _Identity(self)
         self.inboxes = _Inboxes(self)
         self.messages = _Messages(self)
         self.threads = _Threads(self)

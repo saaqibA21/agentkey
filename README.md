@@ -52,6 +52,35 @@ Receiving works immediately. Sending is allowed when either you set `outbound_en
 workspace through the admin API, or the mail leaves from an inbox on a custom domain the workspace
 has verified.
 
+### Identity: letting an agent act as a person
+
+Two ways for an agent to use its owner's existing accounts, both under `Identity` in the dashboard
+and both usable only by API keys that carry the `connect` scope.
+
+**Connected accounts (OAuth).** The owner clicks "Connect GitHub" (or Google) and approves on the
+provider's own page. The token is stored encrypted. The agent calls
+`POST /v1/connections/{id}/request` with a method and an API path, and the server makes the call
+with the owner's token, so the agent never holds it. Connections start read-only; the owner can
+switch on "Allow changes", and separately "Allow token export", which lets the agent fetch the
+token itself for `git clone` / `git push` over HTTPS.
+
+**Saved logins (vault).** For sites with no OAuth: username, password and optional 2FA setup key,
+encrypted with `VAULT_KEY`. An agent that is driving a browser calls
+`POST /v1/vault/items/{id}/login` with the URL it is about to sign in on. The login is released
+only if that URL is on the site it was saved for (https, same host or a subdomain). In "ask" mode
+(the default) the call returns 202 and the owner must press "Allow once" in the dashboard; the
+agent then collects it once. In "auto" mode it is returned immediately. The response includes the
+current 6-digit 2FA code, never the 2FA secret.
+
+Only a signed-in person can add credentials, change these switches or approve a request; an API
+key cannot, whatever its scopes. Every use is written to the audit log.
+
+MCP tools: `list_identities`, `account_request`, `get_git_credentials`, `get_site_login`.
+
+What this does not do: it does not run a browser for the agent, and it does not solve CAPTCHAs or
+get around a site's bot detection or new-device checks. The agent brings its own browser (Claude
+in Chrome, a computer-use agent, Playwright); this supplies the identity.
+
 ### API keys and scopes
 
 `POST /v1/admin/workspaces` (header `X-Admin-Secret`) creates a workspace and returns its root key
@@ -141,6 +170,10 @@ client.messages.send(inbox_id=inbox.id, to="client@example.com", subject="Quote 
   documented APIs and mocked or bypassed locally.
 - Schema is created with `create_all`; there are no versioned migrations (add Alembic before the
   first schema change in production).
+- Identity: the GitHub/Google connect flow is tested against a faked provider, not the real ones.
+  A password released from the vault enters the agent's context, so a compromised or tricked agent
+  could misuse it on the right site; prefer connected accounts, and keep vault items on "ask".
+  Disconnecting removes the token here but does not revoke it at the provider.
 - Billing is not built; the free plan's limits are the only plan.
 - One user per workspace. No team seats or roles yet.
 - Verified domains are re-checked only when someone presses "Check DNS now", not on a schedule.

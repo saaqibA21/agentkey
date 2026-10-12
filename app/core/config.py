@@ -25,6 +25,20 @@ class Settings(BaseSettings):
     # Shared only with the dashboard's server side; exchanges a verified login for a session token.
     dashboard_secret: str = "change-me-dashboard"
     session_ttl_seconds: int = 3600
+    # Fernet key that encrypts stored OAuth tokens and vault logins. Generate with:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Losing it makes every stored credential unreadable; rotating it requires re-encrypting.
+    vault_key: str = ""
+
+    # OAuth apps used for "Connect <provider>" (delegated access), separate from dashboard sign-in.
+    # Callback URL to register: <PUBLIC_BASE_URL>/v1/connections/callback/<provider>
+    github_oauth_client_id: str = ""
+    github_oauth_client_secret: str = ""
+    github_oauth_scopes: str = "repo read:user"
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+    google_oauth_scopes: str = "openid email profile"
+    vault_request_ttl_seconds: int = 600
 
     mail_domain: str = "agents.example.com"
     shared_domains: str = "agents.example.com"
@@ -107,6 +121,8 @@ class Settings(BaseSettings):
                 raise ValueError("production requires a real REDIS_URL")
             if self.mail_provider == "console":
                 raise ValueError("production requires MAIL_PROVIDER=smtp or resend")
+            if not self.vault_key:
+                raise ValueError("production requires VAULT_KEY (a Fernet key) to encrypt stored credentials")
             if self.domain_skip_dns_checks:
                 raise ValueError("DOMAIN_SKIP_DNS_CHECKS must be off in production")
             if self.storage_backend == "local":

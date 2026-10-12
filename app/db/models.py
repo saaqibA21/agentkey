@@ -88,6 +88,57 @@ class Attachment(Base):
     created_at: Mapped[datetime] = _created()
 
 
+class Connection(Base):
+    """An external account (GitHub, Google...) the owner connected through OAuth. Tokens stay
+    encrypted here; agents act through a proxy and never see them unless export is switched on."""
+
+    __tablename__ = "connections"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    provider: Mapped[str] = mapped_column(String(32))
+    account: Mapped[str] = mapped_column(String(255))
+    scopes: Mapped[str] = mapped_column(String(1024), default="")
+    token_enc: Mapped[str] = mapped_column(Text)
+    allow_writes: Mapped[bool] = mapped_column(Boolean, default=False)
+    allow_export: Mapped[bool] = mapped_column(Boolean, default=False)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
+class VaultItem(Base):
+    """A saved site login (username, password, optional TOTP secret), encrypted at rest."""
+
+    __tablename__ = "vault_items"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    site_host: Mapped[str] = mapped_column(String(255))
+    username: Mapped[str] = mapped_column(String(255))
+    secret_enc: Mapped[str] = mapped_column(Text)
+    has_totp: Mapped[bool] = mapped_column(Boolean, default=False)
+    approval: Mapped[str] = mapped_column(String(8), default="ask")  # ask | auto
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
+class AccessRequest(Base):
+    """An agent asking to use a vault login that needs a person's go-ahead."""
+
+    __tablename__ = "access_requests"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    vault_item_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vault_items.id", ondelete="CASCADE"), index=True)
+    requested_by: Mapped[str] = mapped_column(String(128))
+    url: Mapped[str] = mapped_column(String(1024))
+    reason: Mapped[str] = mapped_column(String(500), default="")
+    status: Mapped[str] = mapped_column(String(16), default="PENDING")  # PENDING | APPROVED | DENIED | USED
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = _created()
+
+
 class ApiKey(Base):
     """Scoped credentials: a read-only key can be handed to an agent that must never send."""
 

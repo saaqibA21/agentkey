@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { api, ApiError } from "@/lib/api";
 
@@ -42,7 +43,7 @@ export async function deleteInbox(_: ActionState, form: FormData): Promise<Actio
 
 export async function createKey(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/keys", async () => {
-    const scopes = ["read", "send", "manage"].filter((s) => form.get(`scope_${s}`) === "on");
+    const scopes = ["read", "send", "manage", "connect"].filter((s) => form.get(`scope_${s}`) === "on");
     if (scopes.length === 0) return { error: "Pick at least one permission." };
     const created = await api<{ api_key: string }>("/api-keys", {
       method: "POST",
@@ -109,6 +110,75 @@ export async function createPolicy(_: ActionState, form: FormData): Promise<Acti
 export async function deletePolicy(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/approvals", async () => {
     await api(`/hitl/policies/${text(form, "id")}`, { method: "DELETE" });
+  });
+}
+
+// ---- identity: connected accounts and saved logins -----------------------
+
+export async function connectProvider(_: ActionState, form: FormData): Promise<ActionState> {
+  let url: string;
+  try {
+    url = (await api<{ authorize_url: string }>(`/connections/${text(form, "provider")}/start`, { method: "POST" }))
+      .authorize_url;
+  } catch (err) {
+    if (err instanceof ApiError) return { error: err.detail ?? err.title };
+    throw err;
+  }
+  redirect(url);
+}
+
+export async function updateConnection(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    const field = text(form, "field") === "allow_export" ? "allow_export" : "allow_writes";
+    await api(`/connections/${text(form, "id")}`, {
+      method: "PATCH",
+      body: JSON.stringify({ [field]: text(form, "value") === "true" }),
+    });
+  });
+}
+
+export async function disconnect(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    await api(`/connections/${text(form, "id")}`, { method: "DELETE" });
+  });
+}
+
+export async function addLogin(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    const totp = text(form, "totp_secret");
+    await api("/vault/items", {
+      method: "POST",
+      body: JSON.stringify({
+        name: text(form, "name"),
+        site_url: text(form, "site_url"),
+        username: text(form, "username"),
+        password: String(form.get("password") ?? ""),
+        approval: text(form, "approval") === "auto" ? "auto" : "ask",
+        ...(totp ? { totp_secret: totp } : {}),
+      }),
+    });
+  });
+}
+
+export async function setLoginApproval(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    await api(`/vault/items/${text(form, "id")}`, {
+      method: "PATCH",
+      body: JSON.stringify({ approval: text(form, "approval") === "auto" ? "auto" : "ask" }),
+    });
+  });
+}
+
+export async function deleteLogin(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    await api(`/vault/items/${text(form, "id")}`, { method: "DELETE" });
+  });
+}
+
+export async function decideAccess(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/identity", async () => {
+    const verdict = text(form, "verdict") === "approve" ? "approve" : "deny";
+    await api(`/vault/requests/${text(form, "id")}/${verdict}`, { method: "POST" });
   });
 }
 

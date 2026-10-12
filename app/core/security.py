@@ -13,7 +13,9 @@ from app.core.config import get_settings
 from app.core.exceptions import ProblemError
 
 API_KEY_PREFIX = "ai_live_"
-SCOPES = ("read", "send", "manage")
+# "connect" lets a key act through the owner's connected accounts and vault logins. It is never
+# implied by the other scopes: an inbox-only agent cannot touch a person's identity.
+SCOPES = ("read", "send", "manage", "connect")
 
 
 def generate_api_key() -> str:
@@ -77,6 +79,26 @@ def verify_hitl_token(message_id: str, token: str | None) -> bool:
         return False
     expected = _hmac_hex(get_settings().signing_secret, f"hitl:{message_id}:{exp}".encode())
     return hmac.compare_digest(expected, sig)
+
+
+def sign_blob(purpose: str, data: dict, ttl_seconds: int) -> str:
+    """Tamper-proof, expiring, URL-safe token carrying ``data`` (used for OAuth state)."""
+    body = {**data, "exp": int(time.time()) + ttl_seconds}
+    payload = base64.urlsafe_b64encode(json.dumps(body, separators=(",", ":")).encode()).decode().rstrip("=")
+    return f"{payload}.{_hmac_hex(get_settings().signing_secret, f'{purpose}:{payload}'.encode())}"
+
+
+def verify_blob(purpose: str, token: str | None) -> dict | None:
+    if not token or "." not in token:
+        return None
+    payload, sig = token.rsplit(".", 1)
+    if not hmac.compare_digest(_hmac_hex(get_settings().signing_secret, f"{purpose}:{payload}".encode()), sig):
+        return None
+    try:
+        data = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+    except (ValueError, UnicodeDecodeError):
+        return None
+    return data if data.get("exp", 0) >= time.time() else None
 
 
 SESSION_PREFIX = "ai_sess_"

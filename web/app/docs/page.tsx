@@ -13,6 +13,7 @@ const sections = [
   ["frameworks", "Agent frameworks"],
   ["receiving", "Receiving mail"],
   ["sending", "Sending and approvals"],
+  ["identity", "Acting as you"],
   ["realtime", "Webhooks and WebSocket"],
   ["security", "Handling untrusted mail"],
   ["reference", "API reference"],
@@ -126,6 +127,29 @@ export default function Docs() {
               Add an approval rule under <b>Approvals</b> to hold messages containing words you choose. A held send
               returns HTTP 202 with status <code>PENDING_APPROVAL</code>; your agent should move on and not resend. A
               person approves or rejects it from Slack or the dashboard.
+            </p>
+          </Section>
+
+          <Section id="identity" title="Acting as you on other services">
+            <p>
+              Open <b>Identity</b> in the dashboard to let an agent use your existing accounts. Give the agent a key
+              with the <code>Connect</code> permission; keys without it cannot touch anything there.
+            </p>
+            <p>
+              <b>Connected accounts</b> are the safe default. Press Connect GitHub, approve on GitHub, and the agent can
+              call the GitHub API as you through <code>account_request</code> without ever seeing a password or token.
+              A connection is read-only until you switch on <i>Allow changes</i>. Switch on <i>Allow token export</i>{" "}
+              only if the agent needs to run <code>git clone</code> or <code>git push</code>.
+            </p>
+            <p>
+              <b>Saved logins</b> cover sites you cannot connect. The agent asks with <code>get_site_login</code> and
+              the page address it is signing in on; the login is released only for the site you saved it for, and by
+              default only after you press <i>Allow once</i>. If you saved a 2FA setup key, the agent also receives the
+              current 6-digit code.
+            </p>
+            <p>
+              Your agent still needs its own browser to sign in on a web page, and this does not get past CAPTCHAs or
+              a site&apos;s new-device checks.
             </p>
           </Section>
 

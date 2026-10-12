@@ -79,6 +79,15 @@ def require_scope(scope: str):
     return _dep
 
 
+async def require_user(principal: Principal = Depends(get_principal)) -> Principal:
+    """Only a signed-in person, never an API key. Guards decisions an agent must not make for itself
+    (approving its own access, loosening a credential's rules)."""
+    if principal.kind != "user":
+        raise ProblemError(403, "Dashboard sign-in required",
+                           "This action can only be taken by a person signed in to the dashboard.")
+    return principal
+
+
 async def load_inbox(session: AsyncSession, principal: Principal, inbox_id: uuid.UUID) -> Inbox:
     inbox = await session.get(Inbox, inbox_id)
     # Same 404 for "missing" and "someone else's" so ids cannot be probed across tenants.

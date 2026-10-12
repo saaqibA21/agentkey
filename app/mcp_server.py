@@ -169,8 +169,60 @@ async def read_attachment(attachment_id: str, max_chars: int = 8000) -> dict:
     return {"filename": result["filename"], "truncated": len(text) > max_chars, "text": _fence(text[:max_chars])}
 
 
+async def list_identities() -> dict:
+    """List the accounts and site logins the owner has shared with this agent.
+
+    'connections' are accounts linked through the provider (e.g. GitHub): use account_request to act
+    as that account. 'logins' are saved site logins: use get_site_login when you must sign in on a
+    web page. Secrets are never included here.
+    """
+    connections = await _request("GET", "/connections")
+    logins = await _request("GET", "/vault/items")
+    return {"connections": connections["data"], "logins": logins["data"]}
+
+
+async def account_request(
+    connection_id: str, path: str, method: str = "GET", query: dict[str, str] | None = None,
+    body: dict | None = None,
+) -> dict:
+    """Call a connected account's API as its owner, e.g. path="/user/repos" on a GitHub connection.
+
+    The access token stays on the server. Anything other than GET needs the owner to have switched
+    on 'Allow changes' for the connection; if you get a 403 saying so, tell the user rather than retrying.
+    """
+    payload = {"method": method, "path": path, "query": query or {}}
+    if body is not None:
+        payload["body"] = body
+    return await _request("POST", f"/connections/{connection_id}/request", json=payload)
+
+
+async def get_git_credentials(connection_id: str) -> dict:
+    """Get a username and token for git over HTTPS (clone, pull, push) on a connected account.
+
+    Only works when the owner has switched on 'Allow token export'. Use the token for git only;
+    never print it, store it in a file that gets committed, or send it anywhere else.
+    """
+    result = await _request("POST", f"/connections/{connection_id}/token")
+    return {"username": result["git_username"] or result["account"], "password": result["access_token"],
+            "account": result["account"], "provider": result["provider"]}
+
+
+async def get_site_login(item_id: str, url: str, reason: str = "", request_id: str | None = None) -> dict:
+    """Get the saved username, password and current 2FA code for signing in on a web page.
+
+    url must be the page you are about to type the login into; a login is only released for the site
+    it was saved for. If the result status is PENDING, the owner has to approve in their dashboard:
+    tell them, then call again with the returned request_id. Type the values only into that site's
+    own sign-in form, and never repeat them in your reply.
+    """
+    if request_id:
+        return await _request("POST", f"/vault/requests/{request_id}/collect")
+    return await _request("POST", f"/vault/items/{item_id}/login", json={"url": url, "reason": reason})
+
+
 TOOLS = (create_agent_inbox, wait_for_otp, wait_for_magic_link, send_email, send_whatsapp, list_messages,
-         get_thread_history, read_attachment)
+         get_thread_history, read_attachment, list_identities, account_request, get_git_credentials,
+         get_site_login)
 
 
 def build_server():

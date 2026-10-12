@@ -379,7 +379,8 @@ async def test_mcp_server_tools_and_untrusted_fencing():
 
     tools = {t.name for t in await module.server.list_tools()}
     assert tools == {"create_agent_inbox", "wait_for_otp", "wait_for_magic_link", "send_email",
-                     "send_whatsapp", "list_messages", "get_thread_history", "read_attachment"}
+                     "send_whatsapp", "list_messages", "get_thread_history", "read_attachment",
+                     "list_identities", "account_request", "get_git_credentials", "get_site_login"}
 
     rendered = mcp_server._render({
         "id": "m1", "direction": "INBOUND", "sender": "x@evil.com", "recipient": "a@agents.test",
