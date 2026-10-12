@@ -1,0 +1,9 @@
+name = "agentidentity-inbound"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+INGEST_URL = "https://YOUR-API-HOST/v1/inbound/ingest"
+
+# Set the shared secret (must equal the API's INGEST_SECRET):
+#   npx wrangler secret put INGEST_SECRET

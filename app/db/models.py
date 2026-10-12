@@ -1,0 +1,160 @@
+import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, Uuid
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+# JSONB on Postgres, plain JSON elsewhere so local dev and tests can run on SQLite.
+JSONType = JSON().with_variant(JSONB(), "postgresql")
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+def _pk() -> Mapped[uuid.UUID]:
+    return mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+
+
+def _created() -> Mapped[datetime]:
+    return mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Workspace(Base):
+    __tablename__ = "workspaces"
+
+    id: Mapped[uuid.UUID] = _pk()
+    name: Mapped[str] = mapped_column(String(255))
+    # Hash of the root (all-scope) key. Scoped keys live in ``api_keys``.
+    api_key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    pii_masking_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    outbound_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    daily_send_limit: Mapped[int] = mapped_column(Integer, default=50)
+    created_at: Mapped[datetime] = _created()
+
+
+class ApiKey(Base):
+    """Scoped credentials: a read-only key can be handed to an agent that must never send."""
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    key_prefix: Mapped[str] = mapped_column(String(16))
+    scopes: Mapped[list] = mapped_column(JSONType, default=list)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
+class Inbox(Base):
+    __tablename__ = "inboxes"
+    # Idempotency keys are scoped per workspace so tenants cannot probe each other's client_ids.
+    __table_args__ = (UniqueConstraint("workspace_id", "client_id", name="uq_inbox_workspace_client_id"),)
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    email_address: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    phone_number: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    client_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="ACTIVE")
+    created_at: Mapped[datetime] = _created()
+
+
+class Thread(Base):
+    __tablename__ = "threads"
+
+    id: Mapped[uuid.UUID] = _pk()
+    inbox_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("inboxes.id", ondelete="CASCADE"), index=True)
+    subject: Mapped[str] = mapped_column(String(512), default="")
+    participant_emails: Mapped[list] = mapped_column(JSONType, default=list)
+    last_message_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    message_count: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class Message(Base):
+    __tablename__ = "messages"
+    __table_args__ = (Index("ix_messages_inbox_created", "inbox_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = _pk()
+    inbox_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("inboxes.id", ondelete="CASCADE"), index=True)
+    thread_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("threads.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    channel: Mapped[str] = mapped_column(String(16), default="EMAIL")
+    direction: Mapped[str] = mapped_column(String(16))
+    sender: Mapped[str] = mapped_column(String(255))
+    recipient: Mapped[str] = mapped_column(String(255))
+    subject: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    body_text: Mapped[str] = mapped_column(Text, default="")
+    body_html: Mapped[str | None] = mapped_column(Text, nullable=True)
+    headers: Mapped[dict] = mapped_column(JSONType, default=dict)
+    extracted_data: Mapped[dict] = mapped_column(JSONType, default=dict)
+    # DELIVERED | PENDING_APPROVAL | SENDING | SENT | REJECTED | FAILED
+    status: Mapped[str] = mapped_column(String(32))
+    # RFC 5322 Message-ID (or provider id on other channels); used for threading and inbound dedupe.
+    message_id_header: Mapped[str | None] = mapped_column(String(512), nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class HITLPolicy(Base):
+    __tablename__ = "hitl_policies"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    # Plain entries match as whole words/phrases; entries prefixed with "re:" are regular expressions.
+    trigger_keywords: Mapped[list] = mapped_column(JSONType, default=list)
+    action: Mapped[str] = mapped_column(String(32), default="HOLD_FOR_APPROVAL")
+    target_channel: Mapped[str] = mapped_column(String(32), default="SLACK")
+    target_destination: Mapped[str] = mapped_column(String(512))
+
+
+class WebhookSubscription(Base):
+    __tablename__ = "webhook_subscriptions"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    target_url: Mapped[str] = mapped_column(String(512))
+    secret_token: Mapped[str] = mapped_column(String(128))
+    event_types: Mapped[list] = mapped_column(JSONType, default=list)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class WebhookDelivery(Base):
+    """Durable outbox row per (event, subscription); the dispatcher retries with backoff."""
+
+    __tablename__ = "webhook_deliveries"
+    __table_args__ = (Index("ix_webhook_deliveries_due", "status", "next_attempt_at"),)
+
+    id: Mapped[uuid.UUID] = _pk()
+    subscription_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("webhook_subscriptions.id", ondelete="CASCADE"), index=True
+    )
+    event_type: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSONType)
+    status: Mapped[str] = mapped_column(String(16), default="PENDING")  # PENDING | DELIVERED | FAILED
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    next_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_error: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
+class AuditLog(Base):
+    """Append-only security log (CERT-In directs 180-day retention of ICT system logs)."""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True, index=True)
+    actor: Mapped[str] = mapped_column(String(128))
+    action: Mapped[str] = mapped_column(String(64), index=True)
+    target: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    detail: Mapped[dict] = mapped_column(JSONType, default=dict)
+    ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
