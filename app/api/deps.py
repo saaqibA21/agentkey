@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.exceptions import ProblemError
 from app.core.rate_limiter import allow_request
-from app.core.security import constant_time_equals, hash_api_key
-from app.db.models import ApiKey, Inbox, Workspace
+from app.core.security import SCOPES, SESSION_PREFIX, constant_time_equals, hash_api_key, verify_session_token
+from app.db.models import ApiKey, Inbox, User, Workspace
 from app.db.session import get_session
 
 
@@ -17,11 +17,12 @@ from app.db.session import get_session
 class Principal:
     workspace: Workspace
     scopes: frozenset[str]
-    key_id: uuid.UUID
+    key_id: uuid.UUID  # API key id, or the user id for dashboard sessions
+    kind: str = "api_key"
 
     @property
     def actor(self) -> str:
-        return f"api_key:{self.key_id}"
+        return f"{self.kind}:{self.key_id}"
 
 
 def bearer_token(authorization: str | None) -> str | None:
@@ -33,6 +34,13 @@ def bearer_token(authorization: str | None) -> str | None:
 async def authenticate_api_key(session: AsyncSession, api_key: str | None) -> Principal | None:
     if not api_key:
         return None
+    if api_key.startswith(SESSION_PREFIX):
+        claims = verify_session_token(api_key)
+        user = await session.get(User, uuid.UUID(claims["uid"])) if claims else None
+        if user is None or str(user.workspace_id) != claims["wid"]:
+            return None
+        workspace = await session.get(Workspace, user.workspace_id)
+        return Principal(workspace=workspace, scopes=frozenset(SCOPES), key_id=user.id, kind="user")
     row = (
         await session.execute(
             select(ApiKey, Workspace)
@@ -82,3 +90,8 @@ async def load_inbox(session: AsyncSession, principal: Principal, inbox_id: uuid
 async def require_admin(request: Request, x_admin_secret: str | None = Header(default=None)) -> None:
     if not x_admin_secret or not constant_time_equals(x_admin_secret, get_settings().admin_secret):
         raise ProblemError(401, "Unauthorized", "Admin secret required.")
+
+
+async def require_dashboard(x_dashboard_secret: str | None = Header(default=None)) -> None:
+    if not x_dashboard_secret or not constant_time_equals(x_dashboard_secret, get_settings().dashboard_secret):
+        raise ProblemError(401, "Unauthorized", "Dashboard secret required.")

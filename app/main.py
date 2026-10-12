@@ -2,12 +2,14 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from starlette.routing import Route
 
-from app.api.v1 import admin, hitl, inbound, inboxes, messages, webhooks, websockets
+from app.api.v1 import admin, auth, domains, hitl, inbound, inboxes, messages, webhooks, websockets
 from app.core.cache import close_redis, get_redis, init_redis
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import create_all, dispose_engine, get_sessionmaker
+from app.mcp_hosted import MCP_PATH, hosted_mcp
 from app.services.webhook_dispatcher import dispatcher
 
 
@@ -20,7 +22,8 @@ async def lifespan(app: FastAPI):
         await create_all()
     dispatcher.start()
     try:
-        yield
+        async with hosted_mcp.lifespan(app):
+            yield
     finally:
         await dispatcher.stop()
         await close_redis()
@@ -30,7 +33,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(
-        title="AgentIdentity",
+        title=settings.platform_name,
         version="0.1.0",
         description="Identity and cross-channel communication (email, WhatsApp, SMS) for autonomous AI agents.",
         lifespan=lifespan,
@@ -48,8 +51,11 @@ def create_app() -> FastAPI:
             response.headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
         return response
 
-    for module in (admin, inboxes, messages, inbound, hitl, webhooks, websockets):
+    for module in (admin, auth, inboxes, messages, inbound, hitl, webhooks, domains, websockets):
         app.include_router(module.router, prefix="/v1")
+
+    # Hosted MCP (streamable HTTP). A plain route rather than a mount so POST /mcp is not redirected.
+    app.router.routes.append(Route(MCP_PATH, endpoint=hosted_mcp))
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz():

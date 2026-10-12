@@ -1,5 +1,6 @@
 """Outbound pipeline shared by every channel: quota -> guardrails -> (hold | dispatch)."""
 import logging
+import uuid
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ProblemError
 from app.core.rate_limiter import release_daily_send, reserve_daily_send
 from app.db.models import Inbox, Message, Thread, Workspace, utcnow
+from app.core.config import get_settings
+from app.services import attachments as attachment_service
+from app.services import domains as domain_service
 from app.services import guardrails, mail_sender, sms_service, whatsapp_service
+from app.services.attachments import IncomingAttachment
+from app.services.storage import get_storage
 from app.services.events import emit_events
 from app.services.mail_sender import MailSendError, OutboundEmail
 from app.services.whatsapp_service import ChannelError, ChannelNotConfigured
@@ -38,12 +44,17 @@ async def channel_thread_id(session: AsyncSession, inbox_id, channel: str, count
     )
 
 
-async def _dispatch(message: Message) -> None:
+async def _dispatch(session: AsyncSession, message: Message) -> None:
     dispatch = (message.extracted_data or {}).get("dispatch", {})
     if message.channel == "EMAIL":
+        files = [
+            (row.filename, row.content_type, await get_storage().get(row.storage_key))
+            for row in await attachment_service.for_message(session, message.id)
+        ]
         await mail_sender.send_email(OutboundEmail(
             sender=message.sender, recipient=message.recipient, subject=message.subject or "",
             text=message.body_text, html=message.body_html, headers=dict(message.headers or {}),
+            attachments=files,
         ))
     elif message.channel == "WHATSAPP":
         message.message_id_header = await whatsapp_service.send_whatsapp(
@@ -61,7 +72,7 @@ async def _dispatch(message: Message) -> None:
 async def deliver(session: AsyncSession, message: Message, workspace_id) -> Message:
     """Send a message that is already in SENDING state and record the outcome."""
     try:
-        await _dispatch(message)
+        await _dispatch(session, message)
     except (MailSendError, ChannelError) as exc:
         message.status = "FAILED"
         message.extracted_data = {**(message.extracted_data or {}), "error": str(exc)[:500]}
@@ -83,12 +94,19 @@ async def submit(
     session: AsyncSession, *, workspace: Workspace, inbox: Inbox, channel: str, recipient: str,
     text: str, subject: str | None = None, html: str | None = None,
     reply_to: Message | None = None, dispatch: dict | None = None,
+    attachments: list[IncomingAttachment] | None = None,
 ) -> Message:
-    if not workspace.outbound_enabled:
+    # Sending is earned: either the operator reviewed the workspace, or the mail leaves from a
+    # domain the customer has proven they own (so their reputation is on the line, not ours).
+    own_domain = channel == "EMAIL" and await domain_service.is_verified_for(
+        session, workspace.id, inbox.email_address.rsplit("@", 1)[-1]
+    )
+    if not workspace.outbound_enabled and not own_domain:
         raise ProblemError(
             403, "Outbound disabled",
-            "Outbound sending is not enabled for this workspace yet. Inbound works immediately; "
-            "sending unlocks after verification.",
+            "Receiving works immediately. To send, verify a custom domain and send from an inbox on it, "
+            "or ask for your workspace to be reviewed.",
+            dashboard_url=f"{get_settings().dashboard_url.rstrip('/')}/dashboard/domains",
         )
     if not await reserve_daily_send(workspace.id, workspace.daily_send_limit):
         raise ProblemError(
@@ -128,12 +146,18 @@ async def submit(
             extracted["hitl"] = {"action": decision.action, "matched": decision.matched,
                                  "policy_id": str(decision.policy.id)}
         message = Message(
-            inbox_id=inbox.id, thread_id=thread.id, channel=channel, direction="OUTBOUND",
+            id=uuid.uuid4(), inbox_id=inbox.id, thread_id=thread.id, channel=channel, direction="OUTBOUND",
             sender=sender, recipient=recipient, subject=subject, body_text=text, body_html=html,
             headers=headers, extracted_data=extracted, message_id_header=headers.get("Message-ID"),
             status="PENDING_APPROVAL" if hold else "SENDING",
         )
         session.add(message)
+        if attachments:
+            await session.flush()
+            rows = await attachment_service.store(
+                session, workspace_id=workspace.id, message=message, items=attachments, with_text=False
+            )
+            message.extracted_data = {**extracted, "attachments": [attachment_service.describe(r) for r in rows]}
         await session.commit()
     except Exception:
         await release_daily_send(workspace.id)

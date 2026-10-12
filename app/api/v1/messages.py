@@ -9,11 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import schemas
 from app.api.deps import Principal, load_inbox, require_scope
 from app.core.exceptions import ProblemError
-from app.db.models import Inbox, Message, Thread
+from app.api.v1.inbound import decode_attachments
+from app.core.config import get_settings
+from app.db.models import Attachment, Inbox, Message, Thread
 from app.db.session import get_session
 from app.services import outbound
 from app.services.audit import audit
 from app.services.events import _iso, serialize_message
+from app.services.storage import get_storage
 from app.services.whatsapp_service import normalize_phone
 
 router = APIRouter(tags=["messages"])
@@ -36,10 +39,13 @@ async def _load_message(session: AsyncSession, principal: Principal, message_id:
     return row[0]
 
 
-async def _send_email(session, principal, inbox, request, *, to, subject, text, html, reply_to) -> Message:
+async def _send_email(
+    session, principal, inbox, request, *, to, subject, text, html, reply_to, attachments=()
+) -> Message:
+    files = decode_attachments(list(attachments), get_settings().max_outbound_attachment_bytes)
     message = await outbound.submit(
         session, workspace=principal.workspace, inbox=inbox, channel="EMAIL", recipient=to,
-        subject=subject, text=text, html=html, reply_to=reply_to,
+        subject=subject, text=text, html=html, reply_to=reply_to, attachments=files,
     )
     audit(session, action="message.send", actor=principal.actor, workspace_id=principal.workspace.id,
           target=message.id, detail={"channel": "EMAIL", "status": message.status}, request=request)
@@ -60,7 +66,7 @@ async def send_email(
         if reply_to is None or reply_to.inbox_id != inbox.id:
             raise ProblemError(404, "Message not found", "in_reply_to must reference a message in this inbox.")
     message = await _send_email(session, principal, inbox, request, to=str(body.to), subject=body.subject,
-                                text=body.text, html=body.html, reply_to=reply_to)
+                                text=body.text, html=body.html, reply_to=reply_to, attachments=body.attachments)
     return _sent_response(message, response)
 
 
@@ -78,7 +84,7 @@ async def reply_to_message(
         subject = f"Re: {subject}"
     to = original.sender if original.direction == "INBOUND" else original.recipient
     message = await _send_email(session, principal, inbox, request, to=to, subject=subject[:512],
-                                text=body.text, html=body.html, reply_to=original)
+                                text=body.text, html=body.html, reply_to=original, attachments=body.attachments)
     return _sent_response(message, response)
 
 
@@ -151,6 +157,37 @@ async def get_message(
     principal: Principal = Depends(require_scope("read")), session: AsyncSession = Depends(get_session),
 ):
     return serialize_message(await _load_message(session, principal, message_id), full=True)
+
+
+@router.get("/attachments/{attachment_id}")
+async def download_attachment(
+    attachment_id: uuid.UUID,
+    format: Literal["raw", "text"] = Query("raw", description="'text' returns text extracted from PDFs/text files."),
+    principal: Principal = Depends(require_scope("read")), session: AsyncSession = Depends(get_session),
+):
+    row = (
+        await session.execute(
+            select(Attachment, Inbox)
+            .join(Message, Message.id == Attachment.message_id)
+            .join(Inbox, Inbox.id == Message.inbox_id)
+            .where(Attachment.id == attachment_id)
+        )
+    ).first()
+    if row is None or row[1].workspace_id != principal.workspace.id:
+        raise ProblemError(404, "Attachment not found")
+    attachment = row[0]
+    if format == "text":
+        if not attachment.extracted_text:
+            raise ProblemError(404, "No extracted text", "Text is available for PDFs and plain-text files only.")
+        return {"id": str(attachment.id), "filename": attachment.filename, "text": attachment.extracted_text}
+    data = await get_storage().get(attachment.storage_key)
+    ascii_name = attachment.filename.encode("ascii", "replace").decode().replace('"', "_")
+    # Always a download with a neutral type: attachments are untrusted and must never render on our origin.
+    return Response(content=data, media_type="application/octet-stream", headers={
+        "Content-Disposition": f'attachment; filename="{ascii_name}"',
+        "X-Original-Content-Type": attachment.content_type,
+        "Content-Security-Policy": "sandbox",
+    })
 
 
 def _thread_out(thread: Thread) -> dict:

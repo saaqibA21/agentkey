@@ -1,4 +1,5 @@
 """Outbound mail relay adapters: console (dev), SMTP (AWS SES SMTP or any relay), Resend."""
+import base64
 import html as html_lib
 import logging
 import uuid
@@ -10,9 +11,6 @@ import httpx
 from app.core.config import get_settings
 
 logger = logging.getLogger("agentidentity.mail")
-
-PLATFORM_NAME = "AgentIdentity"
-
 
 class MailSendError(Exception):
     pass
@@ -26,6 +24,7 @@ class OutboundEmail:
     text: str
     html: str | None = None
     headers: dict[str, str] = field(default_factory=dict)
+    attachments: list[tuple[str, str, bytes]] = field(default_factory=list)  # (filename, content_type, data)
 
 
 def new_message_id(domain: str) -> str:
@@ -45,7 +44,7 @@ def prepare_email(
     headers = {
         "Message-ID": new_message_id(domain),
         "X-Agent-Operator-ID": str(workspace_id),
-        "X-Agent-Platform": PLATFORM_NAME,
+        "X-Agent-Platform": get_settings().platform_name,
         # Tells well-behaved auto-responders not to answer, which breaks agent<->autoresponder loops.
         "Auto-Submitted": "auto-generated",
     }
@@ -70,6 +69,9 @@ def _to_mime(mail: OutboundEmail) -> EmailMessage:
     msg.set_content(mail.text)
     if mail.html:
         msg.add_alternative(mail.html, subtype="html")
+    for filename, content_type, data in mail.attachments:
+        maintype, _, subtype = content_type.partition("/")
+        msg.add_attachment(data, maintype=maintype, subtype=subtype or "octet-stream", filename=filename)
     return msg
 
 
@@ -102,6 +104,10 @@ async def _send_resend(mail: OutboundEmail) -> None:
     }
     if mail.html:
         payload["html"] = mail.html
+    if mail.attachments:
+        payload["attachments"] = [
+            {"filename": name, "content": base64.b64encode(data).decode()} for name, _, data in mail.attachments
+        ]
     try:
         async with httpx.AsyncClient(timeout=20) as client:
             resp = await client.post(

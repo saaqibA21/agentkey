@@ -22,6 +22,9 @@ class WorkspaceCreate(BaseModel):
     outbound_enabled: bool = False
     daily_send_limit: int = Field(default=50, ge=0, le=100_000)
     pii_masking_enabled: bool = True
+    plan: str = Field(default="free", max_length=32)
+    max_inboxes: int = Field(default=5, ge=0, le=1_000_000)
+    inbound_daily_limit: int = Field(default=500, ge=0, le=10_000_000)
 
 
 class WorkspaceUpdate(BaseModel):
@@ -29,6 +32,9 @@ class WorkspaceUpdate(BaseModel):
     outbound_enabled: bool | None = None
     daily_send_limit: int | None = Field(default=None, ge=0, le=100_000)
     pii_masking_enabled: bool | None = None
+    plan: str | None = Field(default=None, max_length=32)
+    max_inboxes: int | None = Field(default=None, ge=0, le=1_000_000)
+    inbound_daily_limit: int | None = Field(default=None, ge=0, le=10_000_000)
 
 
 class WorkspaceOut(ORM):
@@ -37,7 +43,35 @@ class WorkspaceOut(ORM):
     pii_masking_enabled: bool
     outbound_enabled: bool
     daily_send_limit: int
+    plan: str
+    max_inboxes: int
+    inbound_daily_limit: int
     created_at: datetime
+
+
+class SessionCreate(BaseModel):
+    email: EmailStr
+    name: str = Field(default="", max_length=255)
+    avatar_url: str | None = Field(default=None, max_length=512)
+    provider: Literal["google", "github", "dev"]
+
+
+class DomainCreate(BaseModel):
+    name: str = Field(min_length=4, max_length=253)
+
+    @field_validator("name")
+    @classmethod
+    def _hostname(cls, v: str) -> str:
+        v = v.strip().lower().rstrip(".")
+        if not re.fullmatch(r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}", v):
+            raise ValueError("enter a domain such as mail.example.com")
+        return v
+
+
+class AttachmentIn(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)
+    content_type: str = Field(default="application/octet-stream", max_length=127, pattern=r"^[\w.+-]+/[\w.+-]+$")
+    content_base64: str
 
 
 class WorkspaceCreated(WorkspaceOut):
@@ -68,6 +102,14 @@ class InboxCreate(BaseModel):
     username: str | None = Field(default=None, min_length=3, max_length=64)
     client_id: str | None = Field(default=None, min_length=1, max_length=128)
     phone_number: str | None = Field(default=None, pattern=PHONE)
+    domain: str | None = Field(
+        default=None, max_length=253, description="A verified custom domain of this workspace. Default: shared domain."
+    )
+
+    @field_validator("domain")
+    @classmethod
+    def _domain(cls, v: str | None) -> str | None:
+        return v.strip().lower() if v else None
 
     @field_validator("username")
     @classmethod
@@ -99,11 +141,13 @@ class SendEmail(BaseModel):
     in_reply_to: uuid.UUID | None = Field(
         default=None, description="Id of a message in this inbox to reply to (sets threading headers)."
     )
+    attachments: list[AttachmentIn] = Field(default_factory=list, max_length=10)
 
 
 class ReplyEmail(BaseModel):
     text: str = Field(min_length=1, max_length=200_000)
     html: str | None = Field(default=None, max_length=500_000)
+    attachments: list[AttachmentIn] = Field(default_factory=list, max_length=10)
 
 
 class SendWhatsApp(BaseModel):
@@ -194,6 +238,7 @@ class IngestPayload(BaseModel):
     text: str = ""
     html: str | None = None
     headers: dict[str, str] = Field(default_factory=dict)
+    attachments: list[AttachmentIn] = Field(default_factory=list, max_length=25)
 
     model_config = ConfigDict(populate_by_name=True)
 

@@ -14,7 +14,8 @@ from app.core.config import get_settings
 from app.core.exceptions import ProblemError
 from app.core.security import constant_time_equals, verify_meta_signature, verify_signed_payload
 from app.db.session import get_session
-from app.services import inbound_processor, whatsapp_service
+from app.services import inbound_processor, sns, whatsapp_service
+from app.services.attachments import IncomingAttachment
 from app.services.inbound_processor import InboundEmail
 
 router = APIRouter(prefix="/inbound", tags=["inbound"])
@@ -44,6 +45,91 @@ def _parse(model, body: bytes):
                                    for e in exc.errors()]) from None
 
 
+def decode_attachments(items: list[schemas.AttachmentIn], settings_limit: int) -> list[IncomingAttachment]:
+    out, total = [], 0
+    for item in items:
+        try:
+            data = base64.b64decode(item.content_base64, validate=True)
+        except (binascii.Error, ValueError):
+            raise ProblemError(422, "Validation failed", f"Attachment {item.filename!r} is not valid base64.") from None
+        total += len(data)
+        if total > settings_limit:
+            raise ProblemError(413, "Attachments too large",
+                               f"Attachments may total at most {settings_limit // (1024 * 1024)} MB.")
+        out.append(IncomingAttachment(item.filename, item.content_type, data))
+    return out
+
+
+async def _fetch_s3(bucket: str, key: str) -> bytes:
+    import asyncio
+
+    import boto3
+
+    def _get() -> bytes:
+        return boto3.client("s3", region_name=get_settings().aws_region).get_object(
+            Bucket=bucket, Key=key)["Body"].read()
+
+    return await asyncio.to_thread(_get)
+
+
+@router.post("/ses")
+async def ingest_ses(request: Request, session: AsyncSession = Depends(get_session)):
+    """Amazon SES receiving (via SNS) for customer-owned domains.
+
+    SES receipt rule: [S3 action with this SNS topic] or [SNS action, Base64]. SNS subscription: HTTPS to this URL.
+    """
+    settings = get_settings()
+    try:
+        envelope = json.loads(await request.body())
+    except ValueError:
+        raise ProblemError(422, "Validation failed", "Body must be an SNS JSON message.") from None
+    topic = settings.ses_inbound_topic_arn
+    if not topic or not isinstance(envelope, dict) or envelope.get("TopicArn") != topic:
+        raise ProblemError(403, "Unknown topic", "This endpoint only accepts the configured SNS topic.")
+    if not await sns.verify(envelope):
+        raise ProblemError(401, "Invalid signature")
+
+    if envelope.get("Type") == "SubscriptionConfirmation":
+        url = envelope.get("SubscribeURL", "")
+        if not sns.is_aws_sns_url(url):
+            raise ProblemError(422, "Validation failed", "SubscribeURL is not an AWS SNS URL.")
+        import httpx
+
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.get(url)
+        return {"confirmed": True}
+    if envelope.get("Type") != "Notification":
+        return {"ignored": envelope.get("Type")}
+
+    notice = json.loads(envelope["Message"])
+    receipt, action = notice.get("receipt", {}), notice.get("receipt", {}).get("action", {})
+    if notice.get("notificationType") != "Received":
+        return {"ignored": notice.get("notificationType")}
+    if receipt.get("virusVerdict", {}).get("status") == "FAIL":
+        return {"dropped": "virus"}
+    if "content" in notice:
+        raw = base64.b64decode(notice["content"]) if action.get("encoding") == "BASE64" else notice["content"].encode()
+    elif action.get("type") == "S3":
+        raw = await _fetch_s3(action["bucketName"], action["objectKey"])
+    else:
+        raise ProblemError(422, "Validation failed", "Notification carries no message content.")
+    if len(raw) > settings.max_inbound_bytes:
+        return {"dropped": "too_large"}
+
+    stored = 0
+    for recipient in receipt.get("recipients", []):
+        mail = inbound_processor.parse_mime(raw, notice.get("mail", {}).get("source"), recipient)
+        mail.recipients = [recipient.lower()]  # only the address SES accepted, never To/Cc of other tenants
+        try:
+            _, created = await inbound_processor.ingest_email(session, mail)
+            stored += created
+        except ProblemError as exc:
+            if exc.status == 429:
+                raise  # SNS retries with backoff
+            logger.info("SES mail for %s not stored: %s", recipient, exc.title)
+    return {"stored": stored}
+
+
 @router.post("/ingest", status_code=202)
 async def ingest_email(
     request: Request, response: Response,
@@ -64,6 +150,7 @@ async def ingest_email(
             sender=payload.sender.strip().lower(),
             recipients=[a.strip().lower() for a in (payload.envelope_to, payload.to) if a],
             subject=payload.subject, text=payload.text, html=payload.html, headers=payload.headers,
+            attachments=decode_attachments(payload.attachments, settings_limit=get_settings().max_attachment_bytes),
         )
     message, created = await inbound_processor.ingest_email(session, mail)
     if not created:

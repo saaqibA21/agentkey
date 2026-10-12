@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request, Response
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +18,8 @@ from app.core.config import get_settings
 from app.core.exceptions import ProblemError
 from app.db.models import Inbox, Message, Thread, utcnow
 from app.db.session import get_session, get_sessionmaker
+from app.services import attachments as attachment_service
+from app.services import domains as domain_service
 from app.services.audit import audit
 from app.services.events import serialize_message
 from app.services.whatsapp_service import normalize_phone
@@ -72,10 +74,28 @@ async def create_inbox(
         response.status_code = 200
         return existing
 
+    settings = get_settings()
+    domain = settings.mail_domain.lower()
+    if body.domain and body.domain != domain:
+        if not await domain_service.is_verified_for(session, workspace_id, body.domain):
+            raise ProblemError(422, "Domain not verified",
+                               f"{body.domain} is not a verified domain of this workspace.")
+        domain = body.domain
+    shared = domain == settings.mail_domain.lower() or domain in settings.shared_domain_set
+
+    active = await session.scalar(
+        select(func.count()).select_from(Inbox).where(Inbox.workspace_id == workspace_id, Inbox.status == "ACTIVE")
+    )
+    if active >= principal.workspace.max_inboxes:
+        raise ProblemError(403, "Inbox limit reached",
+                           f"Your plan allows {principal.workspace.max_inboxes} active inboxes. "
+                           "Delete one or ask for a higher limit.")
+
     username = body.username or f"agent-{secrets.token_hex(6)}"
-    if body.username and is_reserved_username(username):
+    # On a shared domain nobody may pose as a brand or a role account; on your own domain you may.
+    if body.username and shared and is_reserved_username(username):
         raise ProblemError(422, "Username reserved", "This username is reserved to prevent impersonation.")
-    address = f"{username}@{get_settings().mail_domain}".lower()
+    address = f"{username}@{domain}"
     inbox = Inbox(
         workspace_id=workspace_id, email_address=address, client_id=body.client_id,
         phone_number=normalize_phone(body.phone_number) if body.phone_number else None,
@@ -129,6 +149,7 @@ async def delete_inbox(
     inbox.status = "TOMBSTONED"
     inbox.phone_number = None
     if purge:
+        await attachment_service.purge_inbox(session, inbox.id)
         await session.execute(delete(Message).where(Message.inbox_id == inbox.id))
         await session.execute(delete(Thread).where(Thread.inbox_id == inbox.id))
     audit(session, action="inbox.delete", actor=principal.actor, workspace_id=principal.workspace.id,

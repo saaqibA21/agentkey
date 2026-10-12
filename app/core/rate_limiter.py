@@ -46,14 +46,14 @@ async def allow_request(identity: str) -> bool:
     return bool(allowed)
 
 
-def _quota_key(workspace_id) -> str:
-    return f"sendquota:{workspace_id}:{datetime.now(timezone.utc):%Y%m%d}"
+def _quota_key(workspace_id, kind: str = "send") -> str:
+    return f"{kind}quota:{workspace_id}:{datetime.now(timezone.utc):%Y%m%d}"
 
 
-async def reserve_daily_send(workspace_id, limit: int) -> bool:
-    """Atomically take one unit of today's (UTC) send quota. False when exhausted."""
+async def reserve_daily_send(workspace_id, limit: int, kind: str = "send") -> bool:
+    """Atomically take one unit of today's (UTC) quota of ``kind``. False when exhausted."""
     redis = get_redis()
-    key = _quota_key(workspace_id)
+    key = _quota_key(workspace_id, kind)
     used = await redis.incr(key)
     if used == 1:
         await redis.expire(key, 172800)
@@ -65,3 +65,8 @@ async def reserve_daily_send(workspace_id, limit: int) -> bool:
 
 async def release_daily_send(workspace_id) -> None:
     await get_redis().decr(_quota_key(workspace_id))
+
+
+async def daily_usage(workspace_id) -> dict[str, int]:
+    values = await get_redis().mget(_quota_key(workspace_id, "send"), _quota_key(workspace_id, "inbound"))
+    return {"sent_today": int(values[0] or 0), "received_today": int(values[1] or 0)}

@@ -35,6 +35,56 @@ class Workspace(Base):
     pii_masking_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     outbound_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     daily_send_limit: Mapped[int] = mapped_column(Integer, default=50)
+    plan: Mapped[str] = mapped_column(String(32), default="free")
+    max_inboxes: Mapped[int] = mapped_column(Integer, default=5)
+    inbound_daily_limit: Mapped[int] = mapped_column(Integer, default=500)
+    created_at: Mapped[datetime] = _created()
+
+
+class User(Base):
+    """A human who signs in to the dashboard. Agents authenticate with API keys instead."""
+
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), default="")
+    avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    auth_provider: Mapped[str] = mapped_column(String(32))
+    role: Mapped[str] = mapped_column(String(32), default="owner")
+    created_at: Mapped[datetime] = _created()
+    last_login_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Domain(Base):
+    """A customer-owned sending/receiving domain, usable once its DNS records verify."""
+
+    __tablename__ = "domains"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(16), default="PENDING")  # PENDING | VERIFIED
+    verification_token: Mapped[str] = mapped_column(String(64))
+    dkim_records: Mapped[list] = mapped_column(JSONType, default=list)
+    checks: Mapped[dict] = mapped_column(JSONType, default=dict)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = _created()
+
+
+class Attachment(Base):
+    __tablename__ = "attachments"
+
+    id: Mapped[uuid.UUID] = _pk()
+    message_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("messages.id", ondelete="CASCADE"), index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(127))
+    size: Mapped[int] = mapped_column(Integer)
+    sha256: Mapped[str] = mapped_column(String(64))
+    storage_key: Mapped[str] = mapped_column(String(512))
+    # Text pulled out of PDFs / text files so agents can read a document without downloading it.
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = _created()
 
 

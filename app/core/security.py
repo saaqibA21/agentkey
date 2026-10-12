@@ -1,7 +1,9 @@
 import asyncio
+import base64
 import hashlib
 import hmac
 import ipaddress
+import json
 import secrets
 import socket
 import time
@@ -75,6 +77,33 @@ def verify_hitl_token(message_id: str, token: str | None) -> bool:
         return False
     expected = _hmac_hex(get_settings().signing_secret, f"hitl:{message_id}:{exp}".encode())
     return hmac.compare_digest(expected, sig)
+
+
+SESSION_PREFIX = "ai_sess_"
+
+
+def make_session_token(user_id: str, workspace_id: str) -> tuple[str, int]:
+    """Short-lived dashboard credential bound to one user and workspace. Returns (token, expires_at)."""
+    settings = get_settings()
+    exp = int(time.time()) + settings.session_ttl_seconds
+    payload = base64.urlsafe_b64encode(
+        json.dumps({"uid": user_id, "wid": workspace_id, "exp": exp}, separators=(",", ":")).encode()
+    ).decode().rstrip("=")
+    return f"{SESSION_PREFIX}{payload}.{_hmac_hex(settings.signing_secret, f'session:{payload}'.encode())}", exp
+
+
+def verify_session_token(token: str) -> dict | None:
+    if not token.startswith(SESSION_PREFIX) or "." not in token:
+        return None
+    payload, sig = token[len(SESSION_PREFIX):].rsplit(".", 1)
+    expected = _hmac_hex(get_settings().signing_secret, f"session:{payload}".encode())
+    if not hmac.compare_digest(expected, sig):
+        return None
+    try:
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+    except (ValueError, UnicodeDecodeError):
+        return None
+    return claims if claims.get("exp", 0) >= time.time() else None
 
 
 def constant_time_equals(a: str, b: str) -> bool:

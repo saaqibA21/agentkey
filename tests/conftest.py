@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import sys
@@ -17,6 +18,9 @@ os.environ.update({
     "MAIL_PROVIDER": "console",
     "PUBLIC_BASE_URL": "http://test",
     "ALLOW_PRIVATE_WEBHOOK_TARGETS": "true",
+    "DASHBOARD_SECRET": "test-dashboard-secret",
+    "STORAGE_LOCAL_PATH": (_DB.parent / "storage").as_posix(),
+    "SES_INBOUND_TOPIC_ARN": "arn:aws:sns:us-east-1:111122223333:aigent-inbound",
     "RATE_LIMIT_CAPACITY": "10000",
 })
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,13 +41,27 @@ ADMIN = {"X-Admin-Secret": "test-admin-secret"}
 
 @pytest.fixture
 async def client():
-    async with app.router.lifespan_context(app):
-        async with get_engine().begin() as conn:  # fresh schema per test
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
-        mail_sender.console_outbox.clear()
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
-            yield c
+    # The lifespan owns task groups, so it must start and stop inside one task (as it does under
+    # uvicorn); fixture setup and teardown run in different tasks.
+    ready, stop = asyncio.Event(), asyncio.Event()
+
+    async def _lifespan():
+        async with app.router.lifespan_context(app):
+            ready.set()
+            await stop.wait()
+
+    runner = asyncio.create_task(_lifespan())
+    await asyncio.wait([asyncio.create_task(ready.wait()), runner], return_when=asyncio.FIRST_COMPLETED)
+    if runner.done():
+        runner.result()
+    async with get_engine().begin() as conn:  # fresh schema per test
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    mail_sender.console_outbox.clear()
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
+        yield c
+    stop.set()
+    await runner
 
 
 @pytest.fixture
