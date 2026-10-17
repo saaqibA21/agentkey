@@ -76,6 +76,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
                 name="email"
                 type="email"
                 required
+                defaultValue="saaqibheroindia@gmail.com"
                 placeholder="you@example.com"
                 className={`w-full ${inputClass}`}
               />
