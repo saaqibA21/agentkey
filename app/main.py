@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from starlette.routing import Route
 
-from app.api.v1 import admin, auth, connections, domains, hitl, inbound, inboxes, messages, webhooks, websockets
+from app.api.v1 import admin, agents, auth, connections, domains, hitl, inbound, inboxes, messages, webhooks, websockets
 from app.api import oauth
 from app.core.cache import close_redis, get_redis, init_redis
 from app.core.config import get_settings
@@ -52,7 +52,7 @@ def create_app() -> FastAPI:
             response.headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
         return response
 
-    for module in (admin, auth, inboxes, messages, inbound, hitl, webhooks, domains, connections, websockets):
+    for module in (admin, agents, auth, inboxes, messages, inbound, hitl, webhooks, domains, connections, websockets):
         app.include_router(module.router, prefix="/v1")
 
     app.include_router(oauth.root_router)

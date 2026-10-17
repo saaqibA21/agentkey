@@ -118,7 +118,7 @@ export default async function AdminPage() {
                     <ActionForm
                       action={adminUpdateWorkspace}
                       submit={ws.outbound_enabled ? "Revoke Send" : "Grant Send"}
-                      variant={ws.outbound_enabled ? "secondary" : "default"}
+                      variant={ws.outbound_enabled ? "secondary" : "primary"}
                     >
                       <input type="hidden" name="workspace_id" value={ws.id} />
                       <input type="hidden" name="outbound_enabled" value={ws.outbound_enabled ? "false" : "true"} />

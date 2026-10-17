@@ -46,7 +46,7 @@ function MessageCard({ m, inboxId }: { m: Message; inboxId: string }) {
               <span className="text-xs font-medium text-muted uppercase tracking-wider">Magic Link</span>
               <code className="min-w-0 flex-1 truncate font-mono text-xs text-ink/80">{x.magic_link}</code>
               <CopyButton value={x.magic_link} />
-              <ActionForm action={resolveInboxLink} submit="Resolve & Save to Vault" variant="default">
+              <ActionForm action={resolveInboxLink} submit="Resolve & Save to Vault" variant="primary">
                 <input type="hidden" name="inbox_id" value={inboxId} />
                 <input type="hidden" name="url" value={x.magic_link} />
               </ActionForm>

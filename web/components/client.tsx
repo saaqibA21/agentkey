@@ -68,6 +68,13 @@ export function ActionForm({
         <div className="basis-full rounded-lg border border-accent/40 bg-accent/5 p-3">
           <p className="text-sm font-medium">{state.secretLabel}</p>
           <p className="mt-0.5 text-xs text-muted">Copy it now. It is not shown again.</p>
+          {state.details?.map((d) => (
+            <div key={d.label} className="mt-2 flex items-center gap-2 text-xs">
+              <span className="w-24 shrink-0 text-muted">{d.label}</span>
+              <code className="min-w-0 flex-1 overflow-x-auto font-mono">{d.value}</code>
+              <CopyButton value={d.value} />
+            </div>
+          ))}
           <div className="mt-2 flex items-center gap-2">
             <code className="min-w-0 flex-1 overflow-x-auto rounded-md bg-surface px-2 py-1.5 font-mono text-xs">
               {state.secret}

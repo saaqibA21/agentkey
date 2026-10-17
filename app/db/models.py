@@ -215,6 +215,22 @@ class Inbox(Base):
     created_at: Mapped[datetime] = _created()
 
 
+class Agent(Base):
+    """One agent created from the dashboard: its own address, its own API key, and the human who owns it."""
+
+    __tablename__ = "agents"
+
+    id: Mapped[uuid.UUID] = _pk()
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(64))
+    owner_name: Mapped[str] = mapped_column(String(255))
+    owner_email: Mapped[str] = mapped_column(String(255))
+    inbox_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("inboxes.id", ondelete="CASCADE"), index=True)
+    api_key_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("api_keys.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(16), default="ACTIVE")  # ACTIVE | DELETED
+    created_at: Mapped[datetime] = _created()
+
+
 class Thread(Base):
     __tablename__ = "threads"
 

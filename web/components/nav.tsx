@@ -13,6 +13,7 @@ type NavItem = {
 
 const items: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "⚡" },
+  { href: "/dashboard/api", label: "API", icon: "🧩", badge: "New", badgeTone: "accent" },
   { href: "/dashboard/inboxes", label: "Inboxes & Channels", icon: "📬" },
   { href: "/dashboard/identity", label: "Identity & Vault", icon: "🛡️", badge: "OD-ID", badgeTone: "purple" },
   { href: "/dashboard/approvals", label: "HITL Approvals", icon: "🔒" },

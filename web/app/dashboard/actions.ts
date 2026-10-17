@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 
 import { adminApi, api, ApiError } from "@/lib/api";
 
-export type ActionState = { error?: string; ok?: boolean; secret?: string; secretLabel?: string } | null;
+export type ActionState = {
+  error?: string; ok?: boolean; secret?: string; secretLabel?: string;
+  details?: { label: string; value: string }[];
+} | null;
 
 async function run(path: string, work: () => Promise<ActionState | void>): Promise<ActionState> {
   try {
@@ -276,5 +279,32 @@ export async function adminUpdateWorkspace(_: ActionState, form: FormData): Prom
       method: "PATCH",
       body: JSON.stringify(changes),
     });
+  });
+}
+
+// ---- agents: the "Create API" flow ---------------------------------------
+
+export async function createAgent(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/api", async () => {
+    // The owner email is deliberately not sent: the API takes it from the signed-in account.
+    const agent = await api<{ api_key: string; email_address: string; agent_name: string; owner_email: string }>(
+      "/agents",
+      { method: "POST", body: JSON.stringify({ agent_name: text(form, "agent_name"), owner_name: text(form, "owner_name") }) },
+    );
+    return {
+      ok: true,
+      secret: agent.api_key,
+      secretLabel: `API key for ${agent.agent_name}`,
+      details: [
+        { label: "Agent email", value: agent.email_address },
+        { label: "Owner email", value: agent.owner_email },
+      ],
+    };
+  });
+}
+
+export async function deleteAgent(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/api", async () => {
+    await api(`/agents/${text(form, "id")}`, { method: "DELETE" });
   });
 }

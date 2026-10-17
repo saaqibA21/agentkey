@@ -43,6 +43,20 @@ outbound mail instead of sending it. API docs: http://localhost:8000/docs. Tests
 | Dashboard | `web/` | Next.js: landing page, docs, sign-in, inboxes, keys, domains, approvals, webhooks |
 | Email Worker | `workers/cloudflare-email/` | Cloudflare catch-all to the ingest endpoint |
 
+### Create API (one agent, one click)
+
+After signing in with Google, the dashboard's **API** page has a **Create API** button. The person
+enters the agent name and the owner name; the owner email is filled in from their Google account
+and cannot be changed. One click (`POST /v1/agents`, dashboard session only) then creates:
+
+- a unique email address made from the agent name (`Sales Bot` becomes `sales-bot@<MAIL_DOMAIN>`,
+  then `sales-bot-2@...` if taken; deleted addresses are never reused),
+- an API key for that agent with `read` and `send` permissions, shown once,
+- the agent record linking both to its owner (`GET /v1/agents`, `DELETE /v1/agents/{id}`).
+
+Deleting an agent revokes its key and retires its address. Agent names that impersonate brands or
+role accounts are refused, and agents count toward the plan's inbox limit.
+
 ### Self-serve accounts
 
 People sign in to the dashboard with Google or GitHub. The dashboard's server exchanges the verified
