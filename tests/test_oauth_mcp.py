@@ -26,7 +26,7 @@ async def authorize(client, client_id, challenge, me, scopes, approve=True):
         "code_challenge": challenge, "code_challenge_method": "S256", "scope": "read connect"})
     assert start.status_code == 302, start.text
     target = urlsplit(start.headers["location"])
-    assert target.netloc == "localhost:3000" and target.path == "/connect/authorize"
+    assert target.netloc in ("localhost:3000", "localhost:3005") and target.path == "/connect/authorize"
     blob = parse_qs(target.query)["request"][0]
     shown = await client.post("/v1/oauth/consent", headers=me["auth"], json={"request": blob})
     assert shown.json()["client_name"] == "ChatGPT" and shown.json()["redirect_host"] == "chatgpt.com"

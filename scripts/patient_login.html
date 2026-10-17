@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Patient Portal Login & Signup | Curelith</title>
+  <meta name="theme-color" content="#0F1B19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="assets/favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: var(--paper);
+      color: var(--void);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-hero {
+      background: var(--void);
+      color: #fff;
+      padding: 70px 0 50px 0;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .auth-hero::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 1.6px);
+      background-size: 26px 26px;
+      -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+    .auth-hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .auth-hero h1 span { color: var(--gold); font-style: italic; }
+
+    .auth-section {
+      padding: 50px 0 80px 0;
+      flex: 1;
+    }
+    .auth-card-wrapper {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    .auth-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 16px 40px rgba(15,27,25,0.06);
+      text-align: center;
+    }
+    
+    .tab-toggle {
+      display: flex;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .tab-toggle button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-toggle button.active {
+      background: var(--pine);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(30,66,61,0.2);
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--paper);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--void);
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--pine);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--pine);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--sans);
+      font-size: 15.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 20px -4px rgba(30,66,61,0.3);
+      margin-top: 10px;
+    }
+    .submit-btn:hover {
+      background: var(--pine-light);
+      transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+      background: var(--line-dark);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .err-msg {
+      background: rgba(212,130,74,0.1);
+      border: 1px solid rgba(212,130,74,0.3);
+      color: var(--clay-deep);
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo.png" class="brand-mark" alt="Curelith Logo">
+      Curelith
+    </a>
+    <nav class="links">
+      <a href="index.html#why">Why Curelith</a>
+      <a href="index.html#tools">Tools</a>
+      <a href="doctors.html">Physicians</a>
+      <a href="hospitals.html">Hospitals</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="hospital-portal.html" class="btn btn-primary btn-sm">Hospital portal</a>
+    </div>
+  </div>
+</header>
+
+<section class="auth-hero">
+  <div class="wrap">
+    <div class="eyebrow on-dark">Patient Web Portal</div>
+    <h1>Access Your <span>Health Dashboard</span></h1>
+    <p class="sub" style="font-size: 15px; color: var(--mist); max-width: 500px; margin: 8px auto 0 auto;">
+      AI Clinical Chat, Medical Locker & Vitals — synced live with your WhatsApp.
+    </p>
+  </div>
+</section>
+
+<section class="auth-section">
+  <div class="wrap">
+    <div class="auth-card-wrapper">
+      <div class="auth-card">
+        
+        <!-- LOGIN / SIGNUP TAB TOGGLE -->
+        <div class="tab-toggle" id="tabToggle">
+          <button type="button" id="loginTabBtn" class="active" onclick="setMode('login')">Existing User Login</button>
+          <button type="button" id="signupTabBtn" onclick="setMode('signup')">New Patient Signup</button>
+        </div>
+
+        <div id="errMsg" class="err-msg hidden"></div>
+
+        <!-- FORM 1: LOGIN -->
+        <form id="loginForm" onsubmit="handleSendOtp(event)">
+          <div class="form-group">
+            <label>Mobile Number (WhatsApp Enabled)</label>
+            <input type="tel" id="loginPhone" class="form-control" placeholder="e.g. 9042556225" required>
+          </div>
+          <button type="submit" class="submit-btn" id="loginSubmitBtn">Send Verification Code →</button>
+        </form>
+
+        <!-- FORM 2: SIGNUP -->
+        <form id="signupForm" class="hidden" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="signupName" class="form-control" placeholder="e.g. Ramesh Kumar" required>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number (WhatsApp Enabled)</label>
+            <input type="tel" id="signupPhone" class="form-control" placeholder="e.g. 9042556225" required>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <div class="form-group" style="flex: 1;">
+              <label>Age</label>
+              <input type="number" id="signupAge" class="form-control" placeholder="32">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Blood Group</label>
+              <select id="signupBlood" class="form-control">
+                <option value="">Select</option>
+                <option value="O+">O+</option>
+                <option value="A+">A+</option>
+                <option value="B+">B+</option>
+                <option value="AB+">AB+</option>
+                <option value="O-">O-</option>
+                <option value="A-">A-</option>
+                <option value="B-">B-</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn" id="signupSubmitBtn">Create Account & Proceed →</button>
+        </form>
+
+        <!-- FORM 3: OTP VERIFICATION -->
+        <form id="otpForm" class="hidden" onsubmit="handleVerifyOtp(event)">
+          <p style="font-size: 14px; color: var(--ink-soft); margin-bottom: 20px;" id="otpPromptText">
+            Enter verification code sent to your phone
+          </p>
+          <div class="form-group">
+            <label>6-Digit Verification Code</label>
+            <input type="text" id="otpCode" class="form-control" style="text-align: center; font-family: var(--mono); font-size: 20px; letter-spacing: 0.3em;" placeholder="123456" maxlength="6" required>
+          </div>
+          <button type="submit" class="submit-btn" id="otpSubmitBtn">Verify & Enter Dashboard →</button>
+        </form>
+
+        <a href="index.html" style="display: inline-block; margin-top: 24px; font-size: 13.5px; color: var(--ink-soft); text-decoration: none;">← Return to Curelith Home</a>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PWA INSTALL MODAL POPUP -->
+<div id="pwaInstallModal" style="display: none; position: fixed; inset: 0; background: rgba(15,27,25,0.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 999999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; width: 100%; max-width: 400px; border-radius: 24px; padding: 30px 24px 24px 24px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); border: 1px solid #E2DFD2;">
+    
+    <div style="width: 68px; height: 68px; background: #EBF2EF; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 14px rgba(30,66,61,0.12);">
+      <img src="assets/apple-touch-icon.png" style="width: 46px; height: 46px; border-radius: 12px;">
+    </div>
+
+    <h3 style="font-family: 'Fraunces', serif; font-size: 22px; color: #0F1B19; margin-bottom: 8px;">Install Curelith App</h3>
+    <p style="font-size: 13.5px; color: #52635E; line-height: 1.5; margin-bottom: 22px;">
+      Add Curelith to your Home Screen for 1-tap access, fast loading, and offline medical locker access.
+    </p>
+
+    <button onclick="triggerPwaInstallModal()" style="width: 100%; background: #1E423D; color: #FFFFFF; border: none; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; padding: 14px; border-radius: 100px; cursor: pointer; box-shadow: 0 4px 14px rgba(30,66,61,0.3); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      📲 Install App on Home Screen
+    </button>
+
+    <button onclick="closePwaInstallModal()" style="width: 100%; background: transparent; color: #52635E; border: none; font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer;">
+      Continue in Browser →
+    </button>
+  </div>
+</div>
+
+<!-- PWA 1-TAP INSTALL PROMPT BANNER -->
+<div id="pwaInstallBanner" class="hidden" style="position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 480px; z-index: 99999; background: #1E423D; color: #FFFFFF; padding: 10px 14px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(232,199,123,0.4);">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <img src="assets/apple-touch-icon.png" style="width: 32px; height: 32px; border-radius: 8px;">
+    <div>
+      <div style="font-weight: 700; font-size: 13px;">Install Curelith App</div>
+      <div style="font-size: 11px; opacity: 0.85;">1-tap shortcut to home screen</div>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <button onclick="triggerPwaInstall()" style="background: #E8C77B; color: #0F1B19; border: none; font-weight: 700; font-size: 11.5px; padding: 6px 12px; border-radius: 100px; cursor: pointer;">Install</button>
+    <button onclick="dismissPwaBanner()" style="background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;">✕</button>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://api.curelith.com';
+  let currentMode = 'login';
+  let userPhone = '';
+
+  /* ── PWA INSTALLATION SHORTCUT ── */
+  let deferredPrompt = null;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  function showPwaModal() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const modal = document.getElementById('pwaInstallModal');
+    if (!isStandalone && modal) {
+      modal.style.display = 'flex';
+    }
+  }
+
+  function closePwaInstallModal() {
+    const modal = document.getElementById('pwaInstallModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function triggerPwaInstallModal() {
+    closePwaInstallModal();
+    triggerPwaInstall();
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showPwaModal();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(showPwaModal, 400);
+  });
+
+  async function triggerPwaInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        dismissPwaBanner();
+      }
+      deferredPrompt = null;
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        alert("📲 To add Curelith to your iPhone Home Screen:\n\n1. Tap the Share button at bottom of Safari (📤)\n2. Scroll down and tap 'Add to Home Screen' (➕)");
+      } else {
+        alert("📲 To install Curelith on your Home Screen:\n\nTap your browser menu (⋮ or ⚙️) and select 'Install app' or 'Add to Home Screen'.");
+      }
+    }
+  }
+
+  function dismissPwaBanner() {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.classList.add('hidden');
+    localStorage.setItem('pwa_banner_dismissed', '1');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('patient_token');
+    const phone = localStorage.getItem('patient_phone');
+    if (token && phone) {
+      window.location.replace('patient-dashboard.html');
+    }
+  });
+
+  function setMode(mode) {
+    currentMode = mode;
+    hideError();
+    document.getElementById('otpForm').classList.add('hidden');
+    if (mode === 'login') {
+      document.getElementById('loginTabBtn').classList.add('active');
+      document.getElementById('signupTabBtn').classList.remove('active');
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+    } else {
+      document.getElementById('signupTabBtn').classList.add('active');
+      document.getElementById('loginTabBtn').classList.remove('active');
+      document.getElementById('signupForm').classList.remove('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+    }
+  }
+
+  function showError(msg) {
+    const errBox = document.getElementById('errMsg');
+    errBox.textContent = msg;
+    errBox.classList.remove('hidden');
+  }
+  function hideError() {
+    document.getElementById('errMsg').classList.add('hidden');
+  }
+
+  async function handleSendOtp(e) {
+    e.preventDefault();
+    hideError();
+    const phone = document.getElementById('loginPhone').value.trim();
+    if (!phone) return showError('Please enter your mobile number.');
+    
+    userPhone = phone;
+    const btn = document.getElementById('loginSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending Code...';
+
+    try {
+      const res = await fetch(`${API_BASE}/patient/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.textContent = 'Send Verification Code →';
+
+      if (data.success) {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('tabToggle').classList.add('hidden');
+        document.getElementById('otpForm').classList.remove('hidden');
+        document.getElementById('otpPromptText').textContent = `Enter the 6-digit code sent to ${phone}`;
+      } else {
+        showError(data.error || 'Failed to send verification code');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Send Verification Code →';
+      showError('Connection error. Please try again.');
+    }
+  }
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    hideError();
+    const name = document.getElementById('signupName').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const age = document.getElementById('signupAge').value.trim();
+    const blood_group = document.getElementById('signupBlood').value;
+
+    if (!name || !phone) return showError('Name and Mobile Number are required.');
+
+    userPhone = phone;
+    const btn = document.getElementById('signupSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating Account...';
+
+    try {
+      const res = await fetch(`${API_BASE}/patient/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, age, blood_group })
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.textContent = 'Create Account & Proceed →';
+
+      if (data.success && data.token) {
+        localStorage.setItem('patient_token', data.token);
+        localStorage.setItem('patient_phone', phone);
+        localStorage.setItem('patient_info', JSON.stringify(data.patient));
+        window.location.href = 'patient-dashboard.html';
+      } else {
+        showError(data.error || 'Failed to create account');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account & Proceed →';
+      showError('Connection error. Please try again.');
+    }
+  }
+
+  async function handleVerifyOtp(e) {
+    e.preventDefault();
+    hideError();
+    const otp = document.getElementById('otpCode').value.trim();
+    if (!otp) return showError('Please enter verification code.');
+
+    const btn = document.getElementById('otpSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+
+    try {
+      const res = await fetch(`${API_BASE}/patient/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: userPhone, otp })
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.textContent = 'Verify & Enter Dashboard →';
+
+      if (data.success && data.token) {
+        localStorage.setItem('patient_token', data.token);
+        localStorage.setItem('patient_phone', userPhone);
+        localStorage.setItem('patient_info', JSON.stringify(data.patient));
+        window.location.href = 'patient-dashboard.html';
+      } else {
+        showError(data.error || 'Invalid verification code');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Verify & Enter Dashboard →';
+      showError('Connection error. Please try again.');
+    }
+  }
+</script>
+</body>
+</html>

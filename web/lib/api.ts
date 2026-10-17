@@ -77,6 +77,26 @@ export async function apiRaw(path: string): Promise<Response> {
   return call(path, undefined, true);
 }
 
+/** Call operator admin endpoints using X-Admin-Secret. */
+export async function adminApi<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  const adminSecret = process.env.AIGENT_ADMIN_SECRET ?? "change-me-admin";
+  const resp = await fetch(`${API_URL}/v1${path}`, {
+    ...init,
+    headers: {
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...init?.headers,
+      "X-Admin-Secret": adminSecret,
+    },
+    cache: "no-store",
+  });
+  if (resp.status === 204) return undefined as T;
+  if (!resp.ok) {
+    const problem = (await resp.json().catch(() => ({}))) as { title?: string; detail?: string };
+    throw new ApiError(resp.status, problem.title ?? resp.statusText, problem.detail);
+  }
+  return (await resp.json()) as T;
+}
+
 export const publicApiUrl = (process.env.NEXT_PUBLIC_API_URL ?? API_URL).replace(/\/$/, "");
 
 // ---- shapes returned by the API -----------------------------------------------------------
@@ -91,7 +111,32 @@ export type Overview = {
   counts: { inboxes: number; messages: number; pending_approvals: number; api_keys: number; verified_domains: number };
   mail_domain: string;
 };
-export type Inbox = { id: string; email_address: string; status: string; client_id: string | null; created_at: string };
+export type Inbox = {
+  id: string;
+  email_address: string;
+  status: string;
+  client_id: string | null;
+  owner_name?: string | null;
+  display_title?: string | null;
+  phone_number?: string | null;
+  created_at: string;
+};
+export type AdminStats = {
+  workspaces: number;
+  inboxes: number;
+  messages: number;
+  audit_logs: number;
+  status: string;
+};
+export type AuditLogEntry = {
+  id: string;
+  actor: string;
+  action: string;
+  target?: string | null;
+  detail: Record<string, unknown>;
+  ip_address?: string | null;
+  created_at: string;
+};
 export type AttachmentInfo = {
   id?: string; filename: string; content_type: string; size: number; has_text?: boolean; risky?: boolean; skipped?: string;
 };

@@ -11,17 +11,20 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from urllib.parse import urlsplit
 from app import schemas
 from app.api.deps import Principal, load_inbox, require_scope
 from app.core.cache import get_redis, inbox_channel
 from app.core.config import get_settings
 from app.core.exceptions import ProblemError
-from app.db.models import Inbox, Message, Thread, utcnow
+from app.db.models import Inbox, Message, Thread, VaultItem, utcnow
 from app.db.session import get_session, get_sessionmaker
 from app.services import attachments as attachment_service
 from app.services import domains as domain_service
+from app.services import vault
 from app.services.audit import audit
 from app.services.events import serialize_message
+from app.services.link_resolver import resolve_magic_link
 from app.services.whatsapp_service import normalize_phone
 
 router = APIRouter(prefix="/inboxes", tags=["inboxes"])
@@ -99,6 +102,7 @@ async def create_inbox(
     inbox = Inbox(
         workspace_id=workspace_id, email_address=address, client_id=body.client_id,
         phone_number=normalize_phone(body.phone_number) if body.phone_number else None,
+        owner_name=body.owner_name, display_title=body.display_title,
     )
     session.add(inbox)
     audit(session, action="inbox.create", actor=principal.actor, workspace_id=workspace_id,
@@ -216,3 +220,106 @@ async def wait_for(
         await pubsub.unsubscribe()
         await pubsub.aclose()
     return Response(status_code=204)
+
+
+@router.post("/{inbox_id}/resolve-link")
+async def resolve_inbox_link(
+    inbox_id: uuid.UUID,
+    body: schemas.ResolveLinkRequest,
+    request: Request,
+    principal: Principal = Depends(require_scope("read")),
+    session: AsyncSession = Depends(get_session),
+):
+    """Navigate an authentication/magic link, harvesting cookies, JWTs, and structured page elements."""
+    inbox = await load_inbox(session, principal, inbox_id)
+    target_url = body.url
+
+    if not target_url:
+        recent_messages = (
+            await session.scalars(
+                select(Message)
+                .where(Message.inbox_id == inbox_id, Message.direction == "INBOUND")
+                .order_by(Message.created_at.desc())
+                .limit(10)
+            )
+        ).all()
+        for msg in recent_messages:
+            extracted = msg.extracted_data or {}
+            if extracted.get("magic_link"):
+                target_url = extracted["magic_link"]
+                break
+
+    if not target_url:
+        raise ProblemError(404, "No magic link found", "No URL provided and no magic link found in recent inbox messages.")
+
+    agent_handle = inbox.email_address.split("@")[0]
+    nav_result = await resolve_magic_link(
+        target_url,
+        owner_name=inbox.owner_name,
+        agent_handle=agent_handle,
+        timeout_seconds=body.timeout,
+    )
+
+    vault_item_id = None
+    if body.save_to_vault:
+        final_url = nav_result.get("final_url") or target_url
+        site_host = (urlsplit(final_url).hostname or "").lower()
+        if site_host:
+            existing_vault_item = await session.scalar(
+                select(VaultItem).where(
+                    VaultItem.workspace_id == principal.workspace.id,
+                    VaultItem.site_host == site_host,
+                )
+            )
+            session_payload = {
+                "cookies": nav_result.get("cookies", []),
+                "tokens": nav_result.get("tokens", {}),
+                "browser_state": nav_result.get("browser_state", {}),
+                "final_url": final_url,
+                "resolved_at": utcnow().isoformat(),
+            }
+            if existing_vault_item:
+                existing_vault_item.session_data = session_payload
+                if inbox.owner_name:
+                    existing_vault_item.owner_name = inbox.owner_name
+                existing_vault_item.last_used_at = utcnow()
+                vault_item_id = existing_vault_item.id
+            else:
+                new_vault_item = VaultItem(
+                    workspace_id=principal.workspace.id,
+                    name=f"Session: {site_host}",
+                    site_host=site_host,
+                    username=inbox.email_address,
+                    secret_enc=vault.encrypt({
+                        "password": "",
+                        "session_tokens": nav_result.get("tokens", {}),
+                    }),
+                    has_totp=False,
+                    approval="auto",
+                    owner_name=inbox.owner_name,
+                    session_data=session_payload,
+                    last_used_at=utcnow(),
+                )
+                session.add(new_vault_item)
+                await session.flush()
+                vault_item_id = new_vault_item.id
+
+            audit(
+                session,
+                action="vault.session_saved",
+                actor=principal.actor,
+                workspace_id=principal.workspace.id,
+                target=site_host,
+                detail={"inbox_id": str(inbox.id), "final_url": final_url},
+                request=request,
+            )
+            await session.commit()
+
+    return {
+        "status": "RESOLVED",
+        "inbox_id": str(inbox.id),
+        "owner_name": inbox.owner_name,
+        "display_title": inbox.display_title,
+        "vault_item_id": str(vault_item_id) if vault_item_id else None,
+        "navigation": nav_result,
+    }

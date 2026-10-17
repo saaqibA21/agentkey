@@ -9,9 +9,9 @@ import type { ActionState } from "@/app/dashboard/actions";
 type Action = (state: ActionState, form: FormData) => Promise<ActionState>;
 
 const buttonStyles = {
-  primary: "bg-accent text-white hover:bg-accent-strong",
-  secondary: "border border-line bg-surface text-ink hover:bg-subtle",
-  danger: "border border-line bg-surface text-danger hover:bg-danger/10",
+  primary: "bg-teal-600 text-white shadow-sm shadow-teal-600/20 hover:bg-teal-500 hover:shadow-teal-500/30 active:scale-[0.98]",
+  secondary: "border border-line bg-surface text-ink hover:bg-subtle hover:border-line/90 active:scale-[0.98]",
+  danger: "border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 active:scale-[0.98]",
 };
 
 export function CopyButton({ value, label = "Copy" }: { value: string; label?: string }) {
@@ -24,9 +24,9 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="shrink-0 rounded-md border border-line bg-surface px-2 py-1 text-xs text-muted hover:text-ink"
+      className="shrink-0 rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-subtle hover:text-ink active:scale-95"
     >
-      {copied ? "Copied" : label}
+      {copied ? "Copied ✓" : label}
     </button>
   );
 }
@@ -42,7 +42,7 @@ function Submit({
       onClick={(e) => {
         if (confirm && !window.confirm(confirm)) e.preventDefault();
       }}
-      className={`rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:opacity-50 ${buttonStyles[variant]}`}
+      className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-150 disabled:opacity-50 ${buttonStyles[variant]}`}
     >
       {pending ? "Working…" : children}
     </button>

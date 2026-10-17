@@ -1,20 +1,8 @@
 import Link from "next/link";
 
-import { Badge, Card, Code, PageHeader } from "@/components/ui";
+import { Badge, Card, Code, PageHeader, StatCard } from "@/components/ui";
 import { api, publicApiUrl, type Overview } from "@/lib/api";
 import { snippets } from "@/lib/snippets";
-
-function Stat({ label, value, limit }: { label: string; value: number; limit?: number }) {
-  return (
-    <Card>
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">
-        {value}
-        {limit !== undefined && <span className="text-base font-normal text-muted"> / {limit}</span>}
-      </p>
-    </Card>
-  );
-}
 
 function Step({ done, title, children, href, cta }: {
   done: boolean; title: string; children: string; href: string; cta: string;
@@ -51,15 +39,50 @@ export default async function OverviewPage() {
     <>
       <PageHeader
         title={o.workspace.name}
-        lead="Your agents' inboxes, at a glance."
-        aside={<Badge tone="good">{o.workspace.plan} beta</Badge>}
+        lead="Your agents' sovereign communication identity, session vault, and guardrails at a glance."
+        aside={
+          <div className="flex items-center gap-2">
+            <Badge tone="purple">OD-ID Active</Badge>
+            <Badge tone="good">{o.workspace.plan} tier</Badge>
+            <Link
+              href="/dashboard/admin"
+              className="rounded-lg border border-line bg-subtle px-3 py-1 text-xs font-medium text-ink transition hover:bg-line/40"
+            >
+              Admin Console →
+            </Link>
+          </div>
+        }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Inboxes" value={o.counts.inboxes} limit={o.workspace.max_inboxes} />
-        <Stat label="Received today" value={o.usage.received_today} limit={o.workspace.inbound_daily_limit} />
-        <Stat label="Sent today" value={o.usage.sent_today} limit={canSend ? o.workspace.daily_send_limit : undefined} />
-        <Stat label="Waiting for approval" value={o.counts.pending_approvals} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Active Inboxes"
+          value={`${o.counts.inboxes} / ${o.workspace.max_inboxes}`}
+          subtext="Email + WhatsApp + SMS handles"
+          icon="📬"
+          tone="accent"
+        />
+        <StatCard
+          title="Inbound Today"
+          value={o.usage.received_today}
+          subtext={`Daily limit: ${o.workspace.inbound_daily_limit} msgs`}
+          icon="⚡"
+          tone="good"
+        />
+        <StatCard
+          title="Outbound Sent"
+          value={o.usage.sent_today}
+          subtext={canSend ? `Daily quota: ${o.workspace.daily_send_limit}` : "Inbound-only mode"}
+          icon="📤"
+          tone={canSend ? "good" : "neutral"}
+        />
+        <StatCard
+          title="Pending Approvals"
+          value={o.counts.pending_approvals}
+          subtext={o.counts.pending_approvals > 0 ? "Requires operator action" : "Zero bottlenecks"}
+          icon="🛡️"
+          tone={o.counts.pending_approvals > 0 ? "warn" : "neutral"}
+        />
       </div>
 
       {o.counts.pending_approvals > 0 && (

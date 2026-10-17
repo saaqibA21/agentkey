@@ -124,13 +124,14 @@ async def submit(
                 recipient=recipient, subject=subject or "", text=text, html=html,
                 in_reply_to=reply_to.message_id_header if reply_to else None,
                 references=(reply_to.headers or {}).get("References") if reply_to else None,
+                owner_name=inbox.owner_name, display_title=inbox.display_title,
             )
             text, html, headers = mail.text, mail.html, mail.headers
             thread = await touch_thread(
                 session, inbox.id, thread_id=reply_to.thread_id if reply_to else None,
                 subject=subject or "", participants=[recipient],
             )
-            sender = inbox.email_address
+            sender = mail.sender
         else:
             thread = await touch_thread(
                 session, inbox.id, thread_id=await channel_thread_id(session, inbox.id, channel, recipient),

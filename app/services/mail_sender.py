@@ -38,6 +38,7 @@ def disclosure_footer(workspace_name: str) -> str:
 def prepare_email(
     *, workspace_id, workspace_name: str, sender: str, recipient: str, subject: str,
     text: str, html: str | None, in_reply_to: str | None = None, references: str | None = None,
+    owner_name: str | None = None, display_title: str | None = None,
 ) -> OutboundEmail:
     """Apply the non-negotiable platform headers and, on shared domains, the AI disclosure footer."""
     domain = sender.rsplit("@", 1)[-1].lower()
@@ -48,6 +49,8 @@ def prepare_email(
         # Tells well-behaved auto-responders not to answer, which breaks agent<->autoresponder loops.
         "Auto-Submitted": "auto-generated",
     }
+    if owner_name:
+        headers["X-Agent-Owner"] = owner_name
     if in_reply_to:
         headers["In-Reply-To"] = in_reply_to
         headers["References"] = f"{references} {in_reply_to}".strip() if references else in_reply_to
@@ -56,7 +59,17 @@ def prepare_email(
         text = f"{text.rstrip()}\n\n--\n{footer}\n"
         if html:
             html = f'{html}<br><br><hr><p style="color:#666;font-size:12px">{html_lib.escape(footer)}</p>'
-    return OutboundEmail(sender=sender, recipient=recipient, subject=subject, text=text, html=html, headers=headers)
+
+    # Format sender with Owner Delegation attribution
+    if display_title:
+        sender_formatted = f'"{display_title}" <{sender}>'
+    elif owner_name:
+        agent_handle = sender.split("@")[0]
+        sender_formatted = f'"{owner_name} (via {agent_handle})" <{sender}>'
+    else:
+        sender_formatted = sender
+
+    return OutboundEmail(sender=sender_formatted, recipient=recipient, subject=subject, text=text, html=html, headers=headers)
 
 
 def _to_mime(mail: OutboundEmail) -> EmailMessage:

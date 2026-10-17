@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { api, ApiError } from "@/lib/api";
+import { adminApi, api, ApiError } from "@/lib/api";
 
 export type ActionState = { error?: string; ok?: boolean; secret?: string; secretLabel?: string } | null;
 
@@ -26,9 +26,32 @@ export async function createInbox(_: ActionState, form: FormData): Promise<Actio
   return run("/dashboard/inboxes", async () => {
     const username = text(form, "username");
     const domain = text(form, "domain");
+    const owner_name = text(form, "owner_name");
+    const display_title = text(form, "display_title");
+    const phone_number = text(form, "phone_number");
     await api("/inboxes", {
       method: "POST",
-      body: JSON.stringify({ ...(username ? { username } : {}), ...(domain ? { domain } : {}) }),
+      body: JSON.stringify({
+        ...(username ? { username } : {}),
+        ...(domain ? { domain } : {}),
+        ...(owner_name ? { owner_name } : {}),
+        ...(display_title ? { display_title } : {}),
+        ...(phone_number ? { phone_number } : {}),
+      }),
+    });
+  });
+}
+
+export async function resolveInboxLink(_: ActionState, form: FormData): Promise<ActionState> {
+  const inbox_id = text(form, "inbox_id");
+  const url = text(form, "url");
+  return run(`/dashboard/inboxes/${inbox_id}`, async () => {
+    await api(`/inboxes/${inbox_id}/resolve-link`, {
+      method: "POST",
+      body: JSON.stringify({
+        ...(url ? { url } : {}),
+        save_to_vault: true,
+      }),
     });
   });
 }
@@ -146,6 +169,7 @@ export async function disconnect(_: ActionState, form: FormData): Promise<Action
 export async function addLogin(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/identity", async () => {
     const totp = text(form, "totp_secret");
+    const ownerName = text(form, "owner_name");
     await api("/vault/items", {
       method: "POST",
       body: JSON.stringify({
@@ -155,6 +179,7 @@ export async function addLogin(_: ActionState, form: FormData): Promise<ActionSt
         password: String(form.get("password") ?? ""),
         approval: text(form, "approval") === "auto" ? "auto" : "ask",
         ...(totp ? { totp_secret: totp } : {}),
+        ...(ownerName ? { owner_name: ownerName } : {}),
       }),
     });
   });
@@ -225,5 +250,31 @@ export async function createWebhook(_: ActionState, form: FormData): Promise<Act
 export async function deleteWebhook(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/webhooks", async () => {
     await api(`/webhooks/${text(form, "id")}`, { method: "DELETE" });
+  });
+}
+
+// ---- admin operator actions -----------------------------------------------
+
+export async function adminUpdateWorkspace(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/admin", async () => {
+    const id = text(form, "workspace_id");
+    const changes: Record<string, unknown> = {};
+    if (form.has("outbound_enabled")) {
+      changes.outbound_enabled = form.get("outbound_enabled") === "true";
+    }
+    if (form.has("pii_masking_enabled")) {
+      changes.pii_masking_enabled = form.get("pii_masking_enabled") === "true";
+    }
+    if (form.has("daily_send_limit")) {
+      changes.daily_send_limit = Number(form.get("daily_send_limit"));
+    }
+    if (form.has("max_inboxes")) {
+      changes.max_inboxes = Number(form.get("max_inboxes"));
+    }
+
+    await adminApi(`/admin/workspaces/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    });
   });
 }

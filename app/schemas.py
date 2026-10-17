@@ -105,6 +105,8 @@ class InboxCreate(BaseModel):
     domain: str | None = Field(
         default=None, max_length=253, description="A verified custom domain of this workspace. Default: shared domain."
     )
+    owner_name: str | None = Field(default=None, max_length=255, description="Name of the human owner delegating identity.")
+    display_title: str | None = Field(default=None, max_length=255, description="Custom display title in From header.")
 
     @field_validator("domain")
     @classmethod
@@ -127,8 +129,16 @@ class InboxOut(ORM):
     email_address: str
     phone_number: str | None
     client_id: str | None
+    owner_name: str | None = None
+    display_title: str | None = None
     status: str
     created_at: datetime
+
+
+class ResolveLinkRequest(BaseModel):
+    url: str | None = Field(default=None, max_length=2048, description="URL to resolve. Defaults to latest magic link in the inbox.")
+    save_to_vault: bool = Field(default=True, description="Whether to store cookies and session state in the workspace Vault.")
+    timeout: float = Field(default=15.0, ge=1.0, le=60.0)
 
 
 # ---- messages -------------------------------------------------------------

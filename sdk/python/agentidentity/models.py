@@ -13,6 +13,8 @@ class Inbox(_Model):
     email_address: str
     phone_number: Optional[str] = None
     client_id: Optional[str] = None
+    owner_name: Optional[str] = None
+    display_title: Optional[str] = None
     status: str
     created_at: datetime
 

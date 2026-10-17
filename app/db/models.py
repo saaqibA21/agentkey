@@ -119,6 +119,8 @@ class VaultItem(Base):
     secret_enc: Mapped[str] = mapped_column(Text)
     has_totp: Mapped[bool] = mapped_column(Boolean, default=False)
     approval: Mapped[str] = mapped_column(String(8), default="ask")  # ask | auto
+    owner_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    session_data: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = _created()
 
@@ -207,6 +209,8 @@ class Inbox(Base):
     email_address: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     phone_number: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     client_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    owner_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    display_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="ACTIVE")
     created_at: Mapped[datetime] = _created()
 

@@ -2,14 +2,14 @@
 import uuid
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import schemas
 from app.api.deps import Principal, get_principal, require_admin, require_scope
 from app.core.exceptions import ProblemError
 from app.core.security import SCOPES, generate_api_key, hash_api_key
-from app.db.models import ApiKey, Workspace, utcnow
+from app.db.models import ApiKey, AuditLog, Inbox, Message, Workspace, utcnow
 from app.db.session import get_session
 from app.services.audit import audit
 
@@ -66,6 +66,47 @@ async def admin_update_workspace(
           detail=changes, request=request)
     await session.commit()
     return workspace
+
+
+@router.get("/admin/stats", dependencies=[Depends(require_admin)])
+async def admin_get_stats(session: AsyncSession = Depends(get_session)):
+    workspaces_count = await session.scalar(select(func.count()).select_from(Workspace)) or 0
+    inboxes_count = await session.scalar(select(func.count()).select_from(Inbox)) or 0
+    messages_count = await session.scalar(select(func.count()).select_from(Message)) or 0
+    audit_count = await session.scalar(select(func.count()).select_from(AuditLog)) or 0
+    return {
+        "workspaces": workspaces_count,
+        "inboxes": inboxes_count,
+        "messages": messages_count,
+        "audit_logs": audit_count,
+        "status": "HEALTHY",
+    }
+
+
+@router.get("/admin/audit-logs", dependencies=[Depends(require_admin)])
+async def admin_list_audit_logs(
+    limit: int = 50,
+    session: AsyncSession = Depends(get_session),
+):
+    rows = (
+        await session.scalars(
+            select(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit)
+        )
+    ).all()
+    return {
+        "data": [
+            {
+                "id": str(r.id),
+                "actor": r.actor,
+                "action": r.action,
+                "target": r.target,
+                "detail": r.detail,
+                "ip_address": r.ip_address,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ]
+    }
 
 
 @router.get("/workspace", response_model=schemas.WorkspaceOut)

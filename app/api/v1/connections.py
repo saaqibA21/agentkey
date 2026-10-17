@@ -50,6 +50,7 @@ class VaultItemCreate(BaseModel):
     password: str = Field(min_length=1, max_length=1024)
     totp_secret: str | None = Field(default=None, max_length=512)
     approval: str = Field(default="ask", pattern="^(ask|auto)$")
+    owner_name: str | None = Field(default=None, max_length=255)
 
 
 class VaultItemUpdate(BaseModel):
@@ -69,7 +70,8 @@ def _connection_out(c: Connection) -> dict:
 
 def _item_out(i: VaultItem) -> dict:
     return {"id": str(i.id), "name": i.name, "site_host": i.site_host, "username": i.username,
-            "has_totp": i.has_totp, "approval": i.approval,
+            "has_totp": i.has_totp, "approval": i.approval, "owner_name": i.owner_name,
+            "has_session": bool(i.session_data),
             "last_used_at": _iso(i.last_used_at), "created_at": _iso(i.created_at)}
 
 
@@ -237,7 +239,8 @@ async def create_item(
         secret["totp_secret"] = vault.normalize_totp_secret(body.totp_secret)
     item = VaultItem(workspace_id=principal.workspace.id, name=body.name, site_host=host,
                      username=body.username, secret_enc=vault.encrypt(secret),
-                     has_totp="totp_secret" in secret, approval=body.approval)
+                     has_totp="totp_secret" in secret, approval=body.approval,
+                     owner_name=body.owner_name)
     session.add(item)
     audit(session, action="vault.create", actor=principal.actor, workspace_id=principal.workspace.id,
           target=host, request=request)
@@ -328,6 +331,29 @@ async def request_login(
         "status": "PENDING", "request_id": str(pending.id),
         "detail": "A person must approve this in the dashboard. Collect it with the request id afterwards.",
     })
+
+
+@router.get("/vault/items/{item_id}/export-browser-state")
+async def export_browser_state(
+    item_id: uuid.UUID,
+    principal: Principal = Depends(require_scope("connect")),
+    session: AsyncSession = Depends(get_session),
+):
+    """Export storage state (cookies, origins, tokens) for browser automation tools like Playwright."""
+    item = await _item(session, principal, item_id)
+    session_data = item.session_data or {}
+    browser_state = session_data.get("browser_state") or {}
+    return {
+        "item_id": str(item.id),
+        "site_host": item.site_host,
+        "owner_name": item.owner_name,
+        "username": item.username,
+        "cookies": session_data.get("cookies", browser_state.get("cookies", [])),
+        "origins": browser_state.get("origins", []),
+        "tokens": session_data.get("tokens", {}),
+        "final_url": session_data.get("final_url"),
+        "resolved_at": session_data.get("resolved_at"),
+    }
 
 
 def _request_out(r: AccessRequest, item: VaultItem) -> dict:

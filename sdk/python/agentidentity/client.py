@@ -86,9 +86,11 @@ class _Inboxes:
         self._c = client
 
     def create(self, username: Optional[str] = None, client_id: Optional[str] = None,
-               phone_number: Optional[str] = None) -> Inbox:
+               phone_number: Optional[str] = None, owner_name: Optional[str] = None,
+               display_title: Optional[str] = None) -> Inbox:
         """Create an inbox. With ``client_id`` the call is idempotent and returns the existing inbox."""
-        body = _clean({"username": username, "client_id": client_id, "phone_number": phone_number})
+        body = _clean({"username": username, "client_id": client_id, "phone_number": phone_number,
+                       "owner_name": owner_name, "display_title": display_title})
         return Inbox(**self._c._request("POST", "/inboxes", json=body))
 
     def list(self, limit: int = 50, offset: int = 0) -> List[Inbox]:
@@ -125,6 +127,12 @@ class _Inboxes:
     def wait_for_message(self, inbox_id: str, timeout: float = 30) -> Optional[Message]:
         result = self._wait(inbox_id, "message", timeout)
         return Message(**result["message"]) if result else None
+
+    def resolve_magic_link(self, inbox_id: str, url: Optional[str] = None,
+                           save_to_vault: bool = True, timeout: float = 15.0) -> Dict[str, Any]:
+        """Navigate an auth/magic link, harvesting cookies, JWTs, and structured page elements."""
+        body = _clean({"url": url, "save_to_vault": save_to_vault, "timeout": timeout})
+        return self._c._request("POST", f"/inboxes/{inbox_id}/resolve-link", json=body)
 
 
 class _Messages:
@@ -245,6 +253,10 @@ class _Identity:
         """Pick up a login once its request has been approved. Works a single time."""
         return self._c._request("POST", f"/vault/requests/{request_id}/collect")
 
+    def export_browser_state(self, item_id: str) -> Dict[str, Any]:
+        """Export Playwright/Puppeteer storage state (cookies, origins, tokens) for a vault session."""
+        return self._c._request("GET", f"/vault/items/{item_id}/export-browser-state")
+
 
 class AgentIdentity:
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, timeout: float = 30.0,
@@ -277,8 +289,10 @@ class _AsyncInboxes:
         self._c = client
 
     async def create(self, username: Optional[str] = None, client_id: Optional[str] = None,
-                     phone_number: Optional[str] = None) -> Inbox:
-        body = _clean({"username": username, "client_id": client_id, "phone_number": phone_number})
+                     phone_number: Optional[str] = None, owner_name: Optional[str] = None,
+                     display_title: Optional[str] = None) -> Inbox:
+        body = _clean({"username": username, "client_id": client_id, "phone_number": phone_number,
+                       "owner_name": owner_name, "display_title": display_title})
         return Inbox(**await self._c._request("POST", "/inboxes", json=body))
 
     async def list(self, limit: int = 50, offset: int = 0) -> List[Inbox]:
@@ -314,6 +328,12 @@ class _AsyncInboxes:
     async def wait_for_message(self, inbox_id: str, timeout: float = 30) -> Optional[Message]:
         result = await self._wait(inbox_id, "message", timeout)
         return Message(**result["message"]) if result else None
+
+    async def resolve_magic_link(self, inbox_id: str, url: Optional[str] = None,
+                                save_to_vault: bool = True, timeout: float = 15.0) -> Dict[str, Any]:
+        """Navigate an auth/magic link, harvesting cookies, JWTs, and structured page elements."""
+        body = _clean({"url": url, "save_to_vault": save_to_vault, "timeout": timeout})
+        return await self._c._request("POST", f"/inboxes/{inbox_id}/resolve-link", json=body)
 
 
 class _AsyncMessages:
@@ -365,10 +385,35 @@ class _AsyncThreads:
         return Thread(**await self._c._request("GET", f"/threads/{thread_id}"))
 
 
+class _AsyncIdentity:
+    def __init__(self, client: "AsyncAgentIdentity"):
+        self._c = client
+
+    async def connections(self) -> List[Dict[str, Any]]:
+        data = await self._c._request("GET", "/connections")
+        return data["data"]
+
+    async def logins(self) -> List[Dict[str, Any]]:
+        data = await self._c._request("GET", "/vault/items")
+        return data["data"]
+
+    async def request(self, connection_id: str, path: str, method: str = "GET",
+                      query: Optional[Dict[str, str]] = None, body: Any = None) -> Dict[str, Any]:
+        payload = _clean({"method": method, "path": path, "query": query or {}, "body": body})
+        return await self._c._request("POST", f"/connections/{connection_id}/request", json=payload)
+
+    async def login(self, item_id: str, url: str, reason: str = "") -> Dict[str, Any]:
+        return await self._c._request("POST", f"/vault/items/{item_id}/login", json={"url": url, "reason": reason})
+
+    async def export_browser_state(self, item_id: str) -> Dict[str, Any]:
+        return await self._c._request("GET", f"/vault/items/{item_id}/export-browser-state")
+
+
 class AsyncAgentIdentity:
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, timeout: float = 30.0,
                  http_client: Optional[httpx.AsyncClient] = None):
         self._http = http_client or httpx.AsyncClient(timeout=timeout, **_config(api_key, base_url))
+        self.identity = _AsyncIdentity(self)
         self.inboxes = _AsyncInboxes(self)
         self.messages = _AsyncMessages(self)
         self.threads = _AsyncThreads(self)

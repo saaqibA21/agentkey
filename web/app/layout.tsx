@@ -4,15 +4,17 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "AIgent: an inbox for every AI agent", template: "%s · AIgent" },
+  title: { default: "AgentID · Identity for AI Agents", template: "%s · AgentID" },
   description:
-    "Give your AI agent its own email address in one API call. OTPs and magic links arrive already parsed. Works with Claude, Cursor, LangChain and any MCP client.",
+    "AgentID provides secure, verifiable and portable identities for AI agents — so they can act, access, and collaborate across the internet, just like humans.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen">{children}</body>
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-[#07090e] text-white antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
+        {children}
+      </body>
     </html>
   );
 }

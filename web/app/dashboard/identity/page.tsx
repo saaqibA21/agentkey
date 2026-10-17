@@ -12,7 +12,7 @@ type Connection = {
 };
 type Login = {
   id: string; name: string; site_host: string; username: string; has_totp: boolean; approval: "ask" | "auto";
-  last_used_at: string | null;
+  owner_name?: string | null; has_session?: boolean; last_used_at: string | null;
 };
 type AccessRequest = { id: string; url: string; reason: string; created_at: string; item: Login };
 
@@ -145,15 +145,16 @@ export default async function IdentityPage({
         ))}
       </div>
 
-      <h2 className="mb-1 mt-10 font-semibold">Saved logins</h2>
+      <h2 className="mb-1 mt-10 font-semibold">Saved logins & Browser Sessions</h2>
       <p className="mb-3 max-w-2xl text-sm text-muted">
-        For sites you cannot connect above. Stored encrypted, and only ever released for the site you saved them for.
-        With “Ask me each time”, the agent waits until you allow it here.
+        For websites where OAuth is not supported. Stored cryptographically encrypted, domain-pinned, and tied to the registered owner.
+        With “Ask me each time”, the agent waits until you confirm here.
       </p>
       <Card>
         <ActionForm action={addLogin} submit="Save login" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          <input name="name" required placeholder="Name, e.g. Work GitHub" className={inputClass} />
+          <input name="name" required placeholder="Name, e.g. AWS Console or GitHub" className={inputClass} />
           <input name="site_url" required placeholder="https://github.com" className={inputClass} />
+          <input name="owner_name" placeholder="Owner / Operator (e.g. Saaqib)" className={inputClass} />
           <input name="username" required placeholder="Username or email" autoComplete="off" className={inputClass} />
           <input name="password" type="password" required placeholder="Password" autoComplete="new-password" className={inputClass} />
           <input name="totp_secret" placeholder="2FA setup key (optional)" autoComplete="off" className={inputClass} />
@@ -166,28 +167,57 @@ export default async function IdentityPage({
       <div className="mt-3 space-y-2">
         {logins.data.length === 0 && <Empty title="No saved logins" />}
         {logins.data.map((l) => (
-          <Card key={l.id} className="flex flex-wrap items-center gap-3 !py-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{l.name}</p>
-              <p className="text-xs text-muted">
-                {l.username} on {l.site_host}
-                {l.has_totp && " · 2FA codes included"}
-                {l.last_used_at && ` · last used ${timeAgo(l.last_used_at)}`}
-              </p>
+          <Card key={l.id} className="space-y-3 !py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{l.name}</p>
+                  {l.owner_name && (
+                    <Badge tone="purple">Owner: {l.owner_name}</Badge>
+                  )}
+                  {l.has_session && (
+                    <Badge tone="accent">Session Harvested (Playwright Ready)</Badge>
+                  )}
+                </div>
+                <p className="mt-0.5 text-xs text-muted">
+                  {l.username} on <span className="font-mono text-ink">{l.site_host}</span>
+                  {l.has_totp && " · 2FA codes included"}
+                  {l.last_used_at && ` · last used ${timeAgo(l.last_used_at)}`}
+                </p>
+              </div>
+              <Badge tone={l.approval === "auto" ? "warn" : "good"}>{l.approval === "auto" ? "automatic" : "asks first"}</Badge>
+              <ActionForm action={setLoginApproval} variant="secondary"
+                          submit={l.approval === "auto" ? "Ask me each time" : "Make automatic"}
+                          confirm={l.approval === "auto" ? undefined
+                            : "The agent will get this password whenever it asks, without checking with you. Continue?"}>
+                <input type="hidden" name="id" value={l.id} />
+                <input type="hidden" name="approval" value={l.approval === "auto" ? "ask" : "auto"} />
+              </ActionForm>
+              <ActionForm action={deleteLogin} submit="Delete" variant="danger" confirm={`Delete the saved login for ${l.site_host}?`}>
+                <input type="hidden" name="id" value={l.id} />
+              </ActionForm>
             </div>
-            <Badge tone={l.approval === "auto" ? "warn" : "good"}>{l.approval === "auto" ? "automatic" : "asks first"}</Badge>
-            <ActionForm action={setLoginApproval} variant="secondary"
-                        submit={l.approval === "auto" ? "Ask me each time" : "Make automatic"}
-                        confirm={l.approval === "auto" ? undefined
-                          : "The agent will get this password whenever it asks, without checking with you. Continue?"}>
-              <input type="hidden" name="id" value={l.id} />
-              <input type="hidden" name="approval" value={l.approval === "auto" ? "ask" : "auto"} />
-            </ActionForm>
-            <ActionForm action={deleteLogin} submit="Delete" variant="danger" confirm={`Delete the saved login for ${l.site_host}?`}>
-              <input type="hidden" name="id" value={l.id} />
-            </ActionForm>
+            {l.has_session && (
+              <div className="rounded-lg border border-teal-500/30 bg-teal-500/5 p-3 text-xs">
+                <p className="font-semibold text-teal-600 dark:text-teal-400">Browser Automation Primitive</p>
+                <p className="mt-0.5 text-muted">
+                  Agent can authenticate headlessly via Playwright/Puppeteer storage state:
+                </p>
+                <code className="mt-1.5 block select-all rounded bg-code px-2 py-1 font-mono text-[11px] text-ink">
+                  curl -H &quot;Authorization: Bearer $AGENT_API_KEY&quot; {publicApiUrl}/vault/items/{l.id}/export-browser-state
+                </code>
+              </div>
+            )}
           </Card>
         ))}
+      </div>
+
+      <div className="mt-10 rounded-xl border border-line bg-subtle/50 p-5">
+        <h3 className="font-semibold tracking-tight text-ink">Zero-Trust Credential Isolation</h3>
+        <p className="mt-1 text-xs text-muted">
+          AgentIdentity ensures autonomous LLMs never possess raw passwords in context windows. Secrets remain domain-pinned,
+          ephemeral TOTPs are injected synchronously at runtime, and browser state is securely vaulted with owner attribution.
+        </p>
       </div>
     </>
   );
