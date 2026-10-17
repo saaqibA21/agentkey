@@ -24,9 +24,18 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="shrink-0 rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-subtle hover:text-ink active:scale-95"
+      className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-subtle hover:text-ink active:scale-95"
     >
-      {copied ? "Copied ✓" : label}
+      {copied ? (
+        <>
+          <svg className="h-3 w-3 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>Copied</span>
+        </>
+      ) : (
+        label
+      )}
     </button>
   );
 }

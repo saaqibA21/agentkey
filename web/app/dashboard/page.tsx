@@ -15,7 +15,11 @@ function Step({ done, title, children, href, cta }: {
           done ? "bg-accent text-white" : "border border-line text-muted"
         }`}
       >
-        {done ? "✓" : ""}
+        {done ? (
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : null}
       </span>
       <div className="min-w-0 flex-1">
         <p className={`font-medium ${done ? "text-muted line-through" : ""}`}>{title}</p>
@@ -59,28 +63,44 @@ export default async function OverviewPage() {
           title="Active Inboxes"
           value={`${o.counts.inboxes} / ${o.workspace.max_inboxes}`}
           subtext="Email + WhatsApp + SMS handles"
-          icon="📬"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          }
           tone="accent"
         />
         <StatCard
           title="Inbound Today"
           value={o.usage.received_today}
           subtext={`Daily limit: ${o.workspace.inbound_daily_limit} msgs`}
-          icon="⚡"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          }
           tone="good"
         />
         <StatCard
           title="Outbound Sent"
           value={o.usage.sent_today}
           subtext={canSend ? `Daily quota: ${o.workspace.daily_send_limit}` : "Inbound-only mode"}
-          icon="📤"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" x2="11" y1="2" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          }
           tone={canSend ? "good" : "neutral"}
         />
         <StatCard
           title="Pending Approvals"
           value={o.counts.pending_approvals}
           subtext={o.counts.pending_approvals > 0 ? "Requires operator action" : "Zero bottlenecks"}
-          icon="🛡️"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          }
           tone={o.counts.pending_approvals > 0 ? "warn" : "neutral"}
         />
       </div>

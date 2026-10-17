@@ -190,7 +190,7 @@ async def test_send_email_headers_footer_and_reply_threading(client, workspace, 
     assert sent.sender == inbox["email_address"] and sent.recipient == "client@example.com"
     assert sent.headers["X-Agent-Operator-ID"] == workspace["id"]
     assert sent.headers["X-Agent-Platform"] == "AIgent"
-    assert sent.text.rstrip().endswith("🤖 Sent autonomously by an AI agent operated by Acme Robotics.")
+    assert sent.text.rstrip().endswith("[Automated] Sent autonomously by an AI agent operated by Acme Robotics.")
 
     # The customer replies; our reply to that stays in the same thread with correct headers.
     inbound = await ingest(client, inbox["email_address"], **{"from": "client@example.com"}, subject="Re: Quote",

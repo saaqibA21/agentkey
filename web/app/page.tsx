@@ -112,19 +112,27 @@ export default function LandingPage() {
               {/* Compact Trust Indicators */}
               <div className="flex flex-wrap items-center gap-7 pt-4 text-xs font-medium text-[#9BA7B4]">
                 <span className="flex items-center gap-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[10px] text-[#8BE8E3]">✓</span>
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[#8BE8E3]">
+                    <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
                   Secure
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[10px] text-[#8BE8E3]">✓</span>
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[#8BE8E3]">
+                    <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
                   Verifiable
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[10px] text-[#8BE8E3]">✓</span>
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[#8BE8E3]">
+                    <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
                   Portable
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[10px] text-[#8BE8E3]">✓</span>
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8BE8E3]/15 text-[#8BE8E3]">
+                    <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
                   Built for AI
                 </span>
               </div>
@@ -148,9 +156,9 @@ export default function LandingPage() {
                     <button
                       type="button"
                       onClick={copyAgentId}
-                      className="ml-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-[#F5F3EF] hover:bg-white/15 transition"
+                      className="ml-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-[#F5F3EF] hover:bg-white/15 transition flex items-center gap-1"
                     >
-                      {copiedId ? "Copied ✓" : "Copy ID"}
+                      {copiedId ? "Copied" : "Copy ID"}
                     </button>
                   </div>
                 </div>
@@ -394,7 +402,10 @@ export default function LandingPage() {
               className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition"
               aria-label="Close demo modal"
             >
-              ✕
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
 
             <div className="space-y-4">
@@ -440,7 +451,10 @@ export default function LandingPage() {
               className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition"
               aria-label="Close modal"
             >
-              ✕
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
 
             <h3 className="text-xl font-bold text-[#F5F3EF]">{selectedUseCase.title} Architecture</h3>

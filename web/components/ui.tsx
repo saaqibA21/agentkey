@@ -87,8 +87,13 @@ export function Code({ code, copy = true }: { code: string; copy?: boolean }) {
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="rounded-2xl border border-dashed border-line bg-subtle/30 px-6 py-12 text-center">
-      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-subtle text-muted text-lg mb-2">
-        📦
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-subtle text-muted mb-2">
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m7.5 4.27 9 5.15" />
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
       </div>
       <p className="font-semibold text-ink text-sm">{title}</p>
       {children && <div className="mx-auto mt-1 max-w-md text-xs text-muted">{children}</div>}

@@ -277,7 +277,7 @@
     </p>
 
     <button onclick="triggerPwaInstallModal()" style="width: 100%; background: #1E423D; color: #FFFFFF; border: none; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; padding: 14px; border-radius: 100px; cursor: pointer; box-shadow: 0 4px 14px rgba(30,66,61,0.3); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      📲 Install App on Home Screen
+      Install App on Home Screen
     </button>
 
     <button onclick="closePwaInstallModal()" style="width: 100%; background: transparent; color: #52635E; border: none; font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer;">
@@ -297,7 +297,7 @@
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
     <button onclick="triggerPwaInstall()" style="background: #E8C77B; color: #0F1B19; border: none; font-weight: 700; font-size: 11.5px; padding: 6px 12px; border-radius: 100px; cursor: pointer;">Install</button>
-    <button onclick="dismissPwaBanner()" style="background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;">✕</button>
+    <button onclick="dismissPwaBanner()" style="background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;">&times;</button>
   </div>
 </div>
 
@@ -351,9 +351,9 @@
     } else {
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       if (isIOS) {
-        alert("📲 To add Curelith to your iPhone Home Screen:\n\n1. Tap the Share button at bottom of Safari (📤)\n2. Scroll down and tap 'Add to Home Screen' (➕)");
+        alert("To add Curelith to your iPhone Home Screen:\n\n1. Tap the Share button at bottom of Safari\n2. Scroll down and tap 'Add to Home Screen'");
       } else {
-        alert("📲 To install Curelith on your Home Screen:\n\nTap your browser menu (⋮ or ⚙️) and select 'Install app' or 'Add to Home Screen'.");
+        alert("To install Curelith on your Home Screen:\n\nTap your browser menu and select 'Install app' or 'Add to Home Screen'.");
       }
     }
   }

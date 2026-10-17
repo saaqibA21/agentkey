@@ -17,7 +17,8 @@ async function run(path: string, work: () => Promise<ActionState | void>): Promi
     return result ?? { ok: true };
   } catch (err) {
     if (err instanceof ApiError) return { error: err.detail ?? err.title };
-    throw err;
+    if (err instanceof Error) return { error: err.message };
+    return { error: "An unexpected error occurred." };
   }
 }
 
@@ -287,18 +288,22 @@ export async function adminUpdateWorkspace(_: ActionState, form: FormData): Prom
 export async function createAgent(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/api", async () => {
     // The owner email is deliberately not sent: the API takes it from the signed-in account.
-    const agent = await api<{ api_key: string; email_address: string; agent_name: string; owner_email: string }>(
+    const agent = await api<{ api_key: string; passport?: string; email_address: string; agent_name: string; owner_email: string }>(
       "/agents",
       { method: "POST", body: JSON.stringify({ agent_name: text(form, "agent_name"), owner_name: text(form, "owner_name") }) },
     );
+    const details = [
+      { label: "Agent email", value: agent.email_address },
+      { label: "Owner email", value: agent.owner_email },
+    ];
+    if (agent.passport) {
+      details.push({ label: "Verifiable Passport", value: agent.passport });
+    }
     return {
       ok: true,
       secret: agent.api_key,
       secretLabel: `API key for ${agent.agent_name}`,
-      details: [
-        { label: "Agent email", value: agent.email_address },
-        { label: "Owner email", value: agent.owner_email },
-      ],
+      details,
     };
   });
 }

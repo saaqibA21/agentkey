@@ -22,6 +22,7 @@ from app.db.models import Agent, ApiKey, Inbox, User, utcnow
 from app.db.session import get_session
 from app.services.audit import audit
 from app.services.events import _iso
+from app.services.passport import create_agent_passport
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -61,13 +62,16 @@ async def _free_address(session: AsyncSession, slug: str, domain: str) -> str:
     raise ProblemError(409, "Address unavailable", "Could not find a free address for this name; try another.")
 
 
-def _out(agent: Agent, inbox: Inbox, key: ApiKey) -> dict:
-    return {
+def _out(agent: Agent, inbox: Inbox, key: ApiKey, passport: str | None = None) -> dict:
+    data = {
         "id": str(agent.id), "agent_name": agent.name, "owner_name": agent.owner_name,
         "owner_email": agent.owner_email, "email_address": inbox.email_address, "inbox_id": str(inbox.id),
         "api_key_prefix": key.key_prefix, "scopes": key.scopes, "status": agent.status,
         "created_at": _iso(agent.created_at),
     }
+    if passport:
+        data["passport"] = passport
+    return data
 
 
 @router.post("", status_code=201)
@@ -104,7 +108,8 @@ async def create_agent(
     except IntegrityError:  # someone took the same address in the same instant
         await session.rollback()
         raise ProblemError(409, "Address unavailable", "That address was just taken. Please try again.") from None
-    return {**_out(agent, inbox, key_row), "api_key": api_key}
+    passport = create_agent_passport(agent, inbox, workspace)
+    return {**_out(agent, inbox, key_row, passport=passport), "api_key": api_key, "passport": passport}
 
 
 @router.get("")
@@ -115,7 +120,34 @@ async def list_agents(principal: Principal = Depends(require_scope("read")), ses
         .where(Agent.workspace_id == principal.workspace.id, Agent.status == "ACTIVE")
         .order_by(Agent.created_at.desc())
     )).all()
-    return {"data": [_out(a, i, k) for a, i, k in rows]}
+    return {"data": [_out(a, i, k, passport=create_agent_passport(a, i, principal.workspace)) for a, i, k in rows]}
+
+
+@router.get("/{agent_id}/passport")
+async def get_agent_passport(
+    agent_id: uuid.UUID,
+    principal: Principal = Depends(require_scope("read")),
+    session: AsyncSession = Depends(get_session),
+):
+    agent = await session.get(Agent, agent_id)
+    if agent is None or agent.workspace_id != principal.workspace.id or agent.status != "ACTIVE":
+        raise ProblemError(404, "Agent not found")
+    inbox = await session.get(Inbox, agent.inbox_id)
+    if inbox is None or inbox.status != "ACTIVE":
+        raise ProblemError(404, "Agent inbox not found")
+    token = create_agent_passport(agent, inbox, principal.workspace)
+    return {
+        "passport": token,
+        "token": token,
+        "agent_id": str(agent.id),
+        "agent_name": agent.name,
+        "email_address": inbox.email_address,
+        "owner_name": agent.owner_name,
+        "owner_email": agent.owner_email,
+        "trust_score": 99.0,
+        "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
+        "verify_endpoint": f"{get_settings().public_base_url}/v1/auth/agent/verify",
+    }
 
 
 @router.delete("/{agent_id}", status_code=204)

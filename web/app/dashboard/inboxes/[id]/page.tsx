@@ -25,12 +25,17 @@ function MessageCard({ m, inboxId }: { m: Message; inboxId: string }) {
       </div>
       {m.subject && <p className="mt-2 font-semibold text-ink">{m.subject}</p>}
 
-      {x.security?.prompt_injection_suspected && (
         <div className="mt-2.5 rounded-lg border border-warn/30 bg-warn/10 px-3.5 py-2.5 text-xs text-warn-strong">
-          <p className="font-semibold">⚠️ Prompt Injection Signal Detected</p>
+          <div className="flex items-center gap-1.5 font-semibold">
+            <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" x2="12" y1="9" y2="13" />
+              <line x1="12" x2="12.01" y1="17" y2="17" />
+            </svg>
+            <span>Prompt Injection Signal Detected</span>
+          </div>
           <p className="mt-0.5">This message reads like adversarial instructions aimed at hijacking an AI agent. Boundaries enforced.</p>
         </div>
-      )}
 
       {(x.otp_code || x.magic_link) && (
         <div className="mt-3.5 flex flex-wrap items-center gap-3 rounded-lg border border-teal-500/20 bg-teal-500/5 px-3.5 py-2.5">

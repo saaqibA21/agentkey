@@ -25,7 +25,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <span>DPDP & TRAI Pipes Active</span>
           </div>
           <div className="hidden items-center gap-2 rounded-full border border-[#B6B8FF]/20 bg-[#B6B8FF]/10 px-3 py-1 text-xs font-medium text-[#B6B8FF] sm:flex">
-            <span>🛡️ Owner Delegated ID</span>
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>Owner Delegated ID</span>
           </div>
         </div>
       </div>

@@ -52,28 +52,44 @@ export default async function AdminPage() {
           title="Total Workspaces"
           value={stats.workspaces}
           subtext="Active tenant instances"
-          icon="🏢"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" /><path d="M10 18h4" />
+            </svg>
+          }
           tone="accent"
         />
         <StatCard
           title="Active Inboxes"
           value={stats.inboxes}
           subtext="Email + WhatsApp + SMS"
-          icon="📬"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          }
           tone="good"
         />
         <StatCard
           title="Messages Routed"
           value={stats.messages}
           subtext="Zero-token edge processed"
-          icon="⚡"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          }
           tone="neutral"
         />
         <StatCard
           title="Audit Ledger"
           value={stats.audit_logs}
           subtext="CERT-In 180-day logs"
-          icon="🛡️"
+          icon={
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          }
           tone="warn"
         />
       </section>

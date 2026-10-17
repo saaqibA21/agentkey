@@ -2,25 +2,104 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   badge?: string;
   badgeTone?: "accent" | "purple" | "warn";
 };
 
 const items: NavItem[] = [
-  { href: "/dashboard", label: "Overview", icon: "⚡" },
-  { href: "/dashboard/api", label: "API", icon: "🧩", badge: "New", badgeTone: "accent" },
-  { href: "/dashboard/inboxes", label: "Inboxes & Channels", icon: "📬" },
-  { href: "/dashboard/identity", label: "Identity & Vault", icon: "🛡️", badge: "OD-ID", badgeTone: "purple" },
-  { href: "/dashboard/approvals", label: "HITL Approvals", icon: "🔒" },
-  { href: "/dashboard/keys", label: "API Keys", icon: "🔑" },
-  { href: "/dashboard/domains", label: "Domains & DNS", icon: "🌐" },
-  { href: "/dashboard/webhooks", label: "Webhooks", icon: "🔌" },
-  { href: "/dashboard/admin", label: "Admin Console", icon: "👑", badge: "Live", badgeTone: "accent" },
+  {
+    href: "/dashboard",
+    label: "Overview",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/api",
+    label: "API",
+    badge: "New",
+    badgeTone: "accent",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/inboxes",
+    label: "Inboxes & Channels",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/identity",
+    label: "Identity & Vault",
+    badge: "OD-ID",
+    badgeTone: "purple",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/approvals",
+    label: "HITL Approvals",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/keys",
+    label: "API Keys",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6" /><path d="m15.5 7.5 3 3L22 7l-3-3" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/domains",
+    label: "Domains & DNS",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/webhooks",
+    label: "Webhooks",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c0-2.21 1.79-4 4-4h.78" /><path d="M6 13V9a4 4 0 0 1 7.4-2.1" /><circle cx="18" cy="17" r="3" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/admin",
+    label: "Admin Console",
+    badge: "Live",
+    badgeTone: "accent",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" x2="20" y1="21" y2="21" /><line x1="4" x2="20" y1="10" y2="10" /><line x1="12" x2="12" y1="21" y2="10" />
+      </svg>
+    ),
+  },
 ];
 
 export function DashboardNav() {
@@ -45,7 +124,7 @@ export function DashboardNav() {
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <span className="text-base transition-transform group-hover:scale-110">{item.icon}</span>
+              <span className="shrink-0 transition-transform group-hover:scale-110">{item.icon}</span>
               <span>{item.label}</span>
             </div>
             {item.badge && (
@@ -67,7 +146,9 @@ export function DashboardNav() {
         href="/docs"
         className="group flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
       >
-        <span className="text-base">📖</span>
+        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
+        </svg>
         <span>Developer Docs</span>
       </Link>
     </nav>

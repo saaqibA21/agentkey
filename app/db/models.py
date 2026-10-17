@@ -36,8 +36,8 @@ class Workspace(Base):
     outbound_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     daily_send_limit: Mapped[int] = mapped_column(Integer, default=50)
     plan: Mapped[str] = mapped_column(String(32), default="free")
-    max_inboxes: Mapped[int] = mapped_column(Integer, default=5)
-    inbound_daily_limit: Mapped[int] = mapped_column(Integer, default=500)
+    max_inboxes: Mapped[int] = mapped_column(Integer, default=100)
+    inbound_daily_limit: Mapped[int] = mapped_column(Integer, default=5000)
     created_at: Mapped[datetime] = _created()
 
 

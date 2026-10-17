@@ -32,7 +32,7 @@ def new_message_id(domain: str) -> str:
 
 
 def disclosure_footer(workspace_name: str) -> str:
-    return f"🤖 Sent autonomously by an AI agent operated by {workspace_name}."
+    return f"[Automated] Sent autonomously by an AI agent operated by {workspace_name}."
 
 
 def prepare_email(
