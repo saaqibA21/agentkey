@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     env: Literal["development", "test", "production"] = "development"
-    platform_name: str = "AIgent"
+    platform_name: str = "BAGENTS"
     public_base_url: str = "http://localhost:8000"
     dashboard_url: str = "http://localhost:3000"
 

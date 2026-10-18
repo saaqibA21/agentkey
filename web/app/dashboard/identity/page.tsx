@@ -215,7 +215,7 @@ export default async function IdentityPage({
       <div className="mt-10 rounded-xl border border-line bg-subtle/50 p-5">
         <h3 className="font-semibold tracking-tight text-ink">Zero-Trust Credential Isolation</h3>
         <p className="mt-1 text-xs text-muted">
-          AgentIdentity ensures autonomous LLMs never possess raw passwords in context windows. Secrets remain domain-pinned,
+          BAGENTS ensures autonomous LLMs never possess raw passwords in context windows. Secrets remain domain-pinned,
           ephemeral TOTPs are injected synchronously at runtime, and browser state is securely vaulted with owner attribution.
         </p>
       </div>

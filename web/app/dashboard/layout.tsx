@@ -5,7 +5,7 @@ import { auth, signOut } from "@/auth";
 import { DashboardNav } from "@/components/nav";
 import { Logo } from "@/components/site";
 
-export const metadata = { title: "Dashboard · AgentID" };
+export const metadata = { title: "Dashboard · BAGENTS" };
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await auth();

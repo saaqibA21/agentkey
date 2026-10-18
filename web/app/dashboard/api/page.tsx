@@ -28,7 +28,7 @@ export default async function ApiPage() {
     <>
       <PageHeader
         title="API & Agent Passports"
-        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a cryptographic AgentID Passport, dedicated email inbox, and API credentials."
+        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a cryptographic BAGENTS Passport, dedicated email inbox, and API credentials."
       />
 
       {/* Uncontrolled on purpose: a server re-render after creating must not close the panel holding the new key. */}

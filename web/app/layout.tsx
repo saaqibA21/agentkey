@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "AgentID · Identity for AI Agents", template: "%s · AgentID" },
+  title: { default: "BAGENTS · Identity for AI Agents", template: "%s · BAGENTS" },
   description:
-    "AgentID provides secure, verifiable and portable identities for AI agents — so they can act, access, and collaborate across the internet, just like humans.",
+    "BAGENTS provides secure, verifiable and portable identities for AI agents — so they can act, access, and collaborate across the internet, just like humans.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

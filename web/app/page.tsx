@@ -143,7 +143,7 @@ export default function LandingPage() {
               <div className="relative w-full max-w-[700px] animate-float-slow">
                 <img
                   src="/images/hero-robot-blend.png"
-                  alt="AgentID 3D Robot HealthBot (Clinical AI Agent) with tilted glass credential card owned by Curelith Health Systems, permissions Read Analyze Assist"
+                  alt="BAGENTS 3D Robot HealthBot (Clinical AI Agent) with tilted glass credential card owned by Curelith Health Systems, permissions Read Analyze Assist"
                   className="w-full h-auto object-contain select-none drop-shadow-2xl"
                 />
 
@@ -185,7 +185,7 @@ export default function LandingPage() {
                   for every agent.
                 </h2>
                 <p className="mt-4 text-base sm:text-lg text-[#55606E] leading-relaxed">
-                  AgentID gives AI agents a verified digital identity with ownership, permissions, and
+                  BAGENTS gives AI agents a verified digital identity with ownership, permissions, and
                   real-world connections — making them trustworthy, accountable, and ready to work anywhere.
                 </p>
               </div>
@@ -261,7 +261,7 @@ export default function LandingPage() {
               <div className="relative w-full max-w-[680px]">
                 <img
                   src="/images/ecosystem-network-blend.png"
-                  alt="AgentID Connected Ecosystem Network Visual"
+                  alt="BAGENTS Connected Ecosystem Network Visual"
                   className="w-full h-auto object-contain select-none"
                 />
                 <p className="mt-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#64748B]">
@@ -417,12 +417,12 @@ export default function LandingPage() {
               </div>
 
               <h3 className="text-2xl font-bold text-[#F5F3EF]">
-                How AgentID Authenticates Autonomous Bots
+                How BAGENTS Authenticates Autonomous Bots
               </h3>
 
               <div className="space-y-3 rounded-2xl border border-white/10 bg-[#080D12] p-4 text-xs font-mono text-[#9BA7B4]">
                 <p className="text-emerald-400">01: Bot requests login at https://internal.curelith.com</p>
-                <p className="text-indigo-300">02: AgentID edge regex intercepts verification OTP: [ 8 4 9 2 0 1 ]</p>
+                <p className="text-indigo-300">02: BAGENTS edge regex intercepts verification OTP: [ 8 4 9 2 0 1 ]</p>
                 <p className="text-teal-300">03: Cryptographic owner check passed: Curelith Health Systems</p>
                 <p className="text-[#F5F3EF]">04: Session exported to Playwright headless context (200 OK)</p>
               </div>

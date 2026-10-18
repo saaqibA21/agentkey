@@ -22,6 +22,7 @@ os.environ.update({
     "STORAGE_LOCAL_PATH": (_DB.parent / "storage").as_posix(),
     "SES_INBOUND_TOPIC_ARN": "arn:aws:sns:us-east-1:111122223333:aigent-inbound",
     "RATE_LIMIT_CAPACITY": "10000",
+    "PLATFORM_NAME": "BAGENTS",
 })
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
