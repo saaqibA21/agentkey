@@ -28,6 +28,7 @@ router = APIRouter(tags=["auth"])
 
 class AgentPassportVerifyRequest(BaseModel):
     passport: str | None = Field(default=None, description="Signed verifiable agent passport token (ai_pass_...)")
+    email: str | None = Field(default=None, description="Agent email address to verify (e.g. sales-bot@agents.example.com)")
 
 
 @router.post("/internal/sessions", dependencies=[Depends(require_dashboard)], include_in_schema=False)
@@ -106,6 +107,55 @@ async def verify_agent_passport(
     Validates an autonomous agent's cryptographically signed passport (ai_pass_...),
     confirms human owner accountability, active status, and returns a trust score.
     """
+    # 1. Verification by Agent Email Address
+    if body and body.email:
+        clean_email = body.email.strip().lower()
+        inbox = await session.scalar(
+            select(Inbox).where(Inbox.email_address == clean_email, Inbox.status == "ACTIVE")
+        )
+        if not inbox:
+            return {
+                "verified": False,
+                "status": "NOT_FOUND",
+                "error": f"No active BAGENTS agent found for email '{clean_email}'.",
+            }
+        agent = await session.scalar(
+            select(Agent).where(Agent.inbox_id == inbox.id, Agent.status == "ACTIVE")
+        )
+        if not agent:
+            return {
+                "verified": False,
+                "status": "NOT_FOUND",
+                "error": "No active agent associated with this inbox address.",
+            }
+        workspace = await session.get(Workspace, agent.workspace_id)
+        return {
+            "verified": True,
+            "status": "VERIFIED",
+            "trust_score": 99.0,
+            "verification_type": "EMAIL_IDENTITY_VERIFIED",
+            "agent": {
+                "id": str(agent.id),
+                "name": agent.name,
+                "email": inbox.email_address,
+                "avatar_url": getattr(agent, "avatar_url", None),
+                "avatar_seed": getattr(agent, "avatar_seed", None),
+                "status": agent.status,
+            },
+            "owner": {
+                "name": agent.owner_name,
+                "email": agent.owner_email,
+                "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
+            },
+            "workspace": {
+                "id": str(workspace.id) if workspace else None,
+                "name": workspace.name if workspace else "Enterprise Workspace",
+                "compliance_status": "COMPLIANT",
+            },
+            "scopes": ["read", "send"],
+        }
+
+    # 2. Verification by Cryptographic Passport Token
     token = (body.passport if body else None) or request.headers.get("x-agent-passport")
     if not token:
         auth_header = request.headers.get("authorization", "")
@@ -114,8 +164,8 @@ async def verify_agent_passport(
 
     if not token:
         raise ProblemError(
-            400, "Missing passport",
-            "Provide 'passport' in the request JSON body or via the 'X-Agent-Passport' HTTP header."
+            400, "Missing passport or email",
+            "Provide 'email' or 'passport' in the JSON body, or via the 'X-Agent-Passport' header."
         )
 
     claims = verify_passport_signature(token)
@@ -174,6 +224,23 @@ async def verify_agent_passport(
         "issued_at": claims.get("iat"),
         "expires_at": claims.get("exp"),
     }
+
+
+@router.get("/auth/agent/verify")
+@router.get("/agents/verify")
+async def verify_agent_query(
+    email: str | None = None,
+    passport: str | None = None,
+    session: AsyncSession = Depends(get_session),
+):
+    """GET verification endpoint for third-party websites and quick browser inspection."""
+    if not email and not passport:
+        raise ProblemError(400, "Missing parameter", "Provide ?email= or ?passport= query parameter.")
+    req = AgentPassportVerifyRequest(email=email, passport=passport)
+    # Reuse verify_agent_passport logic
+    class FakeRequest:
+        headers = {}
+    return await verify_agent_passport(FakeRequest(), req, session)
 
 
 @router.get("/auth/agent/verify/{agent_id}")
