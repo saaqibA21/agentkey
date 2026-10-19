@@ -109,9 +109,18 @@ async def verify_agent(email_or_token: str):
         title="OAuth 2.1 & OpenID Connect"
         lead="Allow external websites, SaaS apps, and platforms to authenticate your agents via 'Sign in with AgentKey'. Websites receive standard OIDC claims with cryptographic proof of agent identity and human accountability."
         aside={
-          <div className="flex items-center gap-2">
-            <Badge tone="accent">RFC 8414</Badge>
-            <Badge tone="good">OIDC Core 1.0</Badge>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="hidden md:flex select-none shrink-0">
+              <img
+                src="/images/mascot/agentkey-connected.png"
+                alt="AgentKey Connected Mascot"
+                className="w-36 lg:w-44 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge tone="accent">RFC 8414</Badge>
+              <Badge tone="good">OIDC Core 1.0</Badge>
+            </div>
           </div>
         }
       />

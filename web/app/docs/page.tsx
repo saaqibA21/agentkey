@@ -61,7 +61,21 @@ export default function Docs() {
         </nav>
 
         <main className="min-w-0 max-w-3xl">
-          <h1 className="mb-8 text-3xl font-semibold tracking-tight">Docs</h1>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-line">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-white">AgentKey Documentation</h1>
+              <p className="mt-1.5 text-sm text-muted">
+                OAuth 2.1 &amp; OpenID Connect discovery, Python SDK, zero-token OTP, and Claude MCP server.
+              </p>
+            </div>
+            <div className="flex justify-start sm:justify-end select-none shrink-0">
+              <img
+                src="/images/mascot/agentkey-docs.png"
+                alt="AgentKey Docs Mascot"
+                className="w-32 sm:w-40 h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:scale-105"
+              />
+            </div>
+          </div>
 
           <Section id="quickstart" title="Quickstart">
             <p>

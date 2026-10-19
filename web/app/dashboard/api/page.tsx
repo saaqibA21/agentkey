@@ -34,6 +34,15 @@ export default async function ApiPage() {
       <PageHeader
         title="API & Agent Passports"
         lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a guaranteed unique avatar, cryptographic AgentKey Passport, dedicated email inbox, and API credentials."
+        aside={
+          <div className="hidden sm:flex select-none shrink-0">
+            <img
+              src="/images/mascot/agentkey-api-active.png"
+              alt="AgentKey API Active Mascot"
+              className="w-28 sm:w-32 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+        }
       />
 
       {/* OAuth Banner */}

@@ -79,19 +79,28 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
         title="User Guide · How to Use AgentKey"
         lead="Everything you need to give your AI agents sovereign email identities, automate OTP 2FA logins, connect Claude & Cursor MCP, and protect operations with human-in-the-loop guardrails."
         aside={
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard/api"
-              className="rounded-xl border border-[#8BE8E3]/35 bg-[#132A26] px-4 py-2 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833]"
-            >
-              API Reference →
-            </Link>
-            <Link
-              href="/dashboard/keys"
-              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
-            >
-              Get API Key →
-            </Link>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard/api"
+                className="rounded-xl border border-[#8BE8E3]/35 bg-[#132A26] px-4 py-2 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833]"
+              >
+                API Reference →
+              </Link>
+              <Link
+                href="/dashboard/keys"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+              >
+                Get API Key →
+              </Link>
+            </div>
+            <div className="hidden md:flex select-none shrink-0">
+              <img
+                src="/images/mascot/agentkey-docs.png"
+                alt="AgentKey Guide Mascot"
+                className="w-24 lg:w-28 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+              />
+            </div>
           </div>
         }
       />

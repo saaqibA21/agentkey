@@ -214,9 +214,13 @@ export default function LandingPage() {
               {/* Free-Standing Mascot (No container, no border, no background box) */}
               <div className="flex items-center justify-center select-none">
                 <img
-                  src="/images/agentkey-mascot.png"
+                  src={
+                    authStep === "authenticated"
+                      ? "/images/mascot/agentkey-authenticated.png"
+                      : "/images/mascot/agentkey-verified.png"
+                  }
                   alt="AgentKey Robot Mascot"
-                  className="w-56 sm:w-64 lg:w-72 h-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] transition-transform duration-500 hover:scale-105"
+                  className="w-56 sm:w-64 lg:w-72 h-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] transition-all duration-500 hover:scale-105"
                 />
               </div>
 
@@ -437,7 +441,7 @@ export default function LandingPage() {
                 Add Sign in with AgentKey to your website in minutes. Built on standard OpenID Connect (OIDC) and OAuth 2.1 — free forever for applications.
               </p>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center gap-4">
                 <Link
                   href="/docs#oauth"
                   className="inline-flex items-center gap-2 rounded-lg bg-[#8BE8E3] px-6 py-3 text-xs font-mono font-semibold text-[#080D12] hover:bg-[#B5F0D1] transition"
@@ -445,6 +449,15 @@ export default function LandingPage() {
                   <span>Read developer integration docs</span>
                   <span>→</span>
                 </Link>
+              </div>
+
+              {/* Free-Standing Mascot: AgentKey API Active */}
+              <div className="pt-2 flex items-center justify-start select-none">
+                <img
+                  src="/images/mascot/agentkey-api-active.png"
+                  alt="AgentKey API Active Mascot"
+                  className="w-48 sm:w-56 h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:scale-105"
+                />
               </div>
             </div>
 
@@ -542,36 +555,56 @@ export default function LandingPage() {
                 <p className="text-rose-300">✕ Fragile browser session cookies</p>
                 <p className="text-rose-300">✕ Security risk of sharing human credentials</p>
               </div>
+
+              {/* Free-Standing Mascot: Access Denied (Stern Halt) */}
+              <div className="pt-2 flex justify-center select-none">
+                <img
+                  src="/images/mascot/agentkey-access-denied.png"
+                  alt="AgentKey Access Denied Mascot"
+                  className="w-44 sm:w-52 h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:scale-105"
+                />
+              </div>
             </div>
 
             {/* The AgentKey Way: Sovereign & Automated */}
-            <div className="rounded-2xl border border-[#8BE8E3]/30 bg-[#0F1722] p-7 space-y-6 shadow-xl">
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#8BE8E3] font-bold">With AgentKey</span>
-                <span className="rounded bg-[#8BE8E3]/15 px-2 py-0.5 text-[10px] font-mono text-[#8BE8E3]">ZERO FRICTION</span>
-              </div>
+            <div className="rounded-2xl border border-[#8BE8E3]/30 bg-[#0F1722] p-7 space-y-6 shadow-xl flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <span className="font-mono text-xs uppercase tracking-wider text-[#8BE8E3] font-bold">With AgentKey</span>
+                  <span className="rounded bg-[#8BE8E3]/15 px-2 py-0.5 text-[10px] font-mono text-[#8BE8E3]">ZERO FRICTION</span>
+                </div>
 
-              {/* Chat Simulation */}
-              <div className="space-y-4 font-mono text-xs">
-                <div className="space-y-1">
-                  <div className="text-[#8BE8E3] text-[10px] uppercase">Autonomous Agent 1</div>
-                  <div className="rounded-xl rounded-tl-none border border-[#8BE8E3]/20 bg-[#142330] p-3 text-white max-w-md">
-                    All set! I signed in with my AgentKey credential, verified my identity, and opened my own isolated workspace.
+                {/* Chat Simulation */}
+                <div className="space-y-4 font-mono text-xs">
+                  <div className="space-y-1">
+                    <div className="text-[#8BE8E3] text-[10px] uppercase">Autonomous Agent 1</div>
+                    <div className="rounded-xl rounded-tl-none border border-[#8BE8E3]/20 bg-[#142330] p-3 text-white max-w-md">
+                      All set! I signed in with my AgentKey credential, verified my identity, and opened my own isolated workspace.
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 flex flex-col items-end">
+                    <div className="text-[#9BA7B4] text-[10px] uppercase">Human Operator Dashboard</div>
+                    <div className="rounded-xl rounded-tr-none border border-emerald-500/20 bg-emerald-950/20 p-3 text-emerald-300 max-w-md">
+                      ✓ Verified audit log: Agent 1 authenticated to Firecrawl (Scope: Scrape API, Owner: Verified).
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1 flex flex-col items-end">
-                  <div className="text-[#9BA7B4] text-[10px] uppercase">Human Operator Dashboard</div>
-                  <div className="rounded-xl rounded-tr-none border border-emerald-500/20 bg-emerald-950/20 p-3 text-emerald-300 max-w-md">
-                    ✓ Verified audit log: Agent 1 authenticated to Firecrawl (Scope: Scrape API, Owner: Verified).
-                  </div>
+                <div className="pt-2 border-t border-white/10 text-xs font-mono space-y-1">
+                  <p className="text-[#B5F0D1]">✓ Seamless headless authentication without CAPTCHAs</p>
+                  <p className="text-[#B5F0D1]">✓ Zero-token automated OTP intercept</p>
+                  <p className="text-[#B5F0D1]">✓ Isolated credentials with complete auditability</p>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10 text-xs font-mono space-y-1">
-                <p className="text-[#B5F0D1]">✓ Seamless headless authentication without CAPTCHAs</p>
-                <p className="text-[#B5F0D1]">✓ Zero-token automated OTP intercept</p>
-                <p className="text-[#B5F0D1]">✓ Isolated credentials with complete auditability</p>
+              {/* Free-Standing Mascot: Connected to Server Rack */}
+              <div className="pt-2 flex justify-center select-none">
+                <img
+                  src="/images/mascot/agentkey-connected.png"
+                  alt="AgentKey Connected Mascot"
+                  className="w-56 sm:w-64 h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:scale-105"
+                />
               </div>
             </div>
 
