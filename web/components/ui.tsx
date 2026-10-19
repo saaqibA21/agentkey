@@ -4,7 +4,7 @@ import { CopyButton } from "./client";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-line bg-surface p-5 shadow-sm transition-all duration-150 ${className}`}>
+    <div className={`rounded-2xl border border-white/[0.08] bg-[#0D141C]/80 backdrop-blur-xl p-6 sm:p-7 shadow-xl shadow-black/25 transition-all duration-150 ${className}`}>
       {children}
     </div>
   );
@@ -12,12 +12,12 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 
 export function PageHeader({ title, lead, aside }: { title: string; lead?: string; aside?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line/60 pb-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
-        {lead && <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">{lead}</p>}
+    <div className="mb-8 flex flex-col gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl capitalize">{title}</h1>
+        {lead && <p className="max-w-3xl text-sm leading-relaxed text-[#9BA7B4]">{lead}</p>}
       </div>
-      {aside}
+      {aside && <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-auto">{aside}</div>}
     </div>
   );
 }
@@ -33,7 +33,7 @@ const tones = {
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: keyof typeof tones }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium tracking-tight ${tones[tone]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tracking-tight ${tones[tone]}`}>
       {children}
     </span>
   );
@@ -53,33 +53,45 @@ export function StatCard({
   tone?: "neutral" | "good" | "warn" | "accent";
 }) {
   const toneClasses = {
-    neutral: "hover:border-line hover:shadow-sm",
+    neutral: "hover:border-white/20",
     good: "hover:border-emerald-500/40 hover:shadow-emerald-500/5",
     warn: "hover:border-amber-500/40 hover:shadow-amber-500/5",
-    accent: "hover:border-teal-500/40 hover:shadow-teal-500/5",
+    accent: "hover:border-[#8BE8E3]/40 hover:shadow-[#8BE8E3]/5",
   };
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-line bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 shadow-sm ${toneClasses[tone]}`}>
-      <div className="flex items-center justify-between text-muted">
-        <span className="text-xs font-bold uppercase tracking-wider text-muted">{title}</span>
-        {icon && <span className="text-lg p-1.5 rounded-lg bg-subtle">{icon}</span>}
+    <div
+      className={`relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#131D28] to-[#0A1016] p-6 shadow-xl shadow-black/40 transition-all duration-200 hover:-translate-y-0.5 ${toneClasses[tone]}`}
+    >
+      <div className="flex items-center justify-between text-[#9BA7B4]">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#9BA7B4]">{title}</span>
+        {icon && (
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-[#8BE8E3]">
+            {icon}
+          </span>
+        )}
       </div>
-      <div className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">{value}</div>
-      {subtext && <p className="mt-1 text-xs text-muted leading-tight">{subtext}</p>}
+      <div className="mt-3 text-3xl font-extrabold tracking-tight text-white">{value}</div>
+      {subtext && <p className="mt-1.5 text-xs text-[#9BA7B4] leading-relaxed">{subtext}</p>}
     </div>
   );
 }
 
-export function Code({ code, copy = true }: { code: string; copy?: boolean }) {
+export function Code({ code, copy = true, title }: { code: string; copy?: boolean; title?: string }) {
   return (
-    <div className="relative rounded-xl border border-line bg-code shadow-sm">
-      {copy && (
-        <div className="absolute right-2.5 top-2.5">
-          <CopyButton value={code} />
+    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0A1017] shadow-xl">
+      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-rose-500/60" />
+          <span className="h-2 w-2 rounded-full bg-amber-500/60" />
+          <span className="h-2 w-2 rounded-full bg-emerald-500/60" />
+          {title && <span className="ml-2 font-mono text-xs text-[#9BA7B4]">{title}</span>}
         </div>
-      )}
-      <pre className="overflow-x-auto p-4 pr-16 font-mono text-[13px] leading-relaxed text-code-ink">{code}</pre>
+        {copy && <CopyButton value={code} />}
+      </div>
+      <pre className="overflow-x-auto p-4 font-mono text-[13px] leading-relaxed text-[#8BE8E3]/95 selection:bg-[#8BE8E3]/20">
+        {code}
+      </pre>
     </div>
   );
 }

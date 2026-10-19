@@ -95,7 +95,7 @@ export function DashboardNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1.5 overflow-x-auto text-sm md:flex-col">
+    <nav className="flex gap-2 overflow-x-auto text-sm md:flex-col">
       {items.map((item) => {
         const isActive =
           item.href === "/dashboard"
@@ -106,13 +106,13 @@ export function DashboardNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
+            className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 ${
               isActive
-                ? "bg-[#8BE8E3]/10 text-[#8BE8E3] border border-[#8BE8E3]/30 shadow-sm shadow-[#8BE8E3]/10 font-semibold"
-                : "text-[#9BA7B4] hover:bg-white/5 hover:text-white"
+                ? "bg-[#8BE8E3]/10 text-[#8BE8E3] border border-[#8BE8E3]/35 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
+                : "text-[#9BA7B4] hover:bg-white/[0.04] hover:text-white"
             }`}
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <span className="shrink-0 transition-transform group-hover:scale-110">{item.icon}</span>
               <span>{item.label}</span>
             </div>
@@ -120,8 +120,8 @@ export function DashboardNav() {
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                   item.badgeTone === "purple"
-                    ? "bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/30"
-                    : "bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/30"
+                    ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                    : "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30"
                 }`}
               >
                 {item.badge}
@@ -130,12 +130,12 @@ export function DashboardNav() {
           </Link>
         );
       })}
-      <div className="my-2 border-t border-white/5 hidden md:block" />
+      <div className="my-2 border-t border-white/[0.08] hidden md:block" />
       <Link
         href="/docs"
-        className="group flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+        className="group flex items-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
       >
-        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
         </svg>
         <span>Developer Docs</span>
