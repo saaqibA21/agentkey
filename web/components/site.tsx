@@ -40,78 +40,103 @@ export function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#080D12]/80 backdrop-blur-xl transition-colors">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Logo />
-
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 text-sm font-medium text-[#9BA7B4] md:flex">
-          <Link href="/#product" className="transition hover:text-[#F5F3EF]">
-            Product
-          </Link>
-          <Link href="/#agents" className="transition hover:text-[#F5F3EF]">
-            Agents
-          </Link>
-          <Link href="/docs" className="transition hover:text-[#F5F3EF]">
-            Developers
-          </Link>
-          <Link href="/docs#oauth" className="transition hover:text-[#F5F3EF]">
-            OAuth &amp; OIDC
-          </Link>
-          <Link href="/#pricing" className="transition hover:text-[#F5F3EF]">
-            Pricing
-          </Link>
-          <Link href="/#resources" className="transition hover:text-[#F5F3EF]">
-            Resources
-          </Link>
-        </nav>
-
-        {/* Desktop CTA */}
-        <div className="hidden items-center gap-4 md:flex">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 rounded-full bg-[#F5F3EF] px-5 py-2 text-sm font-semibold text-[#111A22] shadow-sm transition-all hover:bg-white hover:shadow-lg hover:shadow-white/10 active:scale-95"
-          >
-            <span>Get Started</span>
-            <span className="text-xs">→</span>
+    <header className="sticky top-0 z-50 transition-colors">
+      {/* Top Announcement Banner (Inspired by agentid.com) */}
+      <div className="border-b border-white/[0.08] bg-[#060A0E] text-xs py-2 px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono uppercase text-[10px] tracking-wider px-2 py-0.5 rounded bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30 font-semibold">
+              NOW LIVE
+            </span>
+            <span className="text-[#9BA7B4] text-[13px] hidden sm:inline">
+              Standard OpenID Connect (OIDC) &amp; Verifiable Agent Passports for AI Apps
+            </span>
+          </div>
+          <Link href="/docs#oauth" className="flex items-center gap-1.5 text-xs font-mono text-[#8BE8E3] hover:underline">
+            <span>[ Directory ] Find apps that accept AgentID</span>
+            <span>→</span>
           </Link>
         </div>
+      </div>
 
-        {/* Mobile Hamburger Button */}
-        <button
-          type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white md:hidden"
-          aria-label="Toggle navigation menu"
-        >
-          {mobileOpen ? (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
-        </button>
+      <div className="border-b border-white/[0.06] bg-[#080D12]/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Logo />
+
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-7 text-xs font-mono uppercase tracking-wider text-[#9BA7B4] md:flex">
+            <Link href="/#how-it-works" className="transition hover:text-[#8BE8E3]">
+              How it works
+            </Link>
+            <Link href="/#developers" className="transition hover:text-[#8BE8E3]">
+              For developers
+            </Link>
+            <Link href="/#security" className="transition hover:text-[#8BE8E3]">
+              Security
+            </Link>
+            <Link href="/#directory" className="transition hover:text-[#8BE8E3]">
+              Directory
+            </Link>
+            <Link href="/docs" className="transition hover:text-[#8BE8E3]">
+              Docs
+            </Link>
+          </nav>
+
+          {/* Desktop CTA */}
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              href="/docs#oauth"
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-mono text-[#9BA7B4] transition hover:bg-white/10 hover:text-white"
+            >
+              <span>Add AgentID</span>
+              <span className="text-xs">→</span>
+            </Link>
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 rounded-lg bg-[#8BE8E3] px-5 py-2 text-xs font-semibold text-[#080D12] shadow-sm transition-all hover:bg-[#B5F0D1] hover:shadow-lg hover:shadow-[#8BE8E3]/15 active:scale-95"
+            >
+              <span>Dashboard</span>
+              <span className="text-xs">→</span>
+            </Link>
+          </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white md:hidden"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileOpen ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="border-b border-white/[0.08] bg-[#080D12] px-6 py-5 md:hidden space-y-4">
-          <div className="flex flex-col gap-3 text-sm font-medium text-[#9BA7B4]">
-            <Link href="/#product" onClick={() => setMobileOpen(false)} className="hover:text-white">Product</Link>
-            <Link href="/#agents" onClick={() => setMobileOpen(false)} className="hover:text-white">Agents</Link>
-            <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-white">Developers</Link>
-            <Link href="/#pricing" onClick={() => setMobileOpen(false)} className="hover:text-white">Pricing</Link>
-            <Link href="/#resources" onClick={() => setMobileOpen(false)} className="hover:text-white">Resources</Link>
+          <div className="flex flex-col gap-3 font-mono text-xs uppercase tracking-wider text-[#9BA7B4]">
+            <Link href="/#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">How it works</Link>
+            <Link href="/#developers" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">For developers</Link>
+            <Link href="/#security" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Security</Link>
+            <Link href="/#directory" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Directory</Link>
+            <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Docs</Link>
+            <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Add AgentID</Link>
           </div>
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#F5F3EF] px-5 py-2.5 text-sm font-semibold text-[#111A22]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#8BE8E3] px-5 py-2.5 text-xs font-semibold text-[#080D12]"
           >
-            <span>Get Started</span>
+            <span>Open Dashboard</span>
             <span>→</span>
           </Link>
         </div>
