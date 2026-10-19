@@ -39,12 +39,12 @@ export default async function OverviewPage() {
   ]);
 
   const email = session?.user?.email?.toLowerCase().trim() ?? "";
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "saaqibheroindia@gmail.com")
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
     .toLowerCase()
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
-  const isAdmin = Boolean(email && adminEmails.includes(email));
+  const isAdmin = Boolean(email && adminEmails.length > 0 && adminEmails.includes(email));
 
   const s = snippets(publicApiUrl);
   const canSend = o.workspace.outbound_enabled || o.counts.verified_domains > 0;
@@ -102,12 +102,20 @@ export default async function OverviewPage() {
                 {o.workspace.plan} tier
               </span>
 
-              {isAdmin && (
+              {isAdmin ? (
                 <Link
                   href="/dashboard/admin"
                   className="inline-flex items-center gap-1 rounded-full border border-[#8BE8E3]/40 bg-[#132A26] px-4 py-1 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833] hover:border-[#8BE8E3]/60 shadow-sm"
                 >
                   <span>Admin Console</span>
+                  <span>→</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/guide"
+                  className="inline-flex items-center gap-1 rounded-full border border-[#8BE8E3]/40 bg-[#132A26] px-4 py-1 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833] hover:border-[#8BE8E3]/60 shadow-sm"
+                >
+                  <span>User Guide</span>
                   <span>→</span>
                 </Link>
               )}
@@ -504,6 +512,25 @@ export default async function OverviewPage() {
             </h3>
 
             <div className="space-y-1.5">
+              <Link
+                href="/dashboard/guide"
+                className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 text-[#8BE8E3]">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                      <path d="M6 6h10" /><path d="M6 10h10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">User Guide</p>
+                    <p className="text-xs text-[#718096]">How to use BAGENTS, 2FA &amp; MCP</p>
+                  </div>
+                </div>
+                <span className="text-sm text-[#718096] group-hover:text-white">›</span>
+              </Link>
+
               <Link
                 href="/docs"
                 className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"

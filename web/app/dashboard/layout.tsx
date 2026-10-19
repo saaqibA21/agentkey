@@ -14,12 +14,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const email = session.user.email ?? "";
   const initial = email.charAt(0).toUpperCase() || "S";
 
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "saaqibheroindia@gmail.com")
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
     .toLowerCase()
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
-  const isAdmin = Boolean(email && adminEmails.includes(email.toLowerCase()));
+  const isAdmin = Boolean(email && adminEmails.length > 0 && adminEmails.includes(email.toLowerCase()));
 
   return (
     <div className="min-h-screen w-full bg-[#080D12] text-[#F5F3EF] flex flex-col">

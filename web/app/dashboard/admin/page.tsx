@@ -11,13 +11,13 @@ export const metadata = { title: "Admin Console · BAGENTS" };
 export default async function AdminPage() {
   const session = await auth();
   const email = session?.user?.email?.toLowerCase().trim() ?? "";
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "saaqibheroindia@gmail.com")
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
     .toLowerCase()
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
 
-  if (!email || !adminEmails.includes(email)) {
+  if (!email || adminEmails.length === 0 || !adminEmails.includes(email)) {
     redirect("/dashboard");
   }
 
