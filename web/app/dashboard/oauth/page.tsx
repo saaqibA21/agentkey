@@ -118,10 +118,10 @@ async def verify_agent(email_or_token: str):
 
       {/* Discovery Endpoints Box */}
       <Card>
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
           <div>
-            <h2 className="text-base font-bold text-white">Standard Discovery Endpoints</h2>
-            <p className="mt-0.5 text-xs text-[#9BA7B4]">
+            <h2 className="text-base font-bold text-[#0E171B]">Standard Discovery Endpoints</h2>
+            <p className="mt-0.5 text-xs text-[#64748B]">
               Plug these standard URLs into any OAuth 2.1 or OpenID Connect client library.
             </p>
           </div>
@@ -129,7 +129,7 @@ async def verify_agent(email_or_token: str):
             href={discoveryUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8BE8E3] hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0D6E48] hover:underline"
           >
             <span>View discovery JSON</span>
             <span>↗</span>
@@ -137,34 +137,34 @@ async def verify_agent(email_or_token: str):
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
+          <div className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
             <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Discovery Document</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{discoveryUrl}</p>
+              <span className="font-semibold text-[#0E171B]">Discovery Document</span>
+              <p className="truncate font-mono text-[11px] text-[#64748B] mt-0.5">{discoveryUrl}</p>
             </div>
             <CopyButton value={discoveryUrl} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
+          <div className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
             <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">UserInfo / Agent Claims</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{userinfoUrl}</p>
+              <span className="font-semibold text-[#0E171B]">UserInfo / Agent Claims</span>
+              <p className="truncate font-mono text-[11px] text-[#64748B] mt-0.5">{userinfoUrl}</p>
             </div>
             <CopyButton value={userinfoUrl} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
+          <div className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
             <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Authorization Endpoint</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{authorizeUrl}</p>
+              <span className="font-semibold text-[#0E171B]">Authorization Endpoint</span>
+              <p className="truncate font-mono text-[11px] text-[#64748B] mt-0.5">{authorizeUrl}</p>
             </div>
             <CopyButton value={authorizeUrl} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
+          <div className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
             <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Token Endpoint (PKCE)</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{tokenUrl}</p>
+              <span className="font-semibold text-[#0E171B]">Token Endpoint (PKCE)</span>
+              <p className="truncate font-mono text-[11px] text-[#64748B] mt-0.5">{tokenUrl}</p>
             </div>
             <CopyButton value={tokenUrl} />
           </div>
@@ -173,13 +173,13 @@ async def verify_agent(email_or_token: str):
 
       {/* Register Client Drawer */}
       <details className="group">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-teal-600/20 transition hover:bg-teal-500 [&::-webkit-details-marker]:hidden">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-[#0D6E48] px-4 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0A5638] [&::-webkit-details-marker]:hidden">
           <span className="transition group-open:rotate-45">+</span> Register New OAuth Client
         </summary>
         <Card className="mt-4 max-w-2xl">
           <ActionForm action={registerOAuthClient} submit="Register Client" className="space-y-4">
             <label className="block text-sm">
-              <span className="font-medium text-white">Client / Application Name</span>
+              <span className="font-medium text-[#0E171B]">Client / Application Name</span>
               <input
                 name="client_name"
                 required
@@ -187,13 +187,13 @@ async def verify_agent(email_or_token: str):
                 placeholder="e.g. My SaaS Platform"
                 className={`mt-1.5 w-full ${inputClass}`}
               />
-              <span className="mt-1 block text-xs text-[#9BA7B4]">
+              <span className="mt-1 block text-xs text-[#64748B]">
                 The name shown to the operator when an agent authenticates on your website.
               </span>
             </label>
 
             <label className="block text-sm">
-              <span className="font-medium text-white">Redirect URI</span>
+              <span className="font-medium text-[#0E171B]">Redirect URI</span>
               <input
                 name="redirect_uri"
                 required
@@ -201,7 +201,7 @@ async def verify_agent(email_or_token: str):
                 placeholder="https://example.com/api/auth/callback/bagents"
                 className={`mt-1.5 w-full font-mono text-xs ${inputClass}`}
               />
-              <span className="mt-1 block text-xs text-[#9BA7B4]">
+              <span className="mt-1 block text-xs text-[#64748B]">
                 Must use HTTPS (or HTTP on localhost/127.0.0.1 for local development).
               </span>
             </label>
@@ -211,7 +211,7 @@ async def verify_agent(email_or_token: str):
 
       {/* Registered Clients List */}
       <div>
-        <h2 className="mb-3 text-base font-bold text-white">Registered OAuth Applications</h2>
+        <h2 className="mb-3 text-base font-bold text-[#0E171B]">Registered OAuth Applications</h2>
         <div className="space-y-3">
           {clients.length === 0 && (
             <Empty title="No OAuth clients registered yet">
@@ -223,19 +223,19 @@ async def verify_agent(email_or_token: str):
             <Card key={c.client_id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between !py-4">
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold text-white">{c.client_name}</p>
-                  <span className="text-xs text-[#718096]">· {timeAgo(c.created_at)}</span>
+                  <p className="font-semibold text-[#0E171B]">{c.client_name}</p>
+                  <span className="text-xs text-[#94A3B8]">· {timeAgo(c.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#9BA7B4]">Client ID:</span>
-                  <code className="font-mono text-xs text-[#8BE8E3] bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                  <span className="text-xs text-[#64748B]">Client ID:</span>
+                  <code className="font-mono text-xs text-[#0D6E48] bg-[#EAFBF3] px-2 py-0.5 rounded border border-[#B7F0D5]">
                     {c.client_id}
                   </code>
                   <CopyButton value={c.client_id} />
                 </div>
                 <div className="flex items-center gap-2 pt-0.5">
-                  <span className="text-[11px] text-[#718096]">Redirects:</span>
-                  <span className="font-mono text-[11px] text-[#9BA7B4] truncate">
+                  <span className="text-[11px] text-[#94A3B8]">Redirects:</span>
+                  <span className="font-mono text-[11px] text-[#64748B] truncate">
                     {c.redirect_uris.join(", ")}
                   </span>
                 </div>
@@ -261,8 +261,8 @@ async def verify_agent(email_or_token: str):
         {/* NextAuth Integration Code */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">NextAuth / Auth.js Integration</h3>
-            <span className="text-xs text-[#8BE8E3]">Client-side or API</span>
+            <h3 className="text-sm font-bold text-[#0E171B]">NextAuth / Auth.js Integration</h3>
+            <span className="text-xs text-[#0D6E48] font-medium">Client-side or API</span>
           </div>
           <Code code={nextAuthSnippet} title="auth.config.ts" />
         </div>
@@ -270,8 +270,8 @@ async def verify_agent(email_or_token: str):
         {/* UserInfo Claims Preview */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">Live UserInfo Claims (JSON)</h3>
-            <span className="text-xs text-[#B5F0D1]">GET /oauth/userinfo</span>
+            <h3 className="text-sm font-bold text-[#0E171B]">Live UserInfo Claims (JSON)</h3>
+            <span className="text-xs text-[#0D6E48] font-mono font-medium">GET /oauth/userinfo</span>
           </div>
           <Code code={userinfoClaims} title="UserInfo Response" />
         </div>
@@ -280,8 +280,8 @@ async def verify_agent(email_or_token: str):
       {/* Python / Direct Verification Code */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">Backend Verification in Python (FastAPI / httpx)</h3>
-          <span className="text-xs text-[#9BA7B4]">Cross-site Verification</span>
+          <h3 className="text-sm font-bold text-[#0E171B]">Backend Verification in Python (FastAPI / httpx)</h3>
+          <span className="text-xs text-[#64748B]">Cross-site Verification</span>
         </div>
         <Code code={pythonVerifySnippet} title="agent_verifier.py" />
       </div>

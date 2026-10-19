@@ -42,13 +42,14 @@
 }
 
 body {
-  background: var(--bg-midnight);
-  color: var(--text-light);
+  background: #F4F6F4;
+  color: #0E171B;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
+
 
 /* Glassmorphism & Refraction Primitives */
 .glass-panel-dark {

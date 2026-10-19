@@ -137,12 +137,12 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
             href={item.href}
             className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
               isActive
-                ? "bg-[#132A26] text-[#8BE8E3] border border-[#8BE8E3]/35 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
-                : "text-[#9BA7B4] hover:bg-white/[0.04] hover:text-white"
+                ? "bg-[#DDF4E8] text-[#0A5638] border border-[#A7E8C8] shadow-xs font-semibold"
+                : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0E171B]"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#8BE8E3]" : "text-[#718096] group-hover:text-white"}`}>
+              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#0A5638]" : "text-[#64748B] group-hover:text-[#0E171B]"}`}>
                 {item.icon}
               </span>
               <span>{item.label}</span>
@@ -151,10 +151,10 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                   item.badgeTone === "purple"
-                    ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                    ? "bg-[#F3E8FF] text-[#6B21A8] border border-[#E9D5FF]"
                     : item.badgeTone === "good"
-                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                    : "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30"
+                    ? "bg-[#EAFBF3] text-[#0D6E48] border border-[#B7F0D5]"
+                    : "bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]"
                 }`}
               >
                 {item.badge}
@@ -164,20 +164,20 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
         );
       })}
 
-      <div className="my-2 border-t border-white/[0.08] hidden md:block" />
+      <div className="my-2 border-t border-[#E2E8F0] hidden md:block" />
 
       <Link
         href="/docs"
         target="_blank"
-        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
+        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#475569] transition hover:bg-[#F1F5F9] hover:text-[#0E171B]"
       >
         <div className="flex items-center gap-3">
-          <svg className="h-4 w-4 shrink-0 text-[#718096] transition-transform group-hover:scale-105 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="h-4 w-4 shrink-0 text-[#64748B] transition-transform group-hover:scale-105 group-hover:text-[#0E171B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
           </svg>
           <span>Developer Docs</span>
         </div>
-        <svg className="h-3.5 w-3.5 text-[#718096] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="h-3.5 w-3.5 text-[#94A3B8] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M7 17l9.2-9.2M17 17V8H8" />
         </svg>
       </Link>
