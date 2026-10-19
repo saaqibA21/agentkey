@@ -26,11 +26,11 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
     <main className="grid min-h-screen place-items-center px-6 py-16 bg-[#07090e] text-white">
       <div className="glass-card w-full max-w-md rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/10 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-500" />
-        <div className="mb-6 overflow-hidden rounded-2xl border border-[#8BE8E3]/25 bg-black/40 shadow-lg shadow-[#8BE8E3]/10">
+        <div className="mb-4 flex justify-center select-none">
           <img
             src="/images/agentkey-mascot.png"
             alt="AgentKey Verified Robot Mascot"
-            className="w-full h-auto object-cover"
+            className="w-28 sm:w-32 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
           />
         </div>
         <Logo />

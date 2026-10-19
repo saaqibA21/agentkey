@@ -242,11 +242,11 @@ export default async function OverviewPage() {
           </div>
 
           <div className="relative z-10 my-4 space-y-3">
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-inner">
+            <div className="flex items-center justify-center select-none py-1">
               <img
                 src="/images/agentkey-mascot.png"
                 alt="AgentKey Verified Mascot"
-                className="w-full h-auto object-cover"
+                className="w-32 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
               />
             </div>
             <div>

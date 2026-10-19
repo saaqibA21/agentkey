@@ -208,48 +208,16 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Mascot & Interactive Sign-In Preview Mockup */}
+            {/* Right Column: Free-Standing Mascot & Interactive Sign-In Preview Mockup */}
             <div className="lg:col-span-5 relative flex flex-col items-center justify-center gap-6">
               
-              {/* Official AgentKey Mascot Showcase Card */}
-              <div className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-[#8BE8E3]/30 bg-gradient-to-b from-[#101923] via-[#0E1720] to-[#0A1017] p-4 shadow-2xl shadow-[#8BE8E3]/10 backdrop-blur-xl group transition-all hover:border-[#8BE8E3]/50">
-                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#8BE8E3] animate-pulse" />
-                    <span className="font-mono text-[11px] text-[#8BE8E3] uppercase tracking-wider font-semibold">
-                      AgentKey · Verified Mascot
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] text-emerald-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    actor_type: agent
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40">
-                  <img
-                    src="/images/agentkey-mascot.png"
-                    alt="AgentKey Robot Mascot holding verified identity credential card"
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080D12]/70 via-transparent to-transparent" />
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between font-mono text-[10px] text-white/90">
-                    <span className="rounded bg-black/60 px-2 py-0.5 backdrop-blur-md border border-white/10">
-                      Ed25519 Hardware-Signed
-                    </span>
-                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 backdrop-blur-md border border-emerald-500/30">
-                      99.4% Trust
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-3 flex items-center justify-between font-mono text-[11px] text-[#9BA7B4]">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[#8BE8E3]">✦</span>
-                    Autonomous AI Identity OS
-                  </span>
-                  <span className="text-[#8BE8E3]/80">Zero Passwords</span>
-                </div>
+              {/* Free-Standing Mascot (No container, no border, no background box) */}
+              <div className="flex items-center justify-center select-none">
+                <img
+                  src="/images/agentkey-mascot.png"
+                  alt="AgentKey Robot Mascot"
+                  className="w-56 sm:w-64 lg:w-72 h-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] transition-transform duration-500 hover:scale-105"
+                />
               </div>
 
               {/* Interactive Sign-In Preview Mockup */}
