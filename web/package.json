@@ -7,8 +7,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@next/swc-wasm-nodejs": "^16.4.0",
-    "@next/swc-win32-x64-msvc": "^16.4.0",
     "next": "^16.4.0",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.3.0",
