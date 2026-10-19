@@ -37,27 +37,28 @@ export default async function ApiPage() {
       />
 
       {/* OAuth Banner */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-xs">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-[#8BE8E3]/25 bg-[#132A26]/40 p-4 backdrop-blur-md shadow-lg shadow-black/20">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#0D6E48]/20 bg-[#E8F8F0] text-[#0D6E48]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-[#8BE8E3]/15 text-[#8BE8E3]">
             <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-[#0E1B18]">Looking for OAuth &amp; &ldquo;Sign in with BAGENTS&rdquo;?</p>
-            <p className="text-[11px] text-[#627282]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
+            <p className="text-xs font-semibold text-white">Looking for OAuth &amp; &ldquo;Sign in with BAGENTS&rdquo;?</p>
+            <p className="text-[11px] text-[#9BA7B4]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
           </div>
         </div>
         <Link
           href="/dashboard/oauth"
-          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#0D6E48] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#0A5638] transition shadow-xs"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-[#8BE8E3]/40 bg-[#132A26] px-3.5 py-1.5 text-xs font-semibold text-[#8BE8E3] hover:bg-[#1A3833] transition shadow-sm"
         >
           <span>OAuth &amp; Connect Portal</span>
           <span>→</span>
         </Link>
       </div>
+
 
 
 
@@ -136,8 +137,8 @@ const { verified, agent, owner, trust_score } = await res.json();`;
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-[#0E1B18]">{a.agent_name}</p>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600">
+                      <p className="font-semibold text-white">{a.agent_name}</p>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                           <path d="m9 12 2 2 4-4" />
@@ -145,19 +146,20 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                         99.0 Verified
                       </span>
                       {a.avatar_seed && (
-                        <span className="hidden sm:inline-flex items-center rounded-md border border-[#CBD5E1] bg-[#F1F5F2] px-2 py-0.5 text-[10px] font-mono text-[#627282]">
+                        <span className="hidden sm:inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-mono text-[#9BA7B4]">
                           id: {a.avatar_seed}
                         </span>
                       )}
                     </div>
                     <div className="mt-1.5 flex items-center gap-2">
-                      <code className="truncate font-mono text-sm text-[#0D6E48] font-semibold">{a.email_address}</code>
+                      <code className="truncate font-mono text-sm text-[#8BE8E3]">{a.email_address}</code>
                       <CopyButton value={a.email_address} />
                     </div>
-                    <p className="mt-1 text-xs text-[#627282]">
+                    <p className="mt-1 text-xs text-[#9BA7B4]">
                       Owner {a.owner_name} ({a.owner_email}) · key {a.api_key_prefix}… · created {timeAgo(a.created_at)}
                     </p>
                   </div>
+
 
                 </div>
 

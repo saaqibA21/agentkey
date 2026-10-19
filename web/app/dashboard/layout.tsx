@@ -22,18 +22,18 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const isAdmin = Boolean(email && adminEmails.includes(email.toLowerCase()));
 
   return (
-    <div className="min-h-screen bg-[#F4F6F4] text-[#0E171B]">
-      {/* Top Navbar Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E2E8F0] bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8">
-            <Logo variant="dark" />
+    <div className="min-h-screen w-full bg-[#07090e] text-[#F5F3EF] flex flex-col">
+      {/* Full-bleed Top Navbar Header */}
+      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#080D12]/95 backdrop-blur-xl">
+        <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6 lg:gap-10">
+            <Logo variant="light" />
 
             {/* Search Input Bar (Mockup Style with ⌘ K) */}
-            <div className="hidden lg:flex items-center">
-              <div className="relative flex items-center w-80">
+            <div className="hidden md:flex items-center">
+              <div className="relative flex items-center w-72 lg:w-96">
                 <svg
-                  className="pointer-events-none absolute left-3.5 h-4 w-4 text-[#7E8B95]"
+                  className="pointer-events-none absolute left-3.5 h-4 w-4 text-[#718096]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -48,9 +48,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                   type="text"
                   placeholder="Search agents, tools, docs..."
                   readOnly
-                  className="w-full rounded-full border border-[#DCE4DE] bg-[#EDF2EE] py-1.5 pl-10 pr-12 text-xs text-[#0E171B] placeholder-[#7E8B95] shadow-inner transition focus:border-[#0D6E48]/50 focus:outline-none"
+                  className="w-full rounded-full border border-white/10 bg-[#0E151E] py-1.5 pl-10 pr-12 text-xs text-white placeholder-[#718096] shadow-inner transition focus:border-[#8BE8E3]/50 focus:outline-none"
                 />
-                <kbd className="pointer-events-none absolute right-3 rounded border border-[#D5DFD8] bg-white px-1.5 py-0.5 text-[10px] font-mono text-[#556370]">
+                <kbd className="pointer-events-none absolute right-3 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono text-[#9BA7B4]">
                   ⌘ K
                 </kbd>
               </div>
@@ -59,12 +59,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           {/* Right Status Controls */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="flex items-center gap-1.5 rounded-full border border-[#0D6E48]/20 bg-[#E8F8F0] px-3 py-1 text-xs font-medium text-[#0D6E48]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0D6E48] animate-pulse" />
+            <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>DPDP &amp; TRAI Pipes Active</span>
             </div>
 
-            <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#5841D8]/20 bg-[#F1EFFE] px-3 py-1 text-xs font-medium text-[#5841D8]">
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-300">
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
@@ -75,31 +75,32 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <button
               type="button"
               aria-label="Notifications"
-              className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-white text-[#556370] transition hover:text-[#0E171B] hover:border-[#CBD5E1]"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-[#0E151E] text-[#9BA7B4] transition hover:text-white hover:border-white/20"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#8BE8E3]" />
             </button>
 
             {/* Profile Circle */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#0D6E48]/30 bg-gradient-to-tr from-[#0D5C43] to-[#128360] font-bold text-xs text-white shadow-xs">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#8BE8E3]/35 bg-gradient-to-tr from-[#132A26] to-[#0A1A17] font-semibold text-xs text-[#8BE8E3] shadow-sm">
               {initial}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr]">
-          <aside className="md:sticky md:top-20 md:self-start space-y-5">
-            <DashboardNav isAdmin={isAdmin} />
+      {/* Full-width Body: Left Sidebar + Fluid Main View */}
+      <div className="flex flex-1 w-full">
+        {/* Fixed / Sticky Full-Height Left Sidebar */}
+        <aside className="hidden md:flex w-64 xl:w-72 shrink-0 flex-col justify-between border-r border-white/[0.08] bg-[#080D12]/70 backdrop-blur-xl px-4 py-6 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto">
+          <DashboardNav isAdmin={isAdmin} />
 
-            {/* Operator profile card matching mockup */}
-            <div className="rounded-2xl border border-black/10 bg-[#0B1A17] text-white p-4 shadow-md backdrop-blur-md">
+          <div className="space-y-4 pt-6">
+            {/* Operator Profile Card */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 shadow-xl shadow-black/30">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#132A26] to-[#1F3D38] border border-[#8BE8E3]/30 font-bold text-[#8BE8E3] text-sm">
                   {initial}
@@ -125,25 +126,28 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                     await signOut({ redirectTo: "/" });
                   }}
                 >
-                  <button className="text-[#9BA7B4] text-xs transition hover:text-rose-400">
+                  <button className="text-[#9BA7B4] text-xs transition hover:text-rose-400 font-medium">
                     Sign out
                   </button>
                 </form>
               </div>
             </div>
 
-            {/* Mini Footer / Motto */}
-            <div className="px-2 pt-2 text-[11px] text-[#7E8B95] flex items-center gap-2">
+            {/* Footer Motto */}
+            <div className="px-2 text-[11px] text-[#718096] flex items-center justify-center gap-2">
               <span>Build</span>
               <span>·</span>
               <span>Connect</span>
               <span>·</span>
               <span>Automate</span>
             </div>
-          </aside>
+          </div>
+        </aside>
 
-          <main className="min-w-0 pb-20">{children}</main>
-        </div>
+        {/* Fluid Main Content Area (Spans remaining screen width) */}
+        <main className="flex-1 min-w-0 w-full p-6 lg:p-8 xl:p-10 pb-24 space-y-6">
+          {children}
+        </main>
       </div>
     </div>
   );

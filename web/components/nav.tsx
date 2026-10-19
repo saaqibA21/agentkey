@@ -124,7 +124,7 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
   }
 
   return (
-    <nav className="flex gap-1 overflow-x-auto text-sm md:flex-col">
+    <nav className="flex gap-1.5 overflow-x-auto text-sm md:flex-col">
       {items.map((item) => {
         const isActive =
           item.href === "/dashboard"
@@ -137,12 +137,12 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
             href={item.href}
             className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
               isActive
-                ? "bg-[#DDF4E8] text-[#0A5638] border border-[#0A5638]/20 shadow-xs font-semibold"
-                : "text-[#4A5568] hover:bg-black/[0.04] hover:text-[#0E171B]"
+                ? "bg-[#132A26] text-[#8BE8E3] border border-[#8BE8E3]/35 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
+                : "text-[#9BA7B4] hover:bg-white/[0.04] hover:text-white"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#0A5638]" : "text-[#718096] group-hover:text-[#0E171B]"}`}>
+              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#8BE8E3]" : "text-[#718096] group-hover:text-white"}`}>
                 {item.icon}
               </span>
               <span>{item.label}</span>
@@ -151,10 +151,10 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                   item.badgeTone === "purple"
-                    ? "bg-[#EDE7F6] text-[#512DA8] border border-[#512DA8]/20"
+                    ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
                     : item.badgeTone === "good"
-                    ? "bg-[#E8F5E9] text-[#2E7D32] border border-[#2E7D32]/20"
-                    : "bg-[#E0F2F1] text-[#00796B] border border-[#00796B]/20"
+                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                    : "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30"
                 }`}
               >
                 {item.badge}
@@ -164,20 +164,20 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
         );
       })}
 
-      <div className="my-2 border-t border-[#E2E8F0] hidden md:block" />
+      <div className="my-2 border-t border-white/[0.08] hidden md:block" />
 
       <Link
         href="/docs"
         target="_blank"
-        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#4A5568] transition hover:bg-black/[0.04] hover:text-[#0E171B]"
+        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
       >
         <div className="flex items-center gap-3">
-          <svg className="h-4 w-4 shrink-0 text-[#718096] transition-transform group-hover:scale-105 group-hover:text-[#0E171B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="h-4 w-4 shrink-0 text-[#718096] transition-transform group-hover:scale-105 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
           </svg>
           <span>Developer Docs</span>
         </div>
-        <svg className="h-3.5 w-3.5 text-[#94A3B8] opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="h-3.5 w-3.5 text-[#718096] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M7 17l9.2-9.2M17 17V8H8" />
         </svg>
       </Link>
