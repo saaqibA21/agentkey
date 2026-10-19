@@ -228,6 +228,8 @@ class Agent(Base):
     inbox_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("inboxes.id", ondelete="CASCADE"), index=True)
     api_key_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("api_keys.id", ondelete="CASCADE"), index=True)
     status: Mapped[str] = mapped_column(String(16), default="ACTIVE")  # ACTIVE | DELETED
+    avatar_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    avatar_seed: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     created_at: Mapped[datetime] = _created()
 
 

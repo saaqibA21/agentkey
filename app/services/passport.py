@@ -32,6 +32,7 @@ def create_agent_passport(agent: Agent, inbox: Inbox, workspace: Workspace) -> s
         "aid": str(agent.id),
         "name": agent.name,
         "email": inbox.email_address,
+        "avatar_url": getattr(agent, "avatar_url", "") or "",
         "owner_name": agent.owner_name,
         "owner_email": agent.owner_email,
         "wid": str(workspace.id),

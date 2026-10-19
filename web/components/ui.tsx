@@ -49,7 +49,7 @@ export function StatCard({
   title: string;
   value: string | number;
   subtext?: string;
-  icon?: string;
+  icon?: ReactNode;
   tone?: "neutral" | "good" | "warn" | "accent";
 }) {
   const toneClasses = {

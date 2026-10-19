@@ -1,9 +1,11 @@
 import { auth } from "@/auth";
+import { AgentAvatar } from "@/components/agent-avatar";
+import { AvatarPicker } from "@/components/avatar-picker";
 import { ActionForm, CopyButton } from "@/components/client";
 import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
 import { api } from "@/lib/api";
 
-import { createAgent, deleteAgent } from "../actions";
+import { createAgent, deleteAgent, updateAgentAvatar } from "../actions";
 
 type Agent = {
   id: string;
@@ -16,6 +18,8 @@ type Agent = {
   scopes: string[];
   created_at: string;
   passport?: string;
+  avatar_url?: string;
+  avatar_seed?: string;
 };
 
 export default async function ApiPage() {
@@ -28,10 +32,10 @@ export default async function ApiPage() {
     <>
       <PageHeader
         title="API & Agent Passports"
-        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a cryptographic BAGENTS Passport, dedicated email inbox, and API credentials."
+        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a guaranteed unique avatar, cryptographic BAGENTS Passport, dedicated email inbox, and API credentials."
       />
 
-      {/* Uncontrolled on purpose: a server re-render after creating must not close the panel holding the new key. */}
+      {/* Create Agent Drawer */}
       <details className="group">
         <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-teal-600/20 transition hover:bg-teal-500 [&::-webkit-details-marker]:hidden">
           <span className="transition group-open:rotate-45">+</span> Create API &amp; Agent
@@ -49,6 +53,10 @@ export default async function ApiPage() {
               />
               <span className="mt-1 block text-xs text-muted">The agent&apos;s email address is generated from this name.</span>
             </label>
+
+            {/* Interactive Unique Avatar Picker */}
+            <AvatarPicker />
+
             <label className="block text-sm">
               <span className="font-medium">Owner name</span>
               <input
@@ -91,24 +99,39 @@ const { verified, agent, owner, trust_score } = await res.json();`;
           return (
             <Card key={a.id} className="!p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-white">{a.agent_name}</p>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
-                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        <path d="m9 12 2 2 4-4" />
-                      </svg>
-                      99.0 Verified
-                    </span>
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  {/* Unique Agent Avatar */}
+                  <AgentAvatar
+                    seed={a.avatar_seed}
+                    url={a.avatar_url}
+                    name={a.agent_name}
+                    size="lg"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-white">{a.agent_name}</p>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <path d="m9 12 2 2 4-4" />
+                        </svg>
+                        99.0 Verified
+                      </span>
+                      {a.avatar_seed && (
+                        <span className="hidden sm:inline-flex items-center rounded-md border border-line bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-muted">
+                          id: {a.avatar_seed}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <code className="truncate font-mono text-sm text-[#8BE8E3]">{a.email_address}</code>
+                      <CopyButton value={a.email_address} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted">
+                      Owner {a.owner_name} ({a.owner_email}) · key {a.api_key_prefix}… · created {timeAgo(a.created_at)}
+                    </p>
                   </div>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <code className="truncate font-mono text-sm text-[#8BE8E3]">{a.email_address}</code>
-                    <CopyButton value={a.email_address} />
-                  </div>
-                  <p className="mt-1 text-xs text-muted">
-                    Owner {a.owner_name} ({a.owner_email}) · key {a.api_key_prefix}… · created {timeAgo(a.created_at)}
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -159,7 +182,7 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-3 text-xs">
+                    <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-4 text-xs">
                       <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
                         <span className="text-muted block">Accountability</span>
                         <span className="font-medium text-white">VERIFIED_HUMAN_OPERATOR</span>
@@ -167,6 +190,17 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                       <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
                         <span className="text-muted block">Trust Score</span>
                         <span className="font-medium text-emerald-400">99.0 / 100</span>
+                      </div>
+                      <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
+                        <span className="text-muted block">Unique Avatar</span>
+                        <a
+                          href={a.avatar_url ?? `/v1/agents/${a.id}/avatar.svg`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-[#8BE8E3] hover:underline truncate block"
+                        >
+                          View Vector SVG
+                        </a>
                       </div>
                       <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
                         <span className="text-muted block">Public Attestation</span>

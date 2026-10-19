@@ -156,6 +156,8 @@ async def verify_agent_passport(
             "id": str(agent.id),
             "name": agent.name,
             "email": inbox.email_address,
+            "avatar_url": getattr(agent, "avatar_url", None),
+            "avatar_seed": getattr(agent, "avatar_seed", None),
             "status": agent.status,
         },
         "owner": {
@@ -194,6 +196,8 @@ async def get_agent_public_attestation(
         "agent_id": str(agent.id),
         "agent_name": agent.name,
         "email_address": inbox.email_address,
+        "avatar_url": getattr(agent, "avatar_url", None),
+        "avatar_seed": getattr(agent, "avatar_seed", None),
         "owner_name": agent.owner_name,
         "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
         "created_at": _iso(agent.created_at),

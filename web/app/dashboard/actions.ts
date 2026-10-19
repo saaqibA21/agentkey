@@ -288,14 +288,32 @@ export async function adminUpdateWorkspace(_: ActionState, form: FormData): Prom
 export async function createAgent(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/api", async () => {
     // The owner email is deliberately not sent: the API takes it from the signed-in account.
-    const agent = await api<{ api_key: string; passport?: string; email_address: string; agent_name: string; owner_email: string }>(
-      "/agents",
-      { method: "POST", body: JSON.stringify({ agent_name: text(form, "agent_name"), owner_name: text(form, "owner_name") }) },
-    );
+    const avatar_seed = text(form, "avatar_seed");
+    const avatar_url = text(form, "avatar_url");
+    const agent = await api<{
+      api_key: string;
+      passport?: string;
+      email_address: string;
+      agent_name: string;
+      owner_email: string;
+      avatar_seed?: string;
+      avatar_url?: string;
+    }>("/agents", {
+      method: "POST",
+      body: JSON.stringify({
+        agent_name: text(form, "agent_name"),
+        owner_name: text(form, "owner_name"),
+        ...(avatar_seed ? { avatar_seed } : {}),
+        ...(avatar_url ? { avatar_url } : {}),
+      }),
+    });
     const details = [
       { label: "Agent email", value: agent.email_address },
       { label: "Owner email", value: agent.owner_email },
     ];
+    if (agent.avatar_seed) {
+      details.push({ label: "Unique Avatar Seed", value: agent.avatar_seed });
+    }
     if (agent.passport) {
       details.push({ label: "Verifiable Passport", value: agent.passport });
     }
@@ -305,6 +323,21 @@ export async function createAgent(_: ActionState, form: FormData): Promise<Actio
       secretLabel: `API key for ${agent.agent_name}`,
       details,
     };
+  });
+}
+
+export async function updateAgentAvatar(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/api", async () => {
+    const id = text(form, "id");
+    const avatar_seed = text(form, "avatar_seed");
+    const avatar_url = text(form, "avatar_url");
+    await api(`/agents/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        ...(avatar_seed ? { avatar_seed } : {}),
+        ...(avatar_url ? { avatar_url } : {}),
+      }),
+    });
   });
 }
 

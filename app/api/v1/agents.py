@@ -7,7 +7,7 @@ import re
 import secrets
 import uuid
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -21,6 +21,12 @@ from app.core.exceptions import ProblemError
 from app.db.models import Agent, ApiKey, Inbox, User, utcnow
 from app.db.session import get_session
 from app.services.audit import audit
+from app.services.avatar import (
+    default_avatar_url,
+    generate_avatar_seed,
+    generate_robot_avatar_svg,
+    is_avatar_seed_available,
+)
 from app.services.events import _iso
 from app.services.passport import create_agent_passport
 
@@ -35,6 +41,8 @@ MAX_SLUG = 40
 class AgentCreate(BaseModel):
     agent_name: str = Field(min_length=1, max_length=64)
     owner_name: str = Field(min_length=1, max_length=255)
+    avatar_seed: str | None = Field(default=None, max_length=128)
+    avatar_url: str | None = Field(default=None, max_length=1024)
 
     @field_validator("agent_name", "owner_name")
     @classmethod
@@ -43,6 +51,12 @@ class AgentCreate(BaseModel):
         if not v or any(c in v for c in "\r\n<>"):
             raise ValueError("enter a plain name")
         return v
+
+
+class AgentUpdate(BaseModel):
+    agent_name: str | None = Field(default=None, min_length=1, max_length=64)
+    avatar_seed: str | None = Field(default=None, max_length=128)
+    avatar_url: str | None = Field(default=None, max_length=1024)
 
 
 def slugify(name: str) -> str:
@@ -67,6 +81,8 @@ def _out(agent: Agent, inbox: Inbox, key: ApiKey, passport: str | None = None) -
         "id": str(agent.id), "agent_name": agent.name, "owner_name": agent.owner_name,
         "owner_email": agent.owner_email, "email_address": inbox.email_address, "inbox_id": str(inbox.id),
         "api_key_prefix": key.key_prefix, "scopes": key.scopes, "status": agent.status,
+        "avatar_url": getattr(agent, "avatar_url", None) or default_avatar_url(agent.name),
+        "avatar_seed": getattr(agent, "avatar_seed", None) or agent.name,
         "created_at": _iso(agent.created_at),
     }
     if passport:
@@ -91,18 +107,31 @@ async def create_agent(
         raise ProblemError(403, "Agent limit reached",
                            f"Your plan allows {workspace.max_inboxes} active agents and inboxes. Delete one first.")
 
+    # Unique Avatar assignment
+    avatar_seed = (body.avatar_seed or "").strip().lower()
+    if avatar_seed:
+        if not await is_avatar_seed_available(session, avatar_seed):
+            raise ProblemError(409, "Avatar already taken", f"Avatar seed '{avatar_seed}' is already claimed by another agent. Every avatar must be unique. Pick another seed.")
+    else:
+        avatar_seed = generate_avatar_seed(body.agent_name)
+        while not await is_avatar_seed_available(session, avatar_seed):
+            avatar_seed = generate_avatar_seed(body.agent_name)
+
+    avatar_url = body.avatar_url or default_avatar_url(avatar_seed)
+
     address = await _free_address(session, slug, get_settings().mail_domain.lower())
     inbox = Inbox(id=uuid.uuid4(), workspace_id=workspace.id, email_address=address,
                   owner_name=body.owner_name, display_title=f"{body.owner_name} (via {body.agent_name})")
     api_key, key_row = _new_key(workspace.id, f"agent: {body.agent_name}"[:255], AGENT_SCOPES)
     key_row.id = uuid.uuid4()
     agent = Agent(workspace_id=workspace.id, name=body.agent_name, owner_name=body.owner_name,
-                  owner_email=user.email, inbox_id=inbox.id, api_key_id=key_row.id)
+                  owner_email=user.email, inbox_id=inbox.id, api_key_id=key_row.id,
+                  avatar_seed=avatar_seed, avatar_url=avatar_url)
     session.add_all([inbox, key_row])
     await session.flush()
     session.add(agent)
     audit(session, action="agent.create", actor=principal.actor, workspace_id=workspace.id, target=address,
-          detail={"agent": body.agent_name, "owner": body.owner_name, "key": key_row.key_prefix}, request=request)
+          detail={"agent": body.agent_name, "owner": body.owner_name, "key": key_row.key_prefix, "avatar_seed": avatar_seed}, request=request)
     try:
         await session.commit()
     except IntegrityError:  # someone took the same address in the same instant
@@ -110,6 +139,52 @@ async def create_agent(
         raise ProblemError(409, "Address unavailable", "That address was just taken. Please try again.") from None
     passport = create_agent_passport(agent, inbox, workspace)
     return {**_out(agent, inbox, key_row, passport=passport), "api_key": api_key, "passport": passport}
+
+
+@router.get("/avatar/{seed}.svg", include_in_schema=False)
+async def get_avatar_svg_by_seed(seed: str):
+    svg_data = generate_robot_avatar_svg(seed)
+    return Response(content=svg_data, media_type="image/svg+xml")
+
+
+@router.get("/{agent_id}/avatar.svg", include_in_schema=False)
+async def get_agent_avatar_svg(agent_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
+    agent = await session.get(Agent, agent_id)
+    seed = agent.avatar_seed if agent and agent.avatar_seed else str(agent_id)
+    svg_data = generate_robot_avatar_svg(seed)
+    return Response(content=svg_data, media_type="image/svg+xml")
+
+
+@router.patch("/{agent_id}")
+async def update_agent(
+    agent_id: uuid.UUID,
+    body: AgentUpdate,
+    request: Request,
+    principal: Principal = Depends(require_user),
+    session: AsyncSession = Depends(get_session),
+):
+    agent = await session.get(Agent, agent_id)
+    if agent is None or agent.workspace_id != principal.workspace.id or agent.status != "ACTIVE":
+        raise ProblemError(404, "Agent not found")
+
+    if body.agent_name:
+        agent.name = body.agent_name
+
+    if body.avatar_seed:
+        clean_seed = body.avatar_seed.strip().lower()
+        if clean_seed != agent.avatar_seed:
+            if not await is_avatar_seed_available(session, clean_seed, exclude_agent_id=agent.id):
+                raise ProblemError(409, "Avatar already taken", f"Avatar seed '{clean_seed}' is already claimed by another agent. Every avatar must be unique.")
+            agent.avatar_seed = clean_seed
+            agent.avatar_url = body.avatar_url or default_avatar_url(clean_seed)
+    elif body.avatar_url:
+        agent.avatar_url = body.avatar_url
+
+    inbox = await session.get(Inbox, agent.inbox_id)
+    key = await session.get(ApiKey, agent.api_key_id)
+    await session.commit()
+    passport = create_agent_passport(agent, inbox, principal.workspace)
+    return {**_out(agent, inbox, key, passport=passport), "passport": passport}
 
 
 @router.get("")
