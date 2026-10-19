@@ -4,7 +4,7 @@ import { CopyButton } from "./client";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.08] bg-[#0D141C]/80 backdrop-blur-xl p-6 sm:p-7 shadow-xl shadow-black/25 transition-all duration-150 ${className}`}>
+    <div className={`rounded-2xl border border-[#E2E8F0] bg-white p-6 sm:p-7 shadow-xs text-[#0E171B] transition-all duration-150 ${className}`}>
       {children}
     </div>
   );
@@ -12,10 +12,10 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 
 export function PageHeader({ title, lead, aside }: { title: string; lead?: string; aside?: ReactNode }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mb-8 flex flex-col gap-4 border-b border-[#E2E8F0] pb-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1.5">
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl capitalize">{title}</h1>
-        {lead && <p className="max-w-3xl text-sm leading-relaxed text-[#9BA7B4]">{lead}</p>}
+        <h1 className="text-2xl font-extrabold tracking-tight text-[#0E1B18] sm:text-3xl capitalize">{title}</h1>
+        {lead && <p className="max-w-3xl text-sm leading-relaxed text-[#627282]">{lead}</p>}
       </div>
       {aside && <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-auto">{aside}</div>}
     </div>
@@ -23,12 +23,12 @@ export function PageHeader({ title, lead, aside }: { title: string; lead?: strin
 }
 
 const tones = {
-  neutral: "bg-white/5 text-[#9BA7B4] border border-white/10",
-  good: "bg-[#B5F0D1]/15 text-[#B5F0D1] border border-[#B5F0D1]/30 font-semibold",
-  warn: "bg-[#f59e0b]/15 text-[#fbbf24] border border-[#f59e0b]/30",
-  bad: "bg-[#fb7185]/15 text-[#fb7185] border border-[#fb7185]/30",
-  accent: "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30 font-semibold",
-  purple: "bg-[#B6B8FF]/15 text-[#B6B8FF] border border-[#B6B8FF]/30 font-semibold",
+  neutral: "bg-[#F1F5F2] text-[#475569] border border-[#CBD5E1]",
+  good: "bg-[#E8F8F0] text-[#0D6E48] border border-[#0D6E48]/25 font-semibold",
+  warn: "bg-[#FEF3C7] text-[#92400E] border border-[#F59E0B]/30",
+  bad: "bg-[#FEE2E2] text-[#991B1B] border border-[#EF4444]/30",
+  accent: "bg-[#E0F2F1] text-[#00695C] border border-[#00695C]/25 font-semibold",
+  purple: "bg-[#EDE7F6] text-[#512DA8] border border-[#512DA8]/25 font-semibold",
 };
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: keyof typeof tones }) {
@@ -53,34 +53,34 @@ export function StatCard({
   tone?: "neutral" | "good" | "warn" | "accent";
 }) {
   const toneClasses = {
-    neutral: "hover:border-white/20",
+    neutral: "hover:border-[#CBD5E1]",
     good: "hover:border-emerald-500/40 hover:shadow-emerald-500/5",
     warn: "hover:border-amber-500/40 hover:shadow-amber-500/5",
-    accent: "hover:border-[#8BE8E3]/40 hover:shadow-[#8BE8E3]/5",
+    accent: "hover:border-[#0D6E48]/40 hover:shadow-[#0D6E48]/5",
   };
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#131D28] to-[#0A1016] p-6 shadow-xl shadow-black/40 transition-all duration-200 hover:-translate-y-0.5 ${toneClasses[tone]}`}
+      className={`relative overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 ${toneClasses[tone]}`}
     >
-      <div className="flex items-center justify-between text-[#9BA7B4]">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#9BA7B4]">{title}</span>
+      <div className="flex items-center justify-between text-[#627282]">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#627282]">{title}</span>
         {icon && (
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-[#8BE8E3]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#0D6E48]/20 bg-[#E8F8F0] text-[#0D6E48]">
             {icon}
           </span>
         )}
       </div>
-      <div className="mt-3 text-3xl font-extrabold tracking-tight text-white">{value}</div>
-      {subtext && <p className="mt-1.5 text-xs text-[#9BA7B4] leading-relaxed">{subtext}</p>}
+      <div className="mt-3 text-3xl font-extrabold tracking-tight text-[#0E1B18]">{value}</div>
+      {subtext && <p className="mt-1.5 text-xs text-[#7E8B95] leading-relaxed">{subtext}</p>}
     </div>
   );
 }
 
 export function Code({ code, copy = true, title }: { code: string; copy?: boolean; title?: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0A1017] shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+    <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#0A1017] shadow-sm">
+      <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.02] px-4 py-2.5">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-rose-500/60" />
           <span className="h-2 w-2 rounded-full bg-amber-500/60" />
@@ -98,8 +98,8 @@ export function Code({ code, copy = true, title }: { code: string; copy?: boolea
 
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-line bg-subtle/30 px-6 py-12 text-center">
-      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-subtle text-muted mb-2">
+    <div className="rounded-2xl border border-dashed border-[#CBD5E1] bg-white/60 px-6 py-12 text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#F1F5F2] text-[#627282] mb-2">
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m7.5 4.27 9 5.15" />
           <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
@@ -107,14 +107,14 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
           <path d="M12 22V12" />
         </svg>
       </div>
-      <p className="font-semibold text-ink text-sm">{title}</p>
-      {children && <div className="mx-auto mt-1 max-w-md text-xs text-muted">{children}</div>}
+      <p className="font-semibold text-[#0E1B18] text-sm">{title}</p>
+      {children && <div className="mx-auto mt-1 max-w-md text-xs text-[#627282]">{children}</div>}
     </div>
   );
 }
 
 export const inputClass =
-  "rounded-xl border border-line bg-surface px-3.5 py-2 text-sm outline-none transition placeholder:text-muted/60 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15";
+  "rounded-xl border border-[#CBD5E1] bg-white text-[#0E171B] px-3.5 py-2 text-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#0D6E48] focus:ring-2 focus:ring-[#0D6E48]/15";
 
 export function timeAgo(iso: string): string {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);

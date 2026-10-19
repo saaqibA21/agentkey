@@ -3,10 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 
-export function Logo() {
+export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
+  const isDarkCanvas = variant === "dark";
   return (
     <Link href="/" className="group flex items-center gap-2.5 font-semibold tracking-tight">
-      <div className="relative flex h-8 w-8 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-gradient-to-b from-[#141F2B] to-[#080D12] shadow-md shadow-[#8BE8E3]/15 transition-all duration-300 group-hover:scale-105 group-hover:border-[#8BE8E3]/60 group-hover:shadow-[#8BE8E3]/30">
+      <div className={`relative flex h-8 w-8 items-center justify-center rounded-xl border transition-all duration-300 group-hover:scale-105 ${
+        isDarkCanvas
+          ? "border-[#0D6E48]/30 bg-gradient-to-b from-[#134E3C] to-[#0A2920] shadow-sm shadow-[#0D6E48]/20"
+          : "border-[#8BE8E3]/35 bg-gradient-to-b from-[#141F2B] to-[#080D12] shadow-md shadow-[#8BE8E3]/15"
+      }`}>
         <svg viewBox="0 0 32 32" fill="none" className="h-4.5 w-4.5">
           <defs>
             <linearGradient id="bagents-brand-mark" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
@@ -15,31 +20,21 @@ export function Logo() {
               <stop offset="1" stopColor="#B6B8FF" />
             </linearGradient>
           </defs>
-          {/* Geometric 'B' Identity Monogram */}
+          {/* Compass Star / Diamond Mark */}
           <path
-            d="M8.5 6.5h7.5c2.76 0 5 2.24 5 5 0 1.5-.66 2.85-1.72 3.76A5.5 5.5 0 0 1 16.5 25.5H8.5V6.5z"
+            d="M16 3 L19.5 12.5 L29 16 L19.5 19.5 L16 29 L12.5 19.5 L3 16 L12.5 12.5 Z"
             fill="url(#bagents-brand-mark)"
           />
-          {/* Inner Cutouts */}
-          <path
-            d="M12 9.5h3.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5H12V9.5z"
-            fill="#080D12"
-          />
-          <path
-            d="M12 17h4.5c1.52 0 2.75 1.23 2.75 2.75S18.02 22.5 16.5 22.5H12V17z"
-            fill="#080D12"
-          />
-          {/* Glowing Neural Identity Iris */}
-          <circle cx="15.2" cy="12" r="1.1" fill="#8BE8E3" />
-          <circle cx="16" cy="19.75" r="1.2" fill="#B5F0D1" />
+          <circle cx="16" cy="16" r="2" fill={isDarkCanvas ? "#0A2920" : "#080D12"} />
         </svg>
       </div>
-      <span className="text-lg font-bold tracking-tight text-[#F5F3EF]">
-        B<span className="text-[#8BE8E3]">AGENTS</span>
+      <span className={`text-lg font-bold tracking-tight ${isDarkCanvas ? "text-[#0E171B]" : "text-[#F5F3EF]"}`}>
+        B<span className={isDarkCanvas ? "text-[#0D6E48]" : "text-[#8BE8E3]"}>AGENTS</span>
       </span>
     </Link>
   );
 }
+
 
 export function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
