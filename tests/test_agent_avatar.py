@@ -13,7 +13,7 @@ async def test_unique_avatar_lifecycle_and_conflict_handling(client):
     agent1 = resp1.json()
     assert agent1.get("avatar_seed") is not None
     assert agent1.get("avatar_url") is not None
-    assert "bottts-neutral" in agent1["avatar_url"] or ".svg" in agent1["avatar_url"]
+    assert "adventurer" in agent1["avatar_url"] or ".svg" in agent1["avatar_url"]
 
     # 2. Create another agent: must have a DIFFERENT unique avatar seed
     resp2 = await client.post("/v1/agents", headers=auth, json={"agent_name": "Scout Alpha", "owner_name": "Avatar Admin"})

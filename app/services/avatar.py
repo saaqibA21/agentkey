@@ -1,6 +1,6 @@
-"""Procedural SVG Avatar Generation and Uniqueness Service for BAGENTS.
+"""Human Procedural SVG Avatar Generation and Uniqueness Service for BAGENTS.
 
-Generates guaranteed-unique, high-tech vector robot avatars and handles avatar URL resolution.
+Generates guaranteed-unique, human-like vector avatars and handles avatar URL resolution.
 """
 import hashlib
 import re
@@ -13,29 +13,47 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Agent
 
 
-PALETTES = [
-    {"accent": "#8BE8E3", "glow": "rgba(139, 232, 227, 0.4)", "name": "Cyan"},
-    {"accent": "#B5F0D1", "glow": "rgba(181, 240, 209, 0.4)", "name": "Mint"},
-    {"accent": "#B6B8FF", "glow": "rgba(182, 184, 255, 0.4)", "name": "Lavender"},
-    {"accent": "#6EE7B7", "glow": "rgba(110, 231, 183, 0.4)", "name": "Emerald"},
-    {"accent": "#FDE047", "glow": "rgba(253, 224, 71, 0.4)", "name": "Amber"},
-    {"accent": "#A78BFA", "glow": "rgba(167, 139, 250, 0.4)", "name": "Violet"},
-    {"accent": "#38BDF8", "glow": "rgba(56, 189, 248, 0.4)", "name": "Sky"},
+SKIN_TONES = [
+    {"skin": "#F6D0B1", "shadow": "#E2B895", "name": "Peach"},
+    {"skin": "#ECC5A8", "shadow": "#D9AA89", "name": "Warm Sand"},
+    {"skin": "#D89E78", "shadow": "#C1835C", "name": "Golden Honey"},
+    {"skin": "#BF7C4E", "shadow": "#A66336", "name": "Warm Almond"},
+    {"skin": "#93592E", "shadow": "#78431C", "name": "Chestnut"},
+    {"skin": "#613D1E", "shadow": "#4A2D13", "name": "Deep Espresso"},
 ]
 
-ANTENNA_STYLES = ["beacon", "dual", "radar", "orbital", "crest"]
-EYE_STYLES = ["visor_scan", "twin_circles", "slits", "matrix", "focus"]
+HAIR_COLORS = [
+    "#18181B",  # Jet Black
+    "#3E2723",  # Deep Brunette
+    "#5D4037",  # Warm Chestnut
+    "#C49756",  # Honey Blonde
+    "#8D3E25",  # Auburn
+    "#64748B",  # Slate Silver
+    "#4B5563",  # Charcoal Gray
+]
+
+CLOTHING_COLORS = [
+    "#1E293B",  # Slate Hoodie
+    "#0F766E",  # Teal Jacket
+    "#4338CA",  # Indigo Blazer
+    "#065F46",  # Emerald Crewneck
+    "#374151",  # Charcoal Shirt
+    "#7C3AED",  # Violet Sweater
+]
+
+HAIR_STYLES = ["short_crop", "wavy_sidepart", "high_bun", "textured_fade", "shoulder_bob", "curly_top"]
+EYE_EXPRESSIONS = ["friendly", "focus", "relaxed", "smiling"]
 
 
 def generate_avatar_seed(name: str) -> str:
-    """Generate a clean, unique seed string for an agent."""
-    clean = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:20] or "bot"
+    """Generate a clean, unique seed string for a human agent persona."""
+    clean = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:20] or "agent"
     return f"{clean}-{secrets.token_hex(4)}"
 
 
-def default_avatar_url(seed: str) -> str:
-    """Standard vector avatar URL using open-source Bottts Neutral style."""
-    return f"https://api.dicebear.com/9.x/bottts-neutral/svg?seed={seed}"
+def default_avatar_url(seed: str, style: str = "adventurer") -> str:
+    """Standard vector human avatar URL using open-source Adventurer or Personas style."""
+    return f"https://api.dicebear.com/9.x/{style}/svg?seed={seed}"
 
 
 async def is_avatar_seed_available(session: AsyncSession, seed: str, exclude_agent_id: uuid.UUID | None = None) -> bool:
@@ -47,117 +65,143 @@ async def is_avatar_seed_available(session: AsyncSession, seed: str, exclude_age
     return existing is None
 
 
-def generate_robot_avatar_svg(seed: str) -> str:
-    """Generate a standalone, deterministic, ultra-crisp SVG robot avatar based on seed."""
+def generate_human_avatar_svg(seed: str) -> str:
+    """Generate a standalone, deterministic, ultra-clean vector SVG human portrait."""
     h = int(hashlib.sha256(seed.encode()).hexdigest(), 16)
-    palette = PALETTES[h % len(PALETTES)]
-    antenna = ANTENNA_STYLES[(h >> 4) % len(ANTENNA_STYLES)]
-    eye = EYE_STYLES[(h >> 8) % len(EYE_STYLES)]
+    skin_data = SKIN_TONES[h % len(SKIN_TONES)]
+    skin = skin_data["skin"]
+    skin_shadow = skin_data["shadow"]
 
-    accent = palette["accent"]
-    glow = palette["glow"]
+    hair_color = HAIR_COLORS[(h >> 4) % len(HAIR_COLORS)]
+    clothes_color = CLOTHING_COLORS[(h >> 8) % len(CLOTHING_COLORS)]
+    hair_style = HAIR_STYLES[(h >> 12) % len(HAIR_STYLES)]
+    eye_expr = EYE_EXPRESSIONS[(h >> 16) % len(EYE_EXPRESSIONS)]
 
-    # Antenna SVG elements
-    antenna_svg = ""
-    if antenna == "beacon":
-        antenna_svg = f"""
-        <line x1="60" y1="36" x2="60" y2="20" stroke="{accent}" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="60" cy="17" r="4.5" fill="{accent}" filter="url(#glow)"/>
+    # Hair silhouette SVG
+    hair_svg = ""
+    if hair_style == "short_crop":
+        hair_svg = f"""
+        <!-- Hair Short Crop -->
+        <path d="M38 50 C36 34, 46 22, 60 22 C74 22, 84 34, 82 50 C80 43, 75 36, 68 36 C61 36, 56 39, 50 39 C44 39, 40 43, 38 50 Z" fill="{hair_color}"/>
         """
-    elif antenna == "dual":
-        antenna_svg = f"""
-        <line x1="48" y1="38" x2="40" y2="22" stroke="{accent}" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="39" cy="20" r="3" fill="{accent}"/>
-        <line x1="72" y1="38" x2="80" y2="22" stroke="{accent}" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="81" cy="20" r="3" fill="{accent}"/>
+    elif hair_style == "wavy_sidepart":
+        hair_svg = f"""
+        <!-- Hair Wavy Sidepart -->
+        <path d="M37 54 C35 32, 45 20, 60 20 C76 20, 85 30, 83 54 C78 40, 72 32, 63 32 C54 32, 46 36, 40 46 Z" fill="{hair_color}"/>
+        <path d="M37 42 C34 46, 34 52, 36 56 C38 48, 42 45, 46 44 Z" fill="{hair_color}"/>
         """
-    elif antenna == "radar":
-        antenna_svg = f"""
-        <line x1="60" y1="36" x2="60" y2="24" stroke="{accent}" stroke-width="2"/>
-        <path d="M52 24 A8 8 0 0 1 68 24" fill="none" stroke="{accent}" stroke-width="2"/>
-        <path d="M46 20 A14 14 0 0 1 74 20" fill="none" stroke="{accent}" stroke-width="1.5" stroke-dasharray="2 2"/>
+    elif hair_style == "high_bun":
+        hair_svg = f"""
+        <!-- High Bun -->
+        <circle cx="60" cy="19" r="10" fill="{hair_color}"/>
+        <path d="M38 52 C36 36, 46 25, 60 25 C74 25, 84 36, 82 52 C78 42, 73 37, 60 37 C47 37, 42 42, 38 52 Z" fill="{hair_color}"/>
         """
-    elif antenna == "orbital":
-        antenna_svg = f"""
-        <ellipse cx="60" cy="28" rx="24" ry="7" fill="none" stroke="{accent}" stroke-width="1.5" stroke-dasharray="4 2"/>
-        <circle cx="84" cy="28" r="2.5" fill="{accent}"/>
+    elif hair_style == "textured_fade":
+        hair_svg = f"""
+        <!-- Textured Fade -->
+        <path d="M40 52 C39 34, 48 24, 60 24 C72 24, 81 34, 80 52 C76 39, 70 34, 60 34 C50 34, 44 39, 40 52 Z" fill="{hair_color}"/>
         """
-    else:  # crest
-        antenna_svg = f"""
-        <polygon points="60,18 66,35 54,35" fill="{accent}" opacity="0.9"/>
+    elif hair_style == "shoulder_bob":
+        hair_svg = f"""
+        <!-- Shoulder Bob -->
+        <path d="M36 68 C34 48, 36 30, 48 22 C58 18, 66 18, 74 24 C84 31, 86 48, 84 68 C81 54, 80 44, 76 38 C70 34, 62 34, 52 38 C44 42, 40 52, 36 68 Z" fill="{hair_color}"/>
+        """
+    else:  # curly_top
+        hair_svg = f"""
+        <!-- Curly Top -->
+        <circle cx="50" cy="25" r="7" fill="{hair_color}"/>
+        <circle cx="60" cy="23" r="8" fill="{hair_color}"/>
+        <circle cx="70" cy="25" r="7" fill="{hair_color}"/>
+        <circle cx="43" cy="32" r="6" fill="{hair_color}"/>
+        <circle cx="77" cy="32" r="6" fill="{hair_color}"/>
+        <path d="M39 50 C38 38, 46 30, 60 30 C74 30, 82 38, 81 50 C76 41, 70 37, 60 37 C50 37, 44 41, 39 50 Z" fill="{hair_color}"/>
         """
 
-    # Eyes / Visor SVG elements
+    # Eye expression SVG
     eyes_svg = ""
-    if eye == "visor_scan":
+    if eye_expr == "friendly":
         eyes_svg = f"""
-        <rect x="42" y="55" width="36" height="8" rx="4" fill="{accent}" opacity="0.9" filter="url(#glow)"/>
-        <line x1="44" y1="59" x2="76" y2="59" stroke="#ffffff" stroke-width="1.5" opacity="0.75"/>
+        <!-- Friendly Eyes -->
+        <ellipse cx="51" cy="54" rx="2.5" ry="3.5" fill="#18181B"/>
+        <circle cx="52" cy="53" r="1" fill="#FFFFFF"/>
+        <ellipse cx="69" cy="54" rx="2.5" ry="3.5" fill="#18181B"/>
+        <circle cx="70" cy="53" r="1" fill="#FFFFFF"/>
+        <path d="M47 48 Q51 46 55 48" stroke="#18181B" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M65 48 Q69 46 73 48" stroke="#18181B" stroke-width="1.5" stroke-linecap="round" fill="none"/>
         """
-    elif eye == "twin_circles":
+    elif eye_expr == "smiling":
         eyes_svg = f"""
-        <circle cx="49" cy="58" r="5" fill="{accent}" filter="url(#glow)"/>
-        <circle cx="71" cy="58" r="5" fill="{accent}" filter="url(#glow)"/>
-        <circle cx="50" cy="57" r="1.5" fill="#ffffff"/>
-        <circle cx="72" cy="57" r="1.5" fill="#ffffff"/>
+        <!-- Smiling Eyes -->
+        <path d="M48 55 Q51 51 54 55" stroke="#18181B" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M66 55 Q69 51 72 55" stroke="#18181B" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M47 48 Q51 46 55 48" stroke="#18181B" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M65 48 Q69 46 73 48" stroke="#18181B" stroke-width="1.5" stroke-linecap="round" fill="none"/>
         """
-    elif eye == "slits":
+    elif eye_expr == "focus":
         eyes_svg = f"""
-        <line x1="44" y1="58" x2="55" y2="58" stroke="{accent}" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
-        <line x1="65" y1="58" x2="76" y2="58" stroke="{accent}" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
+        <!-- Focused Eyes -->
+        <circle cx="51" cy="54" r="2.5" fill="#18181B"/>
+        <circle cx="69" cy="54" r="2.5" fill="#18181B"/>
+        <line x1="47" y1="48" x2="55" y2="49" stroke="#18181B" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="73" y1="48" x2="65" y2="49" stroke="#18181B" stroke-width="1.8" stroke-linecap="round"/>
         """
-    elif eye == "matrix":
+    else:  # relaxed
         eyes_svg = f"""
-        <circle cx="46" cy="58" r="2" fill="{accent}"/>
-        <circle cx="52" cy="58" r="2" fill="{accent}"/>
-        <circle cx="68" cy="58" r="2" fill="{accent}"/>
-        <circle cx="74" cy="58" r="2" fill="{accent}"/>
-        """
-    else:  # focus
-        eyes_svg = f"""
-        <circle cx="49" cy="58" r="6" fill="none" stroke="{accent}" stroke-width="1.5"/>
-        <circle cx="49" cy="58" r="2.5" fill="{accent}"/>
-        <circle cx="71" cy="58" r="6" fill="none" stroke="{accent}" stroke-width="1.5"/>
-        <circle cx="71" cy="58" r="2.5" fill="{accent}"/>
+        <!-- Relaxed Eyes -->
+        <ellipse cx="51" cy="54" rx="2.2" ry="3" fill="#18181B"/>
+        <ellipse cx="69" cy="54" rx="2.2" ry="3" fill="#18181B"/>
+        <path d="M47 49 Q51 47 55 49" stroke="#18181B" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M65 49 Q69 47 73 49" stroke="#18181B" stroke-width="1.4" stroke-linecap="round" fill="none"/>
         """
 
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
   <defs>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#080D12"/>
-      <stop offset="100%" stop-color="#121A22"/>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E151D"/>
+      <stop offset="100%" stop-color="#16222F"/>
     </linearGradient>
-    <linearGradient id="headGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#222B35"/>
-      <stop offset="100%" stop-color="#161E27"/>
-    </linearGradient>
+    <clipPath id="circleClip">
+      <circle cx="60" cy="60" r="54"/>
+    </clipPath>
   </defs>
 
-  <!-- Circular Base Badge -->
-  <circle cx="60" cy="60" r="56" fill="url(#bg)" stroke="#1F2937" stroke-width="2"/>
-  <circle cx="60" cy="60" r="52" fill="none" stroke="{accent}" stroke-width="1" opacity="0.25"/>
+  <!-- Background Circle Badge -->
+  <circle cx="60" cy="60" r="56" fill="url(#bgGrad)" stroke="#223142" stroke-width="2"/>
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#8BE8E3" stroke-width="1" opacity="0.3"/>
 
-  <!-- Antenna Structure -->
-  {antenna_svg}
+  <!-- Character Group Clipped to Circle -->
+  <g clip-path="url(#circleClip)">
+    <!-- Clothing / Shoulders -->
+    <path d="M26 116 C28 92, 42 84, 60 84 C78 84, 92 92, 94 116 Z" fill="{clothes_color}"/>
+    <path d="M52 84 L60 96 L68 84 Z" fill="{skin_shadow}" opacity="0.6"/>
 
-  <!-- Head Chassis -->
-  <rect x="34" y="36" width="52" height="46" rx="14" fill="url(#headGrad)" stroke="#374151" stroke-width="1.5"/>
+    <!-- Neck -->
+    <rect x="54" y="68" width="12" height="18" fill="{skin_shadow}"/>
+    <rect x="55" y="70" width="10" height="14" fill="{skin}"/>
 
-  <!-- Visor Screen -->
-  <rect x="39" y="47" width="42" height="23" rx="7" fill="#0A0F14" stroke="#1F2937" stroke-width="1"/>
+    <!-- Ears -->
+    <circle cx="40" cy="56" r="4.5" fill="{skin}"/>
+    <circle cx="80" cy="56" r="4.5" fill="{skin}"/>
 
-  <!-- Eyes / Sensors -->
-  {eyes_svg}
+    <!-- Head & Face -->
+    <path d="M42 46 C42 34, 49 28, 60 28 C71 28, 78 34, 78 46 C78 62, 71 72, 60 72 C49 72, 42 62, 42 46 Z" fill="{skin}"/>
 
-  <!-- Chest Collar & Core Indicator -->
-  <path d="M42 85 C42 82, 78 82, 78 85 L73 98 C73 100, 47 100, 47 98 Z" fill="#18202A" stroke="#2D3748" stroke-width="1"/>
-  <circle cx="60" cy="91" r="2.5" fill="{accent}" opacity="0.85"/>
+    <!-- Eyes & Brows -->
+    {eyes_svg}
+
+    <!-- Nose -->
+    <path d="M60 55 L58 60 L62 60" stroke="{skin_shadow}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- Mouth -->
+    <path d="M55 65 Q60 68 65 65" stroke="#7A3F29" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+
+    <!-- Hair Silhouette -->
+    {hair_svg}
+  </g>
 </svg>"""
     return svg.strip()
+
+
+# Backward compatibility alias
+def generate_robot_avatar_svg(seed: str) -> str:
+    return generate_human_avatar_svg(seed)

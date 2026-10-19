@@ -4,22 +4,30 @@ import { useEffect, useState } from "react";
 import { AgentAvatar } from "./agent-avatar";
 
 const PRESET_ARCHETYPES = [
-  "cyber-vanguard",
-  "neural-scout",
-  "quantum-core",
-  "orbit-beacon",
-  "titan-sentinel",
-  "pulse-matrix",
+  { seed: "alex-product", label: "Alex (Product)" },
+  { seed: "maya-research", label: "Maya (Research)" },
+  { seed: "jordan-devops", label: "Jordan (DevOps)" },
+  { seed: "priya-exec", label: "Priya (Executive)" },
+  { seed: "marcus-data", label: "Marcus (Data)" },
+  { seed: "elena-creative", label: "Elena (Design)" },
+];
+
+const HUMAN_STYLES = [
+  { id: "adventurer", label: "Illustrated" },
+  { id: "personas", label: "Modern Minimal" },
+  { id: "avataaars", label: "Classic Human" },
+  { id: "lorelei", label: "Editorial" },
 ];
 
 function randomSeed(prefix = "agent") {
-  const clean = prefix.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 15) || "bot";
+  const clean = prefix.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 15) || "persona";
   const hex = Math.random().toString(16).substring(2, 8);
   return `${clean}-${hex}`;
 }
 
 export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: string }) {
   const [seed, setSeed] = useState(() => randomSeed(defaultName));
+  const [style, setStyle] = useState("adventurer");
   const [isCustom, setIsCustom] = useState(false);
 
   useEffect(() => {
@@ -33,18 +41,18 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
     setSeed(randomSeed(defaultName));
   };
 
-  const handlePresetSelect = (preset: string) => {
+  const handlePresetSelect = (presetSeed: string) => {
     setIsCustom(true);
-    setSeed(`${preset}-${Math.random().toString(16).substring(2, 6)}`);
+    setSeed(`${presetSeed}-${Math.random().toString(16).substring(2, 6)}`);
   };
 
-  const avatarUrl = `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}`;
+  const avatarUrl = `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
 
   return (
     <div className="rounded-2xl border border-line bg-black/30 p-4">
       <div className="flex items-center justify-between">
         <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-          Unique Agent Avatar
+          Unique Human Persona Avatar
         </label>
         <span className="text-[11px] text-[#8BE8E3] font-medium">Guaranteed Unique</span>
       </div>
@@ -61,7 +69,7 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
                 setIsCustom(true);
                 setSeed(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
               }}
-              placeholder="unique-avatar-seed"
+              placeholder="unique-human-seed"
               className="flex-1 rounded-xl border border-line bg-black/40 px-3 py-1.5 font-mono text-xs text-[#8BE8E3] focus:border-[#8BE8E3] focus:outline-none"
             />
             <button
@@ -76,17 +84,36 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
             </button>
           </div>
 
-          {/* Archetype Quick Selectors */}
+          {/* Style Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10px] text-muted uppercase tracking-wider mr-1">Archetypes:</span>
-            {PRESET_ARCHETYPES.map((preset) => (
+            <span className="text-[10px] text-muted uppercase tracking-wider mr-1">Style:</span>
+            {HUMAN_STYLES.map((s) => (
               <button
-                key={preset}
+                key={s.id}
                 type="button"
-                onClick={() => handlePresetSelect(preset)}
+                onClick={() => setStyle(s.id)}
+                className={`rounded-lg border px-2 py-0.5 text-[10px] transition ${
+                  style === s.id
+                    ? "border-[#8BE8E3]/60 bg-[#8BE8E3]/15 text-[#8BE8E3] font-semibold"
+                    : "border-line/60 bg-white/[0.03] text-[#9BA7B4] hover:text-white"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Persona Quick Selectors */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] text-muted uppercase tracking-wider mr-1">Personas:</span>
+            {PRESET_ARCHETYPES.map((p) => (
+              <button
+                key={p.seed}
+                type="button"
+                onClick={() => handlePresetSelect(p.seed)}
                 className="rounded-lg border border-line/60 bg-white/[0.03] px-2 py-0.5 text-[10px] text-[#9BA7B4] hover:border-[#8BE8E3]/40 hover:text-white transition"
               >
-                {preset.split("-")[0]}
+                {p.label.split(" ")[0]}
               </button>
             ))}
           </div>

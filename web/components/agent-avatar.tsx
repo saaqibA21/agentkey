@@ -14,7 +14,7 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
   const [hasError, setHasError] = useState(false);
 
   const fallbackSeed = seed || name.toLowerCase().replace(/[^a-z0-9]/g, "-") || "agent";
-  const avatarSrc = url || `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(fallbackSeed)}`;
+  const avatarSrc = url || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(fallbackSeed)}`;
 
   const sizeClasses = {
     sm: "h-8 w-8 text-xs",
