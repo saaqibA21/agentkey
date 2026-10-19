@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { AgentAvatar } from "@/components/agent-avatar";
 import { AvatarPicker } from "@/components/avatar-picker";
@@ -34,6 +35,30 @@ export default async function ApiPage() {
         title="API & Agent Passports"
         lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a guaranteed unique avatar, cryptographic BAGENTS Passport, dedicated email inbox, and API credentials."
       />
+
+      {/* OAuth Banner */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-[#8BE8E3]/25 bg-[#132A26]/40 p-4 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-[#8BE8E3]/15 text-[#8BE8E3]">
+            <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-white">Looking for OAuth &amp; &ldquo;Sign in with BAGENTS&rdquo;?</p>
+            <p className="text-[11px] text-[#9BA7B4]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/oauth"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-[#8BE8E3]/40 bg-[#132A26] px-3.5 py-1.5 text-xs font-semibold text-[#8BE8E3] hover:bg-[#1A3833] transition"
+        >
+          <span>OAuth &amp; Connect Portal</span>
+          <span>→</span>
+        </Link>
+      </div>
+
 
       {/* Create Agent Drawer */}
       <details className="group">

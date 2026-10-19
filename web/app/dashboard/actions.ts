@@ -346,3 +346,44 @@ export async function deleteAgent(_: ActionState, form: FormData): Promise<Actio
     await api(`/agents/${text(form, "id")}`, { method: "DELETE" });
   });
 }
+
+// ---- oauth clients & applications -----------------------------------------
+
+export async function registerOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/oauth", async () => {
+    const client_name = text(form, "client_name");
+    const redirect_uri = text(form, "redirect_uri");
+    if (!redirect_uri) return { error: "At least one redirect URI is required." };
+
+    const client = await api<{
+      client_id: string;
+      client_name: string;
+      redirect_uris: string[];
+    }>("/oauth/clients", {
+      method: "POST",
+      body: JSON.stringify({
+        client_name: client_name || "Untitled App",
+        redirect_uris: [redirect_uri],
+      }),
+    });
+
+    return {
+      ok: true,
+      secret: client.client_id,
+      secretLabel: "Client ID issued for your application",
+      details: [
+        { label: "Application Name", value: client.client_name },
+        { label: "Allowed Redirect URI", value: redirect_uri },
+      ],
+    };
+  });
+}
+
+export async function deleteOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
+  return run("/dashboard/oauth", async () => {
+    await api(`/oauth/clients/${encodeURIComponent(text(form, "client_id"))}`, {
+      method: "DELETE",
+    });
+  });
+}
+

@@ -9,16 +9,17 @@ type NavItem = {
   label: string;
   icon: ReactNode;
   badge?: string;
-  badgeTone?: "accent" | "purple" | "warn";
+  badgeTone?: "accent" | "purple" | "warn" | "good";
 };
 
-const items: NavItem[] = [
+const baseItems: NavItem[] = [
   {
     href: "/dashboard",
     label: "Overview",
     icon: (
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
   },
@@ -50,6 +51,18 @@ const items: NavItem[] = [
     icon: (
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/oauth",
+    label: "OAuth & Connect",
+    badge: "OIDC",
+    badgeTone: "accent",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
       </svg>
     ),
   },
@@ -91,11 +104,27 @@ const items: NavItem[] = [
   },
 ];
 
-export function DashboardNav() {
+export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
+  const items = [...baseItems];
+  if (isAdmin) {
+    items.push({
+      href: "/dashboard/admin",
+      label: "Admin Console",
+      badge: "Live",
+      badgeTone: "good",
+      icon: (
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M7 8h10" /><path d="M7 12h10" /><path d="M7 16h10" />
+        </svg>
+      ),
+    });
+  }
+
   return (
-    <nav className="flex gap-2 overflow-x-auto text-sm md:flex-col">
+    <nav className="flex gap-1.5 overflow-x-auto text-sm md:flex-col">
       {items.map((item) => {
         const isActive =
           item.href === "/dashboard"
@@ -106,14 +135,16 @@ export function DashboardNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 ${
+            className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
               isActive
-                ? "bg-[#8BE8E3]/10 text-[#8BE8E3] border border-[#8BE8E3]/35 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
+                ? "bg-[#142323] text-[#8BE8E3] border border-[#8BE8E3]/30 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
                 : "text-[#9BA7B4] hover:bg-white/[0.04] hover:text-white"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="shrink-0 transition-transform group-hover:scale-110">{item.icon}</span>
+              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#8BE8E3]" : "text-[#718096] group-hover:text-white"}`}>
+                {item.icon}
+              </span>
               <span>{item.label}</span>
             </div>
             {item.badge && (
@@ -121,6 +152,8 @@ export function DashboardNav() {
                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                   item.badgeTone === "purple"
                     ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                    : item.badgeTone === "good"
+                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
                     : "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30"
                 }`}
               >
@@ -130,15 +163,23 @@ export function DashboardNav() {
           </Link>
         );
       })}
+
       <div className="my-2 border-t border-white/[0.08] hidden md:block" />
+
       <Link
         href="/docs"
-        className="group flex items-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
+        target="_blank"
+        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
       >
-        <svg className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
+        <div className="flex items-center gap-3">
+          <svg className="h-4 w-4 shrink-0 text-[#718096] transition-transform group-hover:scale-105 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
+          </svg>
+          <span>Developer Docs</span>
+        </div>
+        <svg className="h-3.5 w-3.5 text-[#718096] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 17l9.2-9.2M17 17V8H8" />
         </svg>
-        <span>Developer Docs</span>
       </Link>
     </nav>
   );

@@ -372,3 +372,34 @@ async def revoke_grant(
     audit(session, action="oauth.revoke", actor=principal.actor, workspace_id=principal.workspace.id,
           target=client_id, request=request)
     await session.commit()
+
+
+@v1_router.get("/clients")
+async def list_clients(principal: Principal = Depends(require_user), session: AsyncSession = Depends(get_session)):
+    clients = (await session.scalars(select(OAuthClient).order_by(OAuthClient.created_at.desc()))).all()
+    return {"data": [{"client_id": c.id, "client_name": c.name or "OAuth App", "redirect_uris": c.redirect_uris, "created_at": _iso(c.created_at)} for c in clients]}
+
+
+@v1_router.post("/clients", status_code=201)
+async def create_client(body: ClientRegistration, principal: Principal = Depends(require_user), session: AsyncSession = Depends(get_session)):
+    if not all(_valid_redirect(u) for u in body.redirect_uris):
+        return JSONResponse({"error": "invalid_redirect_uri",
+                             "error_description": "Redirect URIs must be https (or http on localhost)."}, 400)
+    client = OAuthClient(id=secrets.token_urlsafe(24), name=body.client_name.strip(),
+                         redirect_uris=body.redirect_uris)
+    session.add(client)
+    audit(session, action="oauth.client.create", actor=principal.actor, workspace_id=principal.workspace.id,
+          target=client.id)
+    await session.commit()
+    return {"client_id": client.id, "client_name": client.name, "redirect_uris": client.redirect_uris, "created_at": _iso(client.created_at)}
+
+
+@v1_router.delete("/clients/{client_id}", status_code=204)
+async def delete_client(client_id: str, principal: Principal = Depends(require_user), session: AsyncSession = Depends(get_session)):
+    client = await session.get(OAuthClient, client_id)
+    if client:
+        await session.delete(client)
+        audit(session, action="oauth.client.delete", actor=principal.actor, workspace_id=principal.workspace.id,
+              target=client_id)
+        await session.commit()
+
