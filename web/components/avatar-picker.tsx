@@ -19,6 +19,11 @@ const HUMAN_STYLES = [
   { id: "lorelei", label: "Editorial" },
 ];
 
+function deterministicSeed(prefix = "agent") {
+  const clean = prefix.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 15) || "persona";
+  return `${clean}-avatar`;
+}
+
 function randomSeed(prefix = "agent") {
   const clean = prefix.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 15) || "persona";
   const hex = Math.random().toString(16).substring(2, 8);
@@ -26,15 +31,16 @@ function randomSeed(prefix = "agent") {
 }
 
 export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: string }) {
-  const [seed, setSeed] = useState(() => randomSeed(defaultName));
+  const [seed, setSeed] = useState(() => deterministicSeed(defaultName));
   const [style, setStyle] = useState("adventurer");
   const [isCustom, setIsCustom] = useState(false);
 
   useEffect(() => {
+    // Randomize uniquely on client-side mount without causing SSR hydration mismatch
     if (!isCustom) {
       setSeed(randomSeed(defaultName));
     }
-  }, [defaultName, isCustom]);
+  }, [defaultName]);
 
   const handleRandomize = () => {
     setIsCustom(true);
