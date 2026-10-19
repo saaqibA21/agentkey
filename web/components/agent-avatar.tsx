@@ -14,7 +14,14 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
   const [hasError, setHasError] = useState(false);
 
   const fallbackSeed = seed || name.toLowerCase().replace(/[^a-z0-9]/g, "-") || "agent";
-  const avatarSrc = url || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(fallbackSeed)}`;
+  
+  // Ensure human-like avatar: if the stored URL was an old bottts robot icon, remap to adventurer human style
+  let resolvedUrl = url;
+  if (resolvedUrl && (resolvedUrl.includes("bottts-neutral") || resolvedUrl.includes("bottts"))) {
+    resolvedUrl = resolvedUrl.replace(/bottts-neutral|bottts/g, "adventurer");
+  }
+
+  const avatarSrc = resolvedUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(fallbackSeed)}`;
 
   const sizeClasses = {
     sm: "h-8 w-8 text-xs",
@@ -27,7 +34,7 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
     const initials = name.slice(0, 2).toUpperCase() || "AI";
     return (
       <div
-        className={`flex shrink-0 items-center justify-center rounded-2xl border border-[#8BE8E3]/30 bg-[#080D12] font-mono font-bold text-[#8BE8E3] shadow-inner ${sizeClasses} ${className}`}
+        className={`flex shrink-0 items-center justify-center rounded-full border border-[#8BE8E3]/30 bg-[#080D12] font-mono font-bold text-[#8BE8E3] shadow-inner ${sizeClasses} ${className}`}
       >
         {initials}
       </div>
@@ -36,13 +43,13 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#080D12] p-1 shadow-md shadow-black/40 ring-1 ring-[#8BE8E3]/20 ${sizeClasses} ${className}`}
+      className={`relative shrink-0 overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-[#182230] to-[#0A0F14] p-0.5 shadow-lg shadow-black/60 ring-2 ring-[#8BE8E3]/25 ${sizeClasses} ${className}`}
     >
       <img
         src={avatarSrc}
         alt={`Avatar for ${name}`}
         onError={() => setHasError(true)}
-        className="h-full w-full object-contain"
+        className="h-full w-full rounded-full object-cover"
         loading="lazy"
       />
     </div>
