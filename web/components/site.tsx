@@ -6,9 +6,32 @@ import { useState } from "react";
 export function Logo() {
   return (
     <Link href="/" className="group flex items-center gap-2.5 font-semibold tracking-tight">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-[#B5F0D1] via-[#8BE8E3] to-[#B6B8FF] text-[#080D12] shadow-sm shadow-[#8BE8E3]/20 transition-transform duration-200 group-hover:scale-105">
-        <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+      <div className="relative flex h-8 w-8 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-gradient-to-b from-[#141F2B] to-[#080D12] shadow-md shadow-[#8BE8E3]/15 transition-all duration-300 group-hover:scale-105 group-hover:border-[#8BE8E3]/60 group-hover:shadow-[#8BE8E3]/30">
+        <svg viewBox="0 0 32 32" fill="none" className="h-4.5 w-4.5">
+          <defs>
+            <linearGradient id="bagents-brand-mark" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#8BE8E3" />
+              <stop offset="0.5" stopColor="#B5F0D1" />
+              <stop offset="1" stopColor="#B6B8FF" />
+            </linearGradient>
+          </defs>
+          {/* Geometric 'B' Identity Monogram */}
+          <path
+            d="M8.5 6.5h7.5c2.76 0 5 2.24 5 5 0 1.5-.66 2.85-1.72 3.76A5.5 5.5 0 0 1 16.5 25.5H8.5V6.5z"
+            fill="url(#bagents-brand-mark)"
+          />
+          {/* Inner Cutouts */}
+          <path
+            d="M12 9.5h3.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5H12V9.5z"
+            fill="#080D12"
+          />
+          <path
+            d="M12 17h4.5c1.52 0 2.75 1.23 2.75 2.75S18.02 22.5 16.5 22.5H12V17z"
+            fill="#080D12"
+          />
+          {/* Glowing Neural Identity Iris */}
+          <circle cx="15.2" cy="12" r="1.1" fill="#8BE8E3" />
+          <circle cx="16" cy="19.75" r="1.2" fill="#B5F0D1" />
         </svg>
       </div>
       <span className="text-lg font-bold tracking-tight text-[#F5F3EF]">
