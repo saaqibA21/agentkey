@@ -14,7 +14,7 @@ export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
       }`}>
         <svg viewBox="0 0 32 32" fill="none" className="h-4.5 w-4.5">
           <defs>
-            <linearGradient id="bagents-brand-mark" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <linearGradient id="agentkey-brand-mark" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
               <stop stopColor="#8BE8E3" />
               <stop offset="0.5" stopColor="#B5F0D1" />
               <stop offset="1" stopColor="#B6B8FF" />
@@ -23,13 +23,13 @@ export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
           {/* Compass Star / Diamond Mark */}
           <path
             d="M16 3 L19.5 12.5 L29 16 L19.5 19.5 L16 29 L12.5 19.5 L3 16 L12.5 12.5 Z"
-            fill="url(#bagents-brand-mark)"
+            fill="url(#agentkey-brand-mark)"
           />
           <circle cx="16" cy="16" r="2" fill={isDarkCanvas ? "#0A2920" : "#080D12"} />
         </svg>
       </div>
       <span className={`text-lg font-bold tracking-tight ${isDarkCanvas ? "text-[#0E171B]" : "text-[#F5F3EF]"}`}>
-        B<span className={isDarkCanvas ? "text-[#0D6E48]" : "text-[#8BE8E3]"}>AGENTS</span>
+        Agent<span className={isDarkCanvas ? "text-[#0D6E48]" : "text-[#8BE8E3]"}>Key</span>
       </span>
     </Link>
   );
@@ -49,11 +49,11 @@ export function SiteNav() {
               NOW LIVE
             </span>
             <span className="text-[#9BA7B4] text-[13px] hidden sm:inline">
-              Standard OpenID Connect (OIDC) &amp; Verifiable Agent Passports for AI Apps
+              Standard OpenID Connect (OIDC) &amp; Verifiable Passports for AI Agents
             </span>
           </div>
           <Link href="/docs#oauth" className="flex items-center gap-1.5 text-xs font-mono text-[#8BE8E3] hover:underline">
-            <span>[ Directory ] Find apps that accept AgentID</span>
+            <span>[ Directory ] Find apps that accept AgentKey</span>
             <span>→</span>
           </Link>
         </div>
@@ -88,7 +88,7 @@ export function SiteNav() {
               href="/docs#oauth"
               className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-mono text-[#9BA7B4] transition hover:bg-white/10 hover:text-white"
             >
-              <span>Add AgentID</span>
+              <span>Add AgentKey</span>
               <span className="text-xs">→</span>
             </Link>
             <Link
@@ -129,7 +129,7 @@ export function SiteNav() {
             <Link href="/#security" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Security</Link>
             <Link href="/#directory" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Directory</Link>
             <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Docs</Link>
-            <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Add AgentID</Link>
+            <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Add AgentKey</Link>
           </div>
           <Link
             href="/dashboard"
@@ -152,19 +152,19 @@ export function SiteFooter() {
         <div className="space-y-2">
           <Logo />
           <p className="text-xs text-[#9BA7B4]">
-            Real identities. Real possibilities. Sovereign multi-channel AI identity platform.
+            Real identities. Real possibilities. Sovereign multi-channel AI identity &amp; authentication platform.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-xs">
-          <Link href="/#product" className="transition hover:text-[#F5F3EF]">Product</Link>
-          <Link href="/#agents" className="transition hover:text-[#F5F3EF]">Agents</Link>
-          <Link href="/docs" className="transition hover:text-[#F5F3EF]">Developers</Link>
-          <Link href="/#pricing" className="transition hover:text-[#F5F3EF]">Pricing</Link>
-          <Link href="/#resources" className="transition hover:text-[#F5F3EF]">Resources</Link>
+          <Link href="/#how-it-works" className="transition hover:text-[#F5F3EF]">How it works</Link>
+          <Link href="/#developers" className="transition hover:text-[#F5F3EF]">Developers</Link>
+          <Link href="/#directory" className="transition hover:text-[#F5F3EF]">Directory</Link>
+          <Link href="/docs#oauth" className="transition hover:text-[#F5F3EF]">OAuth &amp; OIDC</Link>
+          <Link href="/docs" className="transition hover:text-[#F5F3EF]">Docs</Link>
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">Privacy</Link>
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">Terms</Link>
-          <span className="text-slate-600">© 2026 BAGENTS Inc. All rights reserved.</span>
+          <span className="text-slate-600">© 2026 AgentKey Inc. All rights reserved.</span>
         </div>
       </div>
     </footer>

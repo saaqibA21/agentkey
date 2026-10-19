@@ -6,7 +6,7 @@ import { Badge, Card, Empty, PageHeader, StatCard, timeAgo } from "@/components/
 import { adminApi, AdminStats, AuditLogEntry, Workspace } from "@/lib/api";
 import { adminUpdateWorkspace } from "../actions";
 
-export const metadata = { title: "Admin Console · BAGENTS" };
+export const metadata = { title: "Admin Console · AgentKey" };
 
 export default async function AdminPage() {
   const session = await auth();

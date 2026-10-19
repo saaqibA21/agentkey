@@ -68,7 +68,7 @@ export default async function IdentityPage({
                 <Badge tone="accent">OIDC</Badge>
               </div>
               <p className="mt-0.5 text-xs text-[#9BA7B4]">
-                External websites and apps use this to offer &ldquo;Sign in with BAGENTS&rdquo; and verify agent email addresses.
+                External websites and apps use this to offer &ldquo;Sign in with AgentKey&rdquo; and verify agent email addresses.
               </p>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default async function IdentityPage({
       <div className="mt-10 rounded-xl border border-line bg-subtle/50 p-5">
         <h3 className="font-semibold tracking-tight text-ink">Zero-Trust Credential Isolation</h3>
         <p className="mt-1 text-xs text-muted">
-          BAGENTS ensures autonomous LLMs never possess raw passwords in context windows. Secrets remain domain-pinned,
+          AgentKey ensures autonomous LLMs never possess raw passwords in context windows. Secrets remain domain-pinned,
           ephemeral TOTPs are injected synchronously at runtime, and browser state is securely vaulted with owner attribution.
         </p>
       </div>

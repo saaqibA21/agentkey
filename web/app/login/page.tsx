@@ -4,7 +4,7 @@ import { auth, devLoginEnabled, oauthProviders, signIn } from "@/auth";
 import { Logo } from "@/components/site";
 import { inputClass } from "@/components/ui";
 
-export const metadata = { title: "Sign in · BAGENTS" };
+export const metadata = { title: "Sign in · AgentKey" };
 
 function GoogleMark() {
   return (
@@ -26,8 +26,15 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
     <main className="grid min-h-screen place-items-center px-6 py-16 bg-[#07090e] text-white">
       <div className="glass-card w-full max-w-md rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/10 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-500" />
+        <div className="mb-6 overflow-hidden rounded-2xl border border-[#8BE8E3]/25 bg-black/40 shadow-lg shadow-[#8BE8E3]/10">
+          <img
+            src="/images/agentkey-mascot.png"
+            alt="AgentKey Verified Robot Mascot"
+            className="w-full h-auto object-cover"
+          />
+        </div>
         <Logo />
-        <h1 className="mt-6 text-2xl font-bold tracking-tight text-white">Sign in to BAGENTS</h1>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight text-white">Sign in to AgentKey</h1>
         <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
           Sign in or create your account with Google. New here? Continuing creates your workspace.
         </p>
@@ -81,7 +88,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
                 className={`w-full ${inputClass}`}
               />
               <button className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-black shadow-lg shadow-white/10 transition hover:bg-slate-200">
-                Enter BAGENTS Workspace →
+                Enter AgentKey Workspace →
               </button>
             </form>
           )}

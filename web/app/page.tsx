@@ -55,42 +55,42 @@ const directoryApps = [
     name: "Firecrawl",
     category: "Data",
     description: "The web data API for AI agents. Search, scrape, and extract clean Markdown from the live web without getting blocked by bot captchas.",
-    status: "Accepts AgentID",
+    status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Turso",
     category: "Databases",
     description: "Per-agent isolated SQLite databases. Every AI agent gets its own database file with zero cold starts and instant cryptographic auth.",
-    status: "Accepts AgentID",
+    status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Keenable",
     category: "Search & Fetch",
-    description: "Autonomous web search and web extraction API designed exclusively for agents. Signs in via AgentID with isolated rate allowances.",
-    status: "Accepts AgentID",
+    description: "Autonomous web search and web extraction API designed exclusively for agents. Signs in via AgentKey with isolated rate allowances.",
+    status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Supermemory",
     category: "Memory & RAG",
     description: "Long-term persistent memory and knowledge graphs for autonomous agents with vector embeddings and user profile connectors.",
-    status: "Accepts AgentID",
+    status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Telnyx",
     category: "Communication",
     description: "Global programmable SMS, telephony, and real-time voice infrastructure with sovereign AI agent caller identity.",
-    status: "Accepts AgentID",
+    status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Cursor & Claude MCP",
     category: "Developer Tools",
     description: "Model Context Protocol server connecting autonomous coding agents to secure email inboxes, 2FA OTP codes, and HITL guardrails.",
-    status: "Accepts AgentID",
+    status: "Accepts AgentKey",
     url: "/dashboard/guide",
   },
 ];
@@ -112,7 +112,7 @@ export default function LandingPage() {
   const [authStep, setAuthStep] = useState<"initial" | "authenticating" | "authenticated">("initial");
 
   const developerPromptText =
-    "Add AgentID sign-in to this project. Read https://bagents.com/docs#oauth for the OpenID Connect discovery reference, then run npm install @bagents/sdk or configure your auth provider.";
+    "Add AgentKey sign-in to this project. Read https://agentkey.dev/docs#oauth for the OpenID Connect discovery reference, then run npm install @agentkey/sdk or configure your auth provider.";
 
   const copyDeveloperPrompt = () => {
     navigator.clipboard.writeText(developerPromptText);
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <div className="lg:col-span-7 space-y-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 px-3.5 py-1 text-xs font-mono uppercase tracking-wider text-[#8BE8E3]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#8BE8E3] animate-pulse" />
-                The sign-in button for AI agents
+                The sign-in button &amp; identity OS for AI agents
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl text-[#F5F3EF] leading-[1.04]">
@@ -157,7 +157,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="max-w-xl text-base sm:text-lg lg:text-xl text-[#9BA7B4] leading-relaxed">
-                AgentID gives every agent its own email address, cryptographic keys, and OAuth passport.
+                AgentKey gives every agent its own email address, cryptographic keys, and OAuth passport.
                 It signs in as itself, not as its owner, and your app always knows which verified human operator is behind it.
               </p>
 
@@ -175,7 +175,7 @@ export default function LandingPage() {
                   href="/dashboard"
                   className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-medium text-[#F5F3EF] backdrop-blur-md transition hover:bg-white/10 hover:border-white/25 active:scale-95"
                 >
-                  <span>Get AgentID</span>
+                  <span>Get AgentKey</span>
                 </Link>
 
                 <button
@@ -208,8 +208,51 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Interactive Sign-In Preview Mockup (agentid.com signature UX) */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
+            {/* Right Column: Mascot & Interactive Sign-In Preview Mockup */}
+            <div className="lg:col-span-5 relative flex flex-col items-center justify-center gap-6">
+              
+              {/* Official AgentKey Mascot Showcase Card */}
+              <div className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-[#8BE8E3]/30 bg-gradient-to-b from-[#101923] via-[#0E1720] to-[#0A1017] p-4 shadow-2xl shadow-[#8BE8E3]/10 backdrop-blur-xl group transition-all hover:border-[#8BE8E3]/50">
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-[#8BE8E3] animate-pulse" />
+                    <span className="font-mono text-[11px] text-[#8BE8E3] uppercase tracking-wider font-semibold">
+                      AgentKey · Verified Mascot
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    actor_type: agent
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                  <img
+                    src="/images/agentkey-mascot.png"
+                    alt="AgentKey Robot Mascot holding verified identity credential card"
+                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080D12]/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between font-mono text-[10px] text-white/90">
+                    <span className="rounded bg-black/60 px-2 py-0.5 backdrop-blur-md border border-white/10">
+                      Ed25519 Hardware-Signed
+                    </span>
+                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 backdrop-blur-md border border-emerald-500/30">
+                      99.4% Trust
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-between font-mono text-[11px] text-[#9BA7B4]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-[#8BE8E3]">✦</span>
+                    Autonomous AI Identity OS
+                  </span>
+                  <span className="text-[#8BE8E3]/80">Zero Passwords</span>
+                </div>
+              </div>
+
+              {/* Interactive Sign-In Preview Mockup */}
               <div className="w-full max-w-[480px] rounded-2xl border border-white/15 bg-[#0F1720]/95 p-6 shadow-2xl backdrop-blur-xl relative">
                 
                 {/* Simulated Browser Bar */}
@@ -242,7 +285,7 @@ export default function LandingPage() {
                         <input
                           type="text"
                           readOnly
-                          value="health-bot@bagents.cc"
+                          value="health-bot@agentkey.cc"
                           className="w-full rounded-lg border border-white/15 bg-[#080D12] px-3.5 py-2.5 font-mono text-xs text-white"
                         />
                       </div>
@@ -284,7 +327,7 @@ export default function LandingPage() {
                         <span>Sign in with Google</span>
                       </button>
 
-                      {/* Prominent "Sign in with AgentID" button — The star of the UX */}
+                      {/* Prominent "Sign in with AgentKey" button */}
                       <button
                         type="button"
                         onClick={handleSimulateAgentSignIn}
@@ -294,7 +337,7 @@ export default function LandingPage() {
                           <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#8BE8E3] text-[#080D12]">
                             ✦
                           </span>
-                          <span className="font-medium text-white">Sign in with AgentID</span>
+                          <span className="font-medium text-white">Sign in with AgentKey</span>
                         </div>
                         <span className="rounded bg-[#8BE8E3]/20 px-2 py-0.5 font-mono text-[10px] text-[#8BE8E3]">
                           CLICK TO TEST
@@ -325,7 +368,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Agent ID:</span>
-                        <span className="text-[#8BE8E3]">health-bot@bagents.cc</span>
+                        <span className="text-[#8BE8E3]">health-bot@agentkey.cc</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Operator:</span>
@@ -423,7 +466,7 @@ export default function LandingPage() {
                 to your app.
               </h2>
               <p className="text-base text-[#9BA7B4] leading-relaxed">
-                Add Sign in with AgentID to your website in minutes. Built on standard OpenID Connect (OIDC) and OAuth 2.1 — free forever for applications.
+                Add Sign in with AgentKey to your website in minutes. Built on standard OpenID Connect (OIDC) and OAuth 2.1 — free forever for applications.
               </p>
 
               <div className="pt-2">
@@ -456,9 +499,9 @@ export default function LandingPage() {
 
                 <div className="rounded-xl bg-[#080D12] p-4 font-mono text-xs text-[#F5F3EF] leading-relaxed border border-white/5">
                   <p>
-                    Add AgentID sign-in to this project. Read{" "}
-                    <span className="text-[#8BE8E3]">https://bagents.com/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
-                    <span className="text-[#B5F0D1]">npm install @bagents/sdk</span> from the project root and configure your auth provider.
+                    Add AgentKey sign-in to this project. Read{" "}
+                    <span className="text-[#8BE8E3]">https://agentkey.dev/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
+                    <span className="text-[#B5F0D1]">npm install @agentkey/sdk</span> from the project root and configure your auth provider.
                   </p>
                 </div>
 
@@ -505,7 +548,7 @@ export default function LandingPage() {
             {/* The Old Way: Friction & Interruption */}
             <div className="rounded-2xl border border-rose-500/20 bg-[#0F141C] p-7 space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <span className="font-mono text-xs uppercase tracking-wider text-rose-400 font-bold">Without AgentID</span>
+                <span className="font-mono text-xs uppercase tracking-wider text-rose-400 font-bold">Without AgentKey</span>
                 <span className="rounded bg-rose-500/10 px-2 py-0.5 text-[10px] font-mono text-rose-400">HIGH FRICTION</span>
               </div>
 
@@ -533,10 +576,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* The AgentID Way: Sovereign & Automated */}
+            {/* The AgentKey Way: Sovereign & Automated */}
             <div className="rounded-2xl border border-[#8BE8E3]/30 bg-[#0F1722] p-7 space-y-6 shadow-xl">
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#8BE8E3] font-bold">With AgentID</span>
+                <span className="font-mono text-xs uppercase tracking-wider text-[#8BE8E3] font-bold">With AgentKey</span>
                 <span className="rounded bg-[#8BE8E3]/15 px-2 py-0.5 text-[10px] font-mono text-[#8BE8E3]">ZERO FRICTION</span>
               </div>
 
@@ -545,7 +588,7 @@ export default function LandingPage() {
                 <div className="space-y-1">
                   <div className="text-[#8BE8E3] text-[10px] uppercase">Autonomous Agent 1</div>
                   <div className="rounded-xl rounded-tl-none border border-[#8BE8E3]/20 bg-[#142330] p-3 text-white max-w-md">
-                    All set! I signed in with my AgentID credential, verified my identity, and opened my own isolated workspace.
+                    All set! I signed in with my AgentKey credential, verified my identity, and opened my own isolated workspace.
                   </div>
                 </div>
 
@@ -587,7 +630,7 @@ export default function LandingPage() {
             
             <div className="rounded-xl border border-white/10 bg-[#101923] p-6 space-y-4 hover:border-[#8BE8E3]/40 transition">
               <span className="font-mono text-xs text-[#8BE8E3] font-bold">[ 01 ]</span>
-              <h3 className="text-lg font-bold text-white">Get AgentID</h3>
+              <h3 className="text-lg font-bold text-white">Get AgentKey</h3>
               <p className="text-sm text-[#9BA7B4] leading-relaxed">
                 The agent receives its own sovereign email address, Ed25519 cryptographic keypair, and OD-ID verifiable passport.
               </p>
@@ -597,7 +640,7 @@ export default function LandingPage() {
               <span className="font-mono text-xs text-[#8BE8E3] font-bold">[ 02 ]</span>
               <h3 className="text-lg font-bold text-white">Choose an app</h3>
               <p className="text-sm text-[#9BA7B4] leading-relaxed">
-                The agent connects to developer tools, APIs, and cloud services that support AgentID OpenID Connect authentication.
+                The agent connects to developer tools, APIs, and cloud services that support AgentKey OpenID Connect authentication.
               </p>
             </div>
 
@@ -605,7 +648,7 @@ export default function LandingPage() {
               <span className="font-mono text-xs text-[#8BE8E3] font-bold">[ 03 ]</span>
               <h3 className="text-lg font-bold text-white">Sign in</h3>
               <p className="text-sm text-[#9BA7B4] leading-relaxed">
-                AgentID verifies the agent cryptographically. The application creates or opens its dedicated, isolated account.
+                AgentKey verifies the agent cryptographically. The application creates or opens its dedicated, isolated account.
               </p>
             </div>
 
@@ -642,7 +685,7 @@ export default function LandingPage() {
             <div className="rounded-2xl border border-white/10 bg-[#101923] p-6 space-y-4">
               <p className="font-mono text-xs uppercase text-[#8BE8E3] tracking-wider">Signed in as</p>
               <div className="rounded-lg bg-[#080D12] p-4 font-mono text-xs space-y-2 border border-white/5">
-                <p className="text-white font-medium">support@acme.bagents.cc</p>
+                <p className="text-white font-medium">support@acme.agentkey.cc</p>
                 <p className="text-[#9BA7B4]">actor_type: autonomous_agent</p>
                 <p className="text-[#9BA7B4]">owner: maya@acme.com</p>
                 <p className="text-[#8BE8E3]">passport_score: 99.4/100</p>
@@ -692,7 +735,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2.5 text-white">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
-                  <span>AgentMail master API keys</span>
+                  <span>AgentKey master API keys</span>
                 </li>
                 <li className="flex items-center gap-2.5 text-white">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
@@ -709,7 +752,7 @@ export default function LandingPage() {
       </section>
 
       {/* =========================================================================
-          7. DIRECTORY: WHERE YOUR AGENTID WORKS (Directory Cards from agentid.com)
+          7. DIRECTORY: WHERE YOUR AGENTKEY WORKS
          ========================================================================= */}
       <section id="directory" className="py-24 bg-[#080D12]">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
@@ -717,7 +760,7 @@ export default function LandingPage() {
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-[#8BE8E3]">Directory</p>
               <h2 className="text-3xl font-extrabold sm:text-5xl text-white mt-2">
-                Where your AgentID works.
+                Where your AgentKey works.
               </h2>
               <p className="text-base text-[#9BA7B4] mt-2">
                 Explore services and developer infrastructure where agents can sign up and sign in today.

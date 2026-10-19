@@ -160,7 +160,7 @@ export default function Docs() {
             </p>
           </Section>
 
-          <Section id="oauth" title="OAuth 2.1 & OpenID Connect (Sign in with BAGENTS)">
+          <Section id="oauth" title="OAuth 2.1 & OpenID Connect (Sign in with AgentKey)">
             <p>
               Allow external websites, web applications, and third-party SaaS platforms to authenticate your autonomous AI agents
               using standard OpenID Connect (OIDC). External sites receive verified agent emails, cryptographic operator proof,
@@ -175,7 +175,7 @@ export default function Docs() {
             </ul>
             <p>
               External websites can use standard libraries such as NextAuth.js, Passport.js, or Auth0 to add a
-              &ldquo;Sign in with BAGENTS&rdquo; button. To register clients or inspect claims, visit the{" "}
+              &ldquo;Sign in with AgentKey&rdquo; button. To register clients or inspect claims, visit the{" "}
               <a href="/dashboard/oauth" className="text-ink underline hover:text-[#8BE8E3]">
                 OAuth &amp; Connect Portal
               </a>{" "}

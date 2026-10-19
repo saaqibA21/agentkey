@@ -5,7 +5,7 @@ import { Badge, Card, Code, PageHeader } from "@/components/ui";
 import { publicApiUrl } from "@/lib/api";
 import { snippets } from "@/lib/snippets";
 
-export const metadata = { title: "User Guide · How to Use BAGENTS" };
+export const metadata = { title: "User Guide · How to Use AgentKey" };
 
 export default function UserGuidePage() {
   const s = snippets(publicApiUrl);
@@ -76,7 +76,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       <PageHeader
-        title="User Guide · How to Use BAGENTS"
+        title="User Guide · How to Use AgentKey"
         lead="Everything you need to give your AI agents sovereign email identities, automate OTP 2FA logins, connect Claude & Cursor MCP, and protect operations with human-in-the-loop guardrails."
         aside={
           <div className="flex items-center gap-2">
@@ -201,7 +201,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               <Badge tone="good">Hosted MCP Ready</Badge>
             </div>
             <p className="text-sm text-[#9BA7B4] leading-relaxed">
-              BAGENTS provides native Model Context Protocol (MCP) servers and a lightweight HTTP API. You don&apos;t have to write custom email parsing code or install complex SMTP daemons.
+              AgentKey provides native Model Context Protocol (MCP) servers and a lightweight HTTP API. You don&apos;t have to write custom email parsing code or install complex SMTP daemons.
             </p>
 
             {/* Sub-cards for toolkits */}
@@ -270,7 +270,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               When an agent signs up on an external service (GitHub, Notion, Slack, X, etc.), the service sends a 6-digit confirmation code or magic link. Traditional LLM solutions feed the whole HTML email into GPT-4, burning thousands of tokens.
             </p>
             <p className="text-sm text-[#9BA7B4] leading-relaxed">
-              With BAGENTS, our edge parser runs deterministic RFC regular expressions and security heuristics on arrival. Your agent simply calls the <code className="text-white">/wait?for=otp</code> long-poll endpoint:
+              With AgentKey, our edge parser runs deterministic RFC regular expressions and security heuristics on arrival. Your agent simply calls the <code className="text-white">/wait?for=otp</code> long-poll endpoint:
             </p>
 
             <div className="pt-2">
@@ -303,7 +303,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               </Link>
             </div>
             <p className="text-sm text-[#9BA7B4] leading-relaxed">
-              Autonomous agents should not be allowed to send emails unchecked. BAGENTS gives you fine-grained policy control:
+              Autonomous agents should not be allowed to send emails unchecked. AgentKey gives you fine-grained policy control:
             </p>
 
             <ul className="list-disc list-inside text-xs text-[#9BA7B4] space-y-1.5 pl-2">
@@ -341,7 +341,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               How do external websites know an incoming request is an authorized AI agent and not an attack bot?
             </p>
             <p className="text-sm text-[#9BA7B4] leading-relaxed">
-              With <b>Owner Delegated ID (OD-ID)</b> and <b>OAuth 2.1 OpenID Connect</b>, third-party apps can implement &ldquo;Sign in with BAGENTS&rdquo;. The external app receives cryptographic claims confirming the agent&apos;s identity, trust score, and the verified human operator legally responsible for the agent.
+              With <b>Owner Delegated ID (OD-ID)</b> and <b>OAuth 2.1 OpenID Connect</b>, third-party apps can implement &ldquo;Sign in with AgentKey&rdquo;. The external app receives cryptographic claims confirming the agent&apos;s identity, trust score, and the verified human operator legally responsible for the agent.
             </p>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#080D12] p-4 text-xs font-mono text-[#8BE8E3]">
@@ -373,7 +373,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
           <Card className="!p-5 space-y-2">
             <h4 className="text-sm font-bold text-white">How does Webhook delivery work?</h4>
             <p className="text-xs text-[#9BA7B4] leading-relaxed">
-              Under <Link href="/dashboard/webhooks" className="text-[#8BE8E3] underline">Webhooks</Link>, register your HTTPS endpoint. Every time an email arrives or an approval status changes, BAGENTS signs a HMAC SHA-256 payload and delivers it in under 100ms.
+              Under <Link href="/dashboard/webhooks" className="text-[#8BE8E3] underline">Webhooks</Link>, register your HTTPS endpoint. Every time an email arrives or an approval status changes, AgentKey signs a HMAC SHA-256 payload and delivers it in under 100ms.
             </p>
           </Card>
 

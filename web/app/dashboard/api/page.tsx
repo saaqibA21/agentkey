@@ -33,7 +33,7 @@ export default async function ApiPage() {
     <>
       <PageHeader
         title="API & Agent Passports"
-        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a guaranteed unique avatar, cryptographic BAGENTS Passport, dedicated email inbox, and API credentials."
+        lead="Manage autonomous AI agents with verifiable human accountability. Each agent receives a guaranteed unique avatar, cryptographic AgentKey Passport, dedicated email inbox, and API credentials."
       />
 
       {/* OAuth Banner */}
@@ -46,7 +46,7 @@ export default async function ApiPage() {
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-white">Looking for OAuth &amp; &ldquo;Sign in with BAGENTS&rdquo;?</p>
+            <p className="text-xs font-semibold text-white">Looking for OAuth &amp; &ldquo;Sign in with AgentKey&rdquo;?</p>
             <p className="text-[11px] text-[#9BA7B4]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
           </div>
         </div>

@@ -241,13 +241,22 @@ export default async function OverviewPage() {
             </span>
           </div>
 
-          <div className="relative z-10 my-6 space-y-2">
-            <h3 className="text-2xl font-bold tracking-tight text-white">
-              Your agent.<br />Your rules.
-            </h3>
-            <p className="text-xs text-[#9BA7B4]">
-              Secure. Private. Sovereign.
-            </p>
+          <div className="relative z-10 my-4 space-y-3">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-inner">
+              <img
+                src="/images/agentkey-mascot.png"
+                alt="AgentKey Verified Mascot"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight text-white">
+                Your agent. Your rules.
+              </h3>
+              <p className="text-xs text-[#9BA7B4] mt-0.5">
+                Sovereign communication &amp; cryptographic identity.
+              </p>
+            </div>
           </div>
 
           <div className="relative z-10">
@@ -369,7 +378,7 @@ export default async function OverviewPage() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">User Guide</p>
-                    <p className="text-xs text-[#718096]">How to use BAGENTS, 2FA &amp; MCP</p>
+                    <p className="text-xs text-[#718096]">How to use AgentKey, 2FA &amp; MCP</p>
                   </div>
                 </div>
                 <span className="text-sm text-[#718096] group-hover:text-white">›</span>
@@ -448,7 +457,7 @@ export default async function OverviewPage() {
               </Link>
 
               <Link
-                href="mailto:support@bagents.ai"
+                href="mailto:support@agentkey.cc"
                 className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"
               >
                 <div className="flex items-center gap-3">

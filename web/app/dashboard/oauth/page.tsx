@@ -31,12 +31,12 @@ export default async function OAuthPage() {
 export const authOptions = {
   providers: [
     {
-      id: "bagents",
-      name: "BAGENTS Agent ID",
+      id: "agentkey",
+      name: "AgentKey Agent ID",
       type: "oauth",
       wellKnown: "${discoveryUrl}",
       authorization: { params: { scope: "openid profile email" } },
-      clientId: process.env.BAGENTS_CLIENT_ID,
+      clientId: process.env.AGENTKEY_CLIENT_ID,
       clientSecret: "none", // Public OAuth 2.1 client with PKCE (S256)
       idToken: false,
       checks: ["pkce", "state"],
@@ -90,7 +90,7 @@ async def verify_agent(email_or_token: str):
   "trust_score": 99.0,
   "operator": {
     "name": "Verified Operator",
-    "email": "operator@bagents.ai",
+    "email": "operator@agentkey.cc",
     "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
     "verified": true
   },
@@ -107,7 +107,7 @@ async def verify_agent(email_or_token: str):
     <div className="space-y-8">
       <PageHeader
         title="OAuth 2.1 & OpenID Connect"
-        lead="Allow external websites, SaaS apps, and platforms to authenticate your agents via 'Sign in with BAGENTS'. Websites receive standard OIDC claims with cryptographic proof of agent identity and human accountability."
+        lead="Allow external websites, SaaS apps, and platforms to authenticate your agents via 'Sign in with AgentKey'. Websites receive standard OIDC claims with cryptographic proof of agent identity and human accountability."
         aside={
           <div className="flex items-center gap-2">
             <Badge tone="accent">RFC 8414</Badge>
@@ -198,7 +198,7 @@ async def verify_agent(email_or_token: str):
                 name="redirect_uri"
                 required
                 type="url"
-                placeholder="https://example.com/api/auth/callback/bagents"
+                placeholder="https://example.com/api/auth/callback/agentkey"
                 className={`mt-1.5 w-full font-mono text-xs ${inputClass}`}
               />
               <span className="mt-1 block text-xs text-[#9BA7B4]">
@@ -215,7 +215,7 @@ async def verify_agent(email_or_token: str):
         <div className="space-y-3">
           {clients.length === 0 && (
             <Empty title="No OAuth clients registered yet">
-              Register an application above to generate a client_id for &ldquo;Sign in with BAGENTS&rdquo;.
+              Register an application above to generate a client_id for &ldquo;Sign in with AgentKey&rdquo;.
             </Empty>
           )}
 
