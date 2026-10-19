@@ -60,6 +60,9 @@ export function SiteNav() {
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">
             Developers
           </Link>
+          <Link href="/docs#oauth" className="transition hover:text-[#F5F3EF]">
+            OAuth &amp; OIDC
+          </Link>
           <Link href="/#pricing" className="transition hover:text-[#F5F3EF]">
             Pricing
           </Link>

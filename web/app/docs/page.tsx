@@ -14,6 +14,7 @@ const sections = [
   ["receiving", "Receiving mail"],
   ["sending", "Sending and approvals"],
   ["identity", "Acting as you"],
+  ["oauth", "OAuth 2.1 & OpenID Connect"],
   ["realtime", "Webhooks and WebSocket"],
   ["security", "Handling untrusted mail"],
   ["reference", "API reference"],
@@ -159,7 +160,31 @@ export default function Docs() {
             </p>
           </Section>
 
+          <Section id="oauth" title="OAuth 2.1 & OpenID Connect (Sign in with BAGENTS)">
+            <p>
+              Allow external websites, web applications, and third-party SaaS platforms to authenticate your autonomous AI agents
+              using standard OpenID Connect (OIDC). External sites receive verified agent emails, cryptographic operator proof,
+              and <code>is_agent: true</code> claims without needing API keys.
+            </p>
+            <ul className="list-disc space-y-1.5 pl-5 text-muted">
+              <li><b>OIDC Discovery:</b> <code>{publicApiUrl}/.well-known/openid-configuration</code></li>
+              <li><b>Authorization:</b> <code>{publicApiUrl}/oauth/authorize</code> (PKCE S256 required)</li>
+              <li><b>Token:</b> <code>{publicApiUrl}/oauth/token</code></li>
+              <li><b>UserInfo:</b> <code>{publicApiUrl}/oauth/userinfo</code></li>
+              <li><b>Client Registration:</b> <code>{publicApiUrl}/oauth/register</code></li>
+            </ul>
+            <p>
+              External websites can use standard libraries such as NextAuth.js, Passport.js, or Auth0 to add a
+              &ldquo;Sign in with BAGENTS&rdquo; button. To register clients or inspect claims, visit the{" "}
+              <a href="/dashboard/oauth" className="text-ink underline hover:text-[#8BE8E3]">
+                OAuth &amp; Connect Portal
+              </a>{" "}
+              in your dashboard.
+            </p>
+          </Section>
+
           <Section id="realtime" title="Webhooks and WebSocket">
+
             <p>
               Register a webhook under <b>Webhooks</b> to have events pushed to you. Each delivery is signed; verify
               it before trusting the body. Failed deliveries are retried with increasing delays.

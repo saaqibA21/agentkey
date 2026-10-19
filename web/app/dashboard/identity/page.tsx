@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ActionForm } from "@/components/client";
 import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
 import { api, publicApiUrl } from "@/lib/api";
@@ -47,9 +48,40 @@ export default async function IdentityPage({
   return (
     <>
       <PageHeader
-        title="Identity"
-        lead="Let your agent act as you on other services. Only apps and API keys you gave the Connect permission can use your accounts and logins, and you decide how far each one goes."
+        title="Identity & Session Vault"
+        lead="Manage your agents' cross-site credentials and allow external websites to authenticate your agents via OpenID Connect & OAuth 2.1."
       />
+
+      {/* OAuth 2.1 & OpenID Connect Provider Box */}
+      <div className="mb-8 rounded-2xl border border-[#8BE8E3]/30 bg-[#0E151E] p-5 shadow-lg shadow-black/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-[#8BE8E3]/15 text-[#8BE8E3]">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-white">OAuth 2.1 &amp; OpenID Connect Identity Provider</h2>
+                <Badge tone="accent">OIDC</Badge>
+              </div>
+              <p className="mt-0.5 text-xs text-[#9BA7B4]">
+                External websites and apps use this to offer &ldquo;Sign in with BAGENTS&rdquo; and verify agent email addresses.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/oauth"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-[#8BE8E3]/40 bg-[#132A26] px-4 py-2 text-xs font-semibold text-[#8BE8E3] hover:bg-[#1A3833] transition shadow-sm"
+          >
+            <span>Open OAuth Portal</span>
+            <span>→</span>
+          </Link>
+        </div>
+      </div>
+
       {connected && <p className="mb-4 rounded-lg bg-accent/10 px-4 py-2 text-sm">Connected {connected}.</p>}
       {error && (
         <p role="alert" className="mb-4 rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">

@@ -240,6 +240,22 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                       </div>
                     </div>
 
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+                          OAuth 2.1 &amp; OpenID Connect UserInfo URL
+                        </span>
+                        <CopyButton value="http://127.0.0.1:8000/oauth/userinfo" />
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line/80 bg-black/60 p-2.5 font-mono text-xs text-[#8BE8E3]">
+                        <span>GET http://127.0.0.1:8000/oauth/userinfo</span>
+                        <Link href="/dashboard/oauth" className="text-xs text-white underline hover:text-[#8BE8E3]">
+                          Register Client ID &amp; OAuth Portal →
+                        </Link>
+                      </div>
+                    </div>
+
+
                     <div className="pt-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted uppercase tracking-wider">
