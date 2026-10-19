@@ -41,24 +41,6 @@ export function SiteNav() {
 
   return (
     <header className="sticky top-0 z-50 transition-colors">
-      {/* Top Announcement Banner (Inspired by agentid.com) */}
-      <div className="border-b border-white/[0.08] bg-[#060A0E] text-xs py-2 px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <span className="font-mono uppercase text-[10px] tracking-wider px-2 py-0.5 rounded bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30 font-semibold">
-              NOW LIVE
-            </span>
-            <span className="text-[#9BA7B4] text-[13px] hidden sm:inline">
-              Standard OpenID Connect (OIDC) &amp; Verifiable Passports for AI Agents
-            </span>
-          </div>
-          <Link href="/docs#oauth" className="flex items-center gap-1.5 text-xs font-mono text-[#8BE8E3] hover:underline">
-            <span>[ Directory ] Find apps that accept AgentKey</span>
-            <span>→</span>
-          </Link>
-        </div>
-      </div>
-
       <div className="border-b border-white/[0.06] bg-[#080D12]/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Logo />
