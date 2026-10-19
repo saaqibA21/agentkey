@@ -14,8 +14,22 @@ export const oauthProviders = [
 ];
 
 const providers: Provider[] = [];
-if (process.env.AUTH_GOOGLE_ID) providers.push(Google);
-if (process.env.AUTH_GITHUB_ID) providers.push(GitHub);
+if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+  providers.push(
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    })
+  );
+}
+if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
+  providers.push(
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    })
+  );
+}
 if (devLoginEnabled) {
   providers.push(
     Credentials({
@@ -50,7 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === "google") return profile?.email_verified === true;
+      if (account?.provider === "google") return Boolean(profile?.email_verified) === true;
       if (account?.provider === "github") return (await githubVerifiedEmail(account.access_token)) !== null;
       return account?.provider === "dev" && devLoginEnabled;
     },

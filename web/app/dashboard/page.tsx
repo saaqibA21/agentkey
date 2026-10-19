@@ -48,12 +48,6 @@ export default async function OverviewPage() {
           <div className="flex items-center gap-2">
             <Badge tone="purple">OD-ID Active</Badge>
             <Badge tone="good">{o.workspace.plan} tier</Badge>
-            <Link
-              href="/dashboard/admin"
-              className="rounded-lg border border-line bg-subtle px-3 py-1 text-xs font-medium text-ink transition hover:bg-line/40"
-            >
-              Admin Console →
-            </Link>
           </div>
         }
       />

@@ -380,10 +380,10 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="/dashboard/admin"
+              href="/docs"
               className="rounded-full border border-white/15 bg-white/5 px-7 py-4 text-sm font-medium text-[#F5F3EF] backdrop-blur-md transition hover:bg-white/10 hover:border-white/25"
             >
-              Admin Governance
+              Explore Documentation
             </Link>
           </div>
         </div>

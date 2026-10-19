@@ -43,9 +43,6 @@ export function SiteNav() {
           <Link href="/#resources" className="transition hover:text-[#F5F3EF]">
             Resources
           </Link>
-          <Link href="/dashboard/admin" className="text-[#8BE8E3] transition hover:text-[#B5F0D1]">
-            Admin
-          </Link>
         </nav>
 
         {/* Desktop CTA */}
@@ -87,7 +84,6 @@ export function SiteNav() {
             <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-white">Developers</Link>
             <Link href="/#pricing" onClick={() => setMobileOpen(false)} className="hover:text-white">Pricing</Link>
             <Link href="/#resources" onClick={() => setMobileOpen(false)} className="hover:text-white">Resources</Link>
-            <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className="text-[#8BE8E3]">Admin Console</Link>
           </div>
           <Link
             href="/dashboard"
@@ -120,7 +116,6 @@ export function SiteFooter() {
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">Developers</Link>
           <Link href="/#pricing" className="transition hover:text-[#F5F3EF]">Pricing</Link>
           <Link href="/#resources" className="transition hover:text-[#F5F3EF]">Resources</Link>
-          <Link href="/dashboard/admin" className="transition hover:text-[#F5F3EF]">Admin</Link>
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">Privacy</Link>
           <Link href="/docs" className="transition hover:text-[#F5F3EF]">Terms</Link>
           <span className="text-slate-600">© 2026 BAGENTS Inc. All rights reserved.</span>

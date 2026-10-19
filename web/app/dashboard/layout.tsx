@@ -55,7 +55,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </div>
 
             <div className="mt-3.5 border-t border-line/60 pt-3 flex items-center justify-between text-xs">
-              <span className="font-mono text-[10px] text-muted">WORKSPACE ADMIN</span>
+              <span className="font-mono text-[10px] text-muted">WORKSPACE OWNER</span>
               <form
                 action={async () => {
                   "use server";

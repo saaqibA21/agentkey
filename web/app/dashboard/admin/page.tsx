@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+import { auth } from "@/auth";
 import { ActionForm } from "@/components/client";
 import { Badge, Card, Empty, PageHeader, StatCard, timeAgo } from "@/components/ui";
 import { adminApi, AdminStats, AuditLogEntry, Workspace } from "@/lib/api";
@@ -6,6 +9,18 @@ import { adminUpdateWorkspace } from "../actions";
 export const metadata = { title: "Admin Console · BAGENTS" };
 
 export default async function AdminPage() {
+  const session = await auth();
+  const email = session?.user?.email?.toLowerCase().trim() ?? "";
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "saaqibheroindia@gmail.com")
+    .toLowerCase()
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  if (!email || !adminEmails.includes(email)) {
+    redirect("/dashboard");
+  }
+
   let stats: AdminStats = { workspaces: 0, inboxes: 0, messages: 0, audit_logs: 0, status: "HEALTHY" };
   let workspaces: Workspace[] = [];
   let auditLogs: AuditLogEntry[] = [];
