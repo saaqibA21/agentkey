@@ -7,10 +7,12 @@ import { createPolicy, decide, deletePolicy } from "../actions";
 export default async function ApprovalsPage() {
   const [pendingRaw, policiesRaw] = await Promise.all([
     api<{ data: Message[] }>("/hitl/pending"),
-    api<Policy[]>("/hitl/policies"),
+    api<Policy[] | { data: Policy[] }>("/hitl/policies"),
   ]);
-  const pending = pendingRaw ?? { data: [] };
-  const policies = policiesRaw ?? [];
+  const pending: { data: Message[] } = pendingRaw?.data ? pendingRaw : { data: [] };
+  const policies: Policy[] = Array.isArray(policiesRaw)
+    ? policiesRaw
+    : (Array.isArray((policiesRaw as any)?.data) ? (policiesRaw as any).data : []);
 
   return (
     <>
@@ -69,11 +71,11 @@ export default async function ApprovalsPage() {
         </p>
       </Card>
       <div className="mt-3 space-y-2">
-        {policies.map((p) => (
+        {policies.map((p: Policy) => (
           <Card key={p.id} className="flex flex-wrap items-center gap-3 !py-3">
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap gap-1">
-                {p.trigger_keywords.map((k) => (
+                {(p.trigger_keywords || []).map((k: string) => (
                   <Badge key={k}>{k}</Badge>
                 ))}
               </p>

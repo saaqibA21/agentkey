@@ -14,8 +14,17 @@ const events = [
 ] as const;
 
 export default async function WebhooksPage() {
-  const hooksRaw = await api<Webhook[]>("/webhooks");
-  const hooks = hooksRaw ?? [];
+  let hooks: Webhook[] = [];
+  try {
+    const hooksRaw = await api<Webhook[] | { data: Webhook[] }>("/webhooks");
+    if (Array.isArray(hooksRaw)) {
+      hooks = hooksRaw;
+    } else if (hooksRaw && Array.isArray((hooksRaw as any).data)) {
+      hooks = (hooksRaw as any).data;
+    }
+  } catch {
+    hooks = [];
+  }
 
   return (
     <>
@@ -54,7 +63,7 @@ export default async function WebhooksPage() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-mono text-sm">{hook.target_url}</p>
               <p className="mt-1 flex flex-wrap gap-1">
-                {hook.event_types.map((e) => (
+                {((hook.event_types as string[]) ?? []).map((e) => (
                   <Badge key={e}>{e === "*" ? "all events" : e}</Badge>
                 ))}
               </p>

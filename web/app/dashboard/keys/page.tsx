@@ -12,7 +12,8 @@ const scopes = [
 ] as const;
 
 export default async function KeysPage() {
-  const keys = (await api<ApiKey[]>("/api-keys")).filter((k) => !k.revoked_at && k.name !== "root");
+  const keysRaw = await api<ApiKey[]>("/api-keys");
+  const keys: ApiKey[] = (Array.isArray(keysRaw) ? keysRaw : ((keysRaw as any)?.data ?? [])).filter((k: ApiKey) => !k?.revoked_at && k?.name !== "root");
 
   return (
     <>

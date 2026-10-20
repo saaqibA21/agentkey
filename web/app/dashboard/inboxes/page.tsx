@@ -8,11 +8,13 @@ import { createInbox, deleteInbox } from "../actions";
 
 export default async function InboxesPage() {
   const [inboxesRaw, overviewRaw, domainsRaw] = await Promise.all([
-    api<Inbox[]>("/inboxes?limit=200"),
+    api<Inbox[] | { data: Inbox[] }>("/inboxes?limit=200"),
     api<Overview>("/overview"),
     api<{ data: Domain[] }>("/domains"),
   ]);
-  const inboxes = inboxesRaw ?? [];
+  const inboxes: Inbox[] = Array.isArray(inboxesRaw)
+    ? inboxesRaw
+    : (Array.isArray((inboxesRaw as any)?.data) ? (inboxesRaw as any).data : []);
   const overview = overviewRaw ?? {
     workspace: { id: "ws_default", name: "Workspace", plan: "pro", outbound_enabled: true, daily_send_limit: 1000, max_inboxes: 50, inbound_daily_limit: 5000, pii_masking_enabled: true },
     usage: { sent_today: 0, received_today: 0 },
@@ -77,7 +79,7 @@ export default async function InboxesPage() {
         {inboxes.length === 0 && (
           <Empty title="No inboxes yet">Create one above, or let your agent call create_agent_inbox.</Empty>
         )}
-        {inboxes.map((inbox) => (
+        {inboxes.map((inbox: Inbox) => (
           <Card key={inbox.id} className="flex flex-wrap items-center gap-3 !py-3.5 transition-all hover:border-line/80">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
