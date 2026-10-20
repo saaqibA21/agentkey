@@ -4,7 +4,7 @@ import { AgentAvatar } from "@/components/agent-avatar";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { ActionForm, CopyButton } from "@/components/client";
 import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, publicApiUrl } from "@/lib/api";
 
 import { createAgent, deleteAgent, updateAgentAvatar } from "../actions";
 
@@ -24,11 +24,24 @@ type Agent = {
 };
 
 export default async function ApiPage() {
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch {
+    session = null;
+  }
   const ownerEmail = session?.user?.email ?? "";
   const ownerName = session?.user?.name || (ownerEmail ? ownerEmail.split("@")[0] : "Owner");
-  const agentsRaw = await api<{ data: Agent[] }>("/agents");
-  const agents = agentsRaw ?? { data: [] };
+
+  let agents = { data: [] as Agent[] };
+  try {
+    const agentsRaw = await api<{ data: Agent[] }>("/agents");
+    if (agentsRaw && Array.isArray(agentsRaw.data)) {
+      agents = agentsRaw;
+    }
+  } catch {
+    agents = { data: [] };
+  }
 
   return (
     <>
@@ -126,7 +139,7 @@ export default async function ApiPage() {
         )}
         {agents.data.map((a) => {
           const verifySnippet = `// Third-Party Website Integration
-const res = await fetch("http://127.0.0.1:8000/v1/auth/agent/verify", {
+const res = await fetch("${publicApiUrl}/v1/auth/agent/verify", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ passport: "${a.passport ?? ""}" })
@@ -175,14 +188,14 @@ const { verified, agent, owner, trust_score } = await res.json();`;
 
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
-                    {a.scopes.map((s) => (
+                    {((a.scopes as string[]) ?? []).map((s) => (
                       <Badge key={s} tone={s === "send" ? "warn" : "neutral"}>
                         {s}
                       </Badge>
                     ))}
                   </div>
                   <a
-                    href={`/dashboard/inboxes/${a.inbox_id}`}
+                    href={a.inbox_id ? `/dashboard/inboxes/${a.inbox_id}` : "/dashboard/inboxes"}
                     className="rounded-xl border border-line px-3.5 py-2 text-sm font-medium hover:bg-white/5"
                   >
                     Open inbox
@@ -259,10 +272,10 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                         <span className="text-xs font-semibold text-muted uppercase tracking-wider">
                           OAuth 2.1 &amp; OpenID Connect UserInfo URL
                         </span>
-                        <CopyButton value="http://127.0.0.1:8000/oauth/userinfo" />
+                        <CopyButton value={`${publicApiUrl}/oauth/userinfo`} />
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line/80 bg-black/60 p-2.5 font-mono text-xs text-[#8BE8E3]">
-                        <span>GET http://127.0.0.1:8000/oauth/userinfo</span>
+                        <span>GET {publicApiUrl}/oauth/userinfo</span>
                         <Link href="/dashboard/oauth" className="text-xs text-white underline hover:text-[#8BE8E3]">
                           Register Client ID &amp; OAuth Portal →
                         </Link>

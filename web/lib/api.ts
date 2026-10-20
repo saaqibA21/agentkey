@@ -262,11 +262,18 @@ function getResilientFallback<T>(path: string): T {
     return {
       data: [
         {
-          id: "ag_default_01",
-          name: "Autonomous Task Agent",
-          avatar_url: "/images/mascot/agentkey-badge.png",
-          status: "ACTIVE",
+          id: "ag_live_primary",
+          agent_name: "Autonomous Task Agent",
+          owner_name: "Operator",
+          owner_email: "operator@agentkey.in",
+          email_address: "agent-01@agentkey.in",
+          inbox_id: "inbox_primary_agent",
+          api_key_prefix: "ai_live_8f3a",
+          scopes: ["read", "send", "manage", "connect"],
           created_at: new Date().toISOString(),
+          passport: "agpass_live_98a72b1c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+          avatar_url: "/images/mascot/agentkey-badge.png",
+          avatar_seed: "8f3a2b",
         },
       ],
     } as unknown as T;
