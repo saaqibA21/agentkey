@@ -88,7 +88,8 @@ function DomainCard({ domain }: { domain: Domain }) {
 }
 
 export default async function DomainsPage() {
-  const domains = await api<{ data: Domain[] }>("/domains");
+  const domainsRaw = await api<{ data: Domain[] }>("/domains");
+  const domains = domainsRaw ?? { data: [] };
 
   return (
     <>

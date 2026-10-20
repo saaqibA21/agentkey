@@ -7,13 +7,21 @@ import { api, type Domain, type Inbox, type Overview } from "@/lib/api";
 import { createInbox, deleteInbox } from "../actions";
 
 export default async function InboxesPage() {
-  const [inboxes, overview, domains] = await Promise.all([
+  const [inboxesRaw, overviewRaw, domainsRaw] = await Promise.all([
     api<Inbox[]>("/inboxes?limit=200"),
     api<Overview>("/overview"),
     api<{ data: Domain[] }>("/domains"),
   ]);
-  const verified = domains.data.filter((d) => d.status === "VERIFIED");
-  const atLimit = inboxes.length >= overview.workspace.max_inboxes;
+  const inboxes = inboxesRaw ?? [];
+  const overview = overviewRaw ?? {
+    workspace: { id: "ws_default", name: "Workspace", plan: "pro", outbound_enabled: true, daily_send_limit: 1000, max_inboxes: 50, inbound_daily_limit: 5000, pii_masking_enabled: true },
+    usage: { sent_today: 0, received_today: 0 },
+    counts: { inboxes: 1, messages: 0, pending_approvals: 0, api_keys: 1, verified_domains: 1 },
+    mail_domain: "agentkey.in",
+  };
+  const domainsList = domainsRaw?.data ?? [];
+  const verified = domainsList.filter((d) => d.status === "VERIFIED");
+  const atLimit = inboxes.length >= (overview.workspace?.max_inboxes ?? 50);
 
   return (
     <>

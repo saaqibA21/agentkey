@@ -35,15 +35,23 @@ function Toggle({ id, field, on, label, help }: { id: string; field: string; on:
 
 export default async function IdentityPage({
   searchParams,
-}: { searchParams: Promise<{ connected?: string; error?: string }> }) {
-  const [{ connected, error }, apps, providers, connections, logins, requests] = await Promise.all([
-    searchParams,
+}: { searchParams?: Promise<{ connected?: string; error?: string }> }) {
+  const params = searchParams ? await searchParams : {};
+  const connected = params?.connected;
+  const error = params?.error;
+
+  const [appsRaw, providersRaw, connectionsRaw, loginsRaw, requestsRaw] = await Promise.all([
     api<{ data: { client_id: string; client_name: string; redirect_host: string; scopes: string[]; last_authorized_at: string }[] }>("/oauth/grants"),
     api<{ data: { id: string; name: string }[] }>("/connections/providers"),
     api<{ data: Connection[] }>("/connections"),
     api<{ data: Login[] }>("/vault/items"),
     api<{ data: AccessRequest[] }>("/vault/requests"),
   ]);
+  const apps = appsRaw ?? { data: [] };
+  const providers = providersRaw ?? { data: [] };
+  const connections = connectionsRaw ?? { data: [] };
+  const logins = loginsRaw ?? { data: [] };
+  const requests = requestsRaw ?? { data: [] };
 
   return (
     <>

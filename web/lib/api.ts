@@ -17,7 +17,22 @@ export class ApiError extends Error {
   }
 }
 
-// Session tokens are short-lived and workspace-scoped; cache them per signed-in user until they near expiry.
+// Global circuit breaker to prevent serverless function timeouts when backend is offline
+let backendOfflineUntil = 0;
+
+export function isBackendOffline(): boolean {
+  return Date.now() < backendOfflineUntil;
+}
+
+export function setBackendOffline(seconds = 60) {
+  backendOfflineUntil = Date.now() + seconds * 1000;
+}
+
+export function setBackendOnline() {
+  backendOfflineUntil = 0;
+}
+
+// Session tokens are short-lived and workspace-scoped; cache them per signed-in user
 const tokens = new Map<string, { token: string; expiresAt: number }>();
 
 async function identity() {
@@ -38,9 +53,17 @@ async function sessionToken(forceNew = false): Promise<string> {
   const cached = tokens.get(cacheKey);
   if (!forceNew && cached && cached.expiresAt - 120 > Date.now() / 1000) return cached.token;
 
+  const mockToken = `mock_session_${Buffer.from(me.email).toString("base64")}`;
+
+  // If circuit is open, return cached standby token immediately (0ms delay)
+  if (isBackendOffline()) {
+    tokens.set(cacheKey, { token: mockToken, expiresAt: Math.floor(Date.now() / 1000) + 120 });
+    return mockToken;
+  }
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 1800);
 
     const resp = await fetch(`${API_URL}/v1/internal/sessions`, {
       method: "POST",
@@ -55,24 +78,33 @@ async function sessionToken(forceNew = false): Promise<string> {
     clearTimeout(timeout);
 
     if (!resp.ok) {
-      return `mock_session_${Buffer.from(me.email).toString("base64")}`;
+      setBackendOffline(60);
+      tokens.set(cacheKey, { token: mockToken, expiresAt: Math.floor(Date.now() / 1000) + 120 });
+      return mockToken;
     }
     const data = (await resp.json()) as { token: string; expires_at: number };
+    setBackendOnline();
     tokens.set(cacheKey, { token: data.token, expiresAt: data.expires_at });
     return data.token;
   } catch {
-    return `mock_session_${Buffer.from(me.email).toString("base64")}`;
+    setBackendOffline(60);
+    tokens.set(cacheKey, { token: mockToken, expiresAt: Math.floor(Date.now() / 1000) + 120 });
+    return mockToken;
   }
 }
 
 async function call(path: string, init: RequestInit | undefined, retry: boolean): Promise<Response> {
+  if (isBackendOffline()) {
+    throw new Error("Backend offline");
+  }
+
   const token = await sessionToken(!retry);
   if (token.startsWith("mock_session_")) {
-    throw new Error("API standby mode");
+    throw new Error("Backend offline");
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4000);
+  const timeout = setTimeout(() => controller.abort(), 2000);
   try {
     const resp = await fetch(`${API_URL}/v1${path}`, {
       ...init,
@@ -88,6 +120,7 @@ async function call(path: string, init: RequestInit | undefined, retry: boolean)
     return resp.status === 401 && retry ? call(path, init, false) : resp;
   } catch (err) {
     clearTimeout(timeout);
+    setBackendOffline(60);
     throw err;
   }
 }
@@ -284,8 +317,12 @@ function getResilientFallback<T>(path: string): T {
   return {} as T;
 }
 
-/** Call the AgentKey API as the signed-in user. Resilient against backend downtime during Server Component renders. */
+/** Call the AgentKey API as the signed-in user. Fast and resilient against backend downtime. */
 export async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  if (isBackendOffline() && (!init?.method || init.method === "GET")) {
+    return getResilientFallback<T>(path);
+  }
+
   try {
     const resp = await call(path, init, true);
     if (resp.status === 204) return undefined as T;
@@ -311,10 +348,14 @@ export async function apiRaw(path: string): Promise<Response> {
 
 /** Call operator admin endpoints using X-Admin-Secret. */
 export async function adminApi<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  if (isBackendOffline() && (!init?.method || init.method === "GET")) {
+    return getResilientFallback<T>(path);
+  }
+
   const adminSecret = process.env.AIGENT_ADMIN_SECRET ?? "_yETXQ0OHXL-BvESlXEyKBrqom7NZaH89W42GKG8Kz0";
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 2000);
     const resp = await fetch(`${API_URL}/v1${path}`, {
       ...init,
       headers: {

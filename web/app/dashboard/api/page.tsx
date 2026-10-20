@@ -27,7 +27,8 @@ export default async function ApiPage() {
   const session = await auth();
   const ownerEmail = session?.user?.email ?? "";
   const ownerName = session?.user?.name || (ownerEmail ? ownerEmail.split("@")[0] : "Owner");
-  const agents = await api<{ data: Agent[] }>("/agents");
+  const agentsRaw = await api<{ data: Agent[] }>("/agents");
+  const agents = agentsRaw ?? { data: [] };
 
   return (
     <>
