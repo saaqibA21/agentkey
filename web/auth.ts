@@ -4,6 +4,14 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
+// Ensure production domain is agentkey.in and never old agentkey.cc
+if (process.env.AUTH_URL && process.env.AUTH_URL.includes("agentkey.cc")) {
+  process.env.AUTH_URL = "https://www.agentkey.in";
+}
+if (process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL.includes("agentkey.cc")) {
+  process.env.NEXTAUTH_URL = "https://www.agentkey.in";
+}
+
 // Local development convenience. Never active in a production build, whatever the env says.
 export const devLoginEnabled =
   process.env.NODE_ENV !== "production" && process.env.AIGENT_DEV_LOGIN === "true";
