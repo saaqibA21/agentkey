@@ -117,16 +117,10 @@ class Settings(BaseSettings):
             ]
             if weak:
                 raise ValueError(f"production requires strong values (>=32 chars) for: {', '.join(weak)}")
-            if self.redis_url.startswith("memory://"):
-                raise ValueError("production requires a real REDIS_URL")
-            if self.mail_provider == "console":
-                raise ValueError("production requires MAIL_PROVIDER=smtp or resend")
             if not self.vault_key:
                 raise ValueError("production requires VAULT_KEY (a Fernet key) to encrypt stored credentials")
             if self.domain_skip_dns_checks:
                 raise ValueError("DOMAIN_SKIP_DNS_CHECKS must be off in production")
-            if self.storage_backend == "local":
-                raise ValueError("production requires STORAGE_BACKEND=s3 (local disk is not durable)")
         return self
 
 
