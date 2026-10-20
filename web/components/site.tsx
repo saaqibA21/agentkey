@@ -7,26 +7,12 @@ export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
   const isDarkCanvas = variant === "dark";
   return (
     <Link href="/" className="group flex items-center gap-2.5 font-semibold tracking-tight">
-      <div className={`relative flex h-8 w-8 items-center justify-center rounded-xl border transition-all duration-300 group-hover:scale-105 ${
-        isDarkCanvas
-          ? "border-[#0D6E48]/30 bg-gradient-to-b from-[#134E3C] to-[#0A2920] shadow-sm shadow-[#0D6E48]/20"
-          : "border-[#8BE8E3]/35 bg-gradient-to-b from-[#141F2B] to-[#080D12] shadow-md shadow-[#8BE8E3]/15"
-      }`}>
-        <svg viewBox="0 0 32 32" fill="none" className="h-4.5 w-4.5">
-          <defs>
-            <linearGradient id="agentkey-brand-mark" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#8BE8E3" />
-              <stop offset="0.5" stopColor="#B5F0D1" />
-              <stop offset="1" stopColor="#B6B8FF" />
-            </linearGradient>
-          </defs>
-          {/* Compass Star / Diamond Mark */}
-          <path
-            d="M16 3 L19.5 12.5 L29 16 L19.5 19.5 L16 29 L12.5 19.5 L3 16 L12.5 12.5 Z"
-            fill="url(#agentkey-brand-mark)"
-          />
-          <circle cx="16" cy="16" r="2" fill={isDarkCanvas ? "#0A2920" : "#080D12"} />
-        </svg>
+      <div className="relative flex h-8 w-8 items-center justify-center transition-transform duration-300 group-hover:scale-105 select-none shrink-0">
+        <img
+          src="/images/agentkey-icon.png"
+          alt="AgentKey Emblem"
+          className="h-8 w-auto object-contain drop-shadow-[0_4px_12px_rgba(139,232,227,0.3)]"
+        />
       </div>
       <span className={`text-lg font-bold tracking-tight ${isDarkCanvas ? "text-[#0E171B]" : "text-[#F5F3EF]"}`}>
         Agent<span className={isDarkCanvas ? "text-[#0D6E48]" : "text-[#8BE8E3]"}>Key</span>
