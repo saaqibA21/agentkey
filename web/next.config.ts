@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    cpus: 4,
+  },
   env: {
     AUTH_URL: "https://www.agentkey.in",
     NEXTAUTH_URL: "https://www.agentkey.in",
