@@ -24,7 +24,10 @@ export default async function OverviewPage() {
   const s = snippets(publicApiUrl);
   const canSend = o.workspace.outbound_enabled || o.counts.verified_domains > 0;
 
-  const rawName = o.workspace.name || (email ? email.split("@")[0] : "saaqibheroindia");
+  const rawName =
+    o.workspace.name && o.workspace.name !== "Autonomous Workspace"
+      ? o.workspace.name
+      : (session?.user?.name || (email ? email.split("@")[0] : "Workspace"));
   const workspaceTitle = rawName.toLowerCase().includes("workspace")
     ? rawName
     : `${rawName}'s workspace`;
