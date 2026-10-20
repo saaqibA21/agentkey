@@ -5,10 +5,12 @@ import { api, type Message, type Policy } from "@/lib/api";
 import { createPolicy, decide, deletePolicy } from "../actions";
 
 export default async function ApprovalsPage() {
-  const [pending, policies] = await Promise.all([
+  const [pendingRaw, policiesRaw] = await Promise.all([
     api<{ data: Message[] }>("/hitl/pending"),
     api<Policy[]>("/hitl/policies"),
   ]);
+  const pending = pendingRaw ?? { data: [] };
+  const policies = policiesRaw ?? [];
 
   return (
     <>

@@ -98,7 +98,8 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
     if (err instanceof ApiError && (err.status === 404 || err.status === 422)) notFound();
     throw err;
   }
-  const messages = await api<{ data: Message[] }>(`/inboxes/${id}/messages?limit=50`);
+  const messagesRaw = await api<{ data: Message[] }>(`/inboxes/${id}/messages?limit=50`);
+  const messages = messagesRaw ?? { data: [] };
 
   return (
     <>

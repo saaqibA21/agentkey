@@ -14,7 +14,8 @@ const events = [
 ] as const;
 
 export default async function WebhooksPage() {
-  const hooks = await api<Webhook[]>("/webhooks");
+  const hooksRaw = await api<Webhook[]>("/webhooks");
+  const hooks = hooksRaw ?? [];
 
   return (
     <>
