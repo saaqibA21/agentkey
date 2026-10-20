@@ -149,12 +149,12 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
             href={item.href}
             className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
               isActive
-                ? "bg-[#132A26] text-[#8BE8E3] border border-[#8BE8E3]/35 shadow-sm shadow-[#8BE8E3]/15 font-semibold"
-                : "text-[#9BA7B4] hover:bg-white/[0.04] hover:text-white"
+                ? "bg-[#18191B] text-[#FAF5EE] shadow-sm font-semibold"
+                : "text-[#64646A] hover:bg-black/[0.04] hover:text-[#18191B]"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#8BE8E3]" : "text-[#718096] group-hover:text-white"}`}>
+              <span className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-[#FAF5EE]" : "text-[#8C8A94] group-hover:text-[#18191B]"}`}>
                 {item.icon}
               </span>
               <span>{item.label}</span>
@@ -162,11 +162,13 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
             {item.badge && (
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                  item.badgeTone === "purple"
-                    ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                  isActive
+                    ? "bg-white/20 text-[#FAF5EE]"
+                    : item.badgeTone === "purple"
+                    ? "bg-purple-100 text-purple-800 border border-purple-200"
                     : item.badgeTone === "good"
-                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                    : "bg-[#8BE8E3]/15 text-[#8BE8E3] border border-[#8BE8E3]/30"
+                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    : "bg-[#F2ECE1] text-[#18191B] border border-[#DDD4C2]"
                 }`}
               >
                 {item.badge}
@@ -176,20 +178,20 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
         );
       })}
 
-      <div className="my-2 border-t border-white/[0.08] hidden md:block" />
+      <div className="my-2 border-t border-[#E5DEC9] hidden md:block" />
 
       <Link
         href="/docs"
         target="_blank"
-        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#9BA7B4] transition hover:bg-white/[0.04] hover:text-white"
+        className="group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#64646A] transition hover:bg-black/[0.04] hover:text-[#18191B]"
       >
         <div className="flex items-center gap-3">
-          <svg className="h-4 w-4 shrink-0 text-[#718096] transition-transform group-hover:scale-105 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="h-4 w-4 shrink-0 text-[#8C8A94] transition-transform group-hover:scale-105 group-hover:text-[#18191B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10" /><path d="M6 10h10" />
           </svg>
           <span>Developer Docs</span>
         </div>
-        <svg className="h-3.5 w-3.5 text-[#718096] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="h-3.5 w-3.5 text-[#8C8A94] opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M7 17l9.2-9.2M17 17V8H8" />
         </svg>
       </Link>

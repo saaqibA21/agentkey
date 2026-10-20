@@ -11,11 +11,11 @@ export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
         <img
           src="/images/agentkey-icon.png"
           alt="AgentKey Emblem"
-          className="h-8 w-auto object-contain drop-shadow-[0_4px_12px_rgba(139,232,227,0.3)]"
+          className="h-8 w-auto object-contain drop-shadow-[0_2px_8px_rgba(40,35,30,0.12)]"
         />
       </div>
-      <span className={`text-lg font-bold tracking-tight ${isDarkCanvas ? "text-[#0E171B]" : "text-[#F5F3EF]"}`}>
-        Agent<span className={isDarkCanvas ? "text-[#0D6E48]" : "text-[#8BE8E3]"}>Key</span>
+      <span className={`text-lg font-bold tracking-tight ${isDarkCanvas ? "text-white" : "text-[#18191B]"}`}>
+        Agent<span className={isDarkCanvas ? "text-slate-300" : "text-[#35343A]"}>Key</span>
       </span>
     </Link>
   );
@@ -27,25 +27,25 @@ export function SiteNav() {
 
   return (
     <header className="sticky top-0 z-50 transition-colors">
-      <div className="border-b border-white/[0.06] bg-[#080D12]/85 backdrop-blur-xl">
+      <div className="border-b border-[#E5DEC9] bg-[#FAF5EE]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Logo />
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-7 text-xs font-mono uppercase tracking-wider text-[#9BA7B4] md:flex">
-            <Link href="/#how-it-works" className="transition hover:text-[#8BE8E3]">
+          <nav className="hidden items-center gap-7 text-xs font-mono uppercase tracking-wider text-[#64646A] md:flex">
+            <Link href="/#how-it-works" className="transition hover:text-[#18191B]">
               How it works
             </Link>
-            <Link href="/#developers" className="transition hover:text-[#8BE8E3]">
+            <Link href="/#developers" className="transition hover:text-[#18191B]">
               For developers
             </Link>
-            <Link href="/#security" className="transition hover:text-[#8BE8E3]">
+            <Link href="/#security" className="transition hover:text-[#18191B]">
               Security
             </Link>
-            <Link href="/#directory" className="transition hover:text-[#8BE8E3]">
+            <Link href="/#directory" className="transition hover:text-[#18191B]">
               Directory
             </Link>
-            <Link href="/docs" className="transition hover:text-[#8BE8E3]">
+            <Link href="/docs" className="transition hover:text-[#18191B]">
               Docs
             </Link>
           </nav>
@@ -54,14 +54,14 @@ export function SiteNav() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href="/docs#oauth"
-              className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-mono text-[#9BA7B4] transition hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-1.5 rounded-lg border border-[#DDD4C2] bg-white px-4 py-2 text-xs font-mono text-[#64646A] transition hover:border-[#18191B] hover:text-[#18191B]"
             >
               <span>Add AgentKey</span>
               <span className="text-xs">→</span>
             </Link>
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 rounded-lg bg-[#8BE8E3] px-5 py-2 text-xs font-semibold text-[#080D12] shadow-sm transition-all hover:bg-[#B5F0D1] hover:shadow-lg hover:shadow-[#8BE8E3]/15 active:scale-95"
+              className="flex items-center gap-2 rounded-lg bg-[#18191B] px-5 py-2 text-xs font-semibold text-[#FAF5EE] shadow-sm transition-all hover:bg-[#2C2D33] active:scale-95"
             >
               <span>Dashboard</span>
               <span className="text-xs">→</span>
@@ -72,7 +72,7 @@ export function SiteNav() {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDD4C2] bg-white text-[#18191B] md:hidden"
             aria-label="Toggle navigation menu"
           >
             {mobileOpen ? (
@@ -90,19 +90,19 @@ export function SiteNav() {
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="border-b border-white/[0.08] bg-[#080D12] px-6 py-5 md:hidden space-y-4">
-          <div className="flex flex-col gap-3 font-mono text-xs uppercase tracking-wider text-[#9BA7B4]">
-            <Link href="/#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">How it works</Link>
-            <Link href="/#developers" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">For developers</Link>
-            <Link href="/#security" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Security</Link>
-            <Link href="/#directory" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Directory</Link>
-            <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Docs</Link>
-            <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#8BE8E3]">Add AgentKey</Link>
+        <div className="border-b border-[#E5DEC9] bg-[#FAF5EE] px-6 py-5 md:hidden space-y-4">
+          <div className="flex flex-col gap-3 font-mono text-xs uppercase tracking-wider text-[#64646A]">
+            <Link href="/#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">How it works</Link>
+            <Link href="/#developers" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">For developers</Link>
+            <Link href="/#security" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Security</Link>
+            <Link href="/#directory" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Directory</Link>
+            <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Docs</Link>
+            <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Add AgentKey</Link>
           </div>
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#8BE8E3] px-5 py-2.5 text-xs font-semibold text-[#080D12]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#18191B] px-5 py-2.5 text-xs font-semibold text-[#FAF5EE]"
           >
             <span>Open Dashboard</span>
             <span>→</span>
@@ -115,24 +115,24 @@ export function SiteNav() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-[#080D12] py-14 text-sm text-[#9BA7B4]">
+    <footer className="border-t border-[#E5DEC9] bg-[#FAF5EE] py-14 text-sm text-[#64646A]">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <Logo />
-          <p className="text-xs text-[#9BA7B4]">
+          <p className="text-xs text-[#64646A]">
             Real identities. Real possibilities. Sovereign multi-channel AI identity &amp; authentication platform.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-xs">
-          <Link href="/#how-it-works" className="transition hover:text-[#F5F3EF]">How it works</Link>
-          <Link href="/#developers" className="transition hover:text-[#F5F3EF]">Developers</Link>
-          <Link href="/#directory" className="transition hover:text-[#F5F3EF]">Directory</Link>
-          <Link href="/docs#oauth" className="transition hover:text-[#F5F3EF]">OAuth &amp; OIDC</Link>
-          <Link href="/docs" className="transition hover:text-[#F5F3EF]">Docs</Link>
-          <Link href="/docs" className="transition hover:text-[#F5F3EF]">Privacy</Link>
-          <Link href="/docs" className="transition hover:text-[#F5F3EF]">Terms</Link>
-          <span className="text-slate-600">© 2026 AgentKey Inc. All rights reserved.</span>
+          <Link href="/#how-it-works" className="transition hover:text-[#18191B]">How it works</Link>
+          <Link href="/#developers" className="transition hover:text-[#18191B]">Developers</Link>
+          <Link href="/#directory" className="transition hover:text-[#18191B]">Directory</Link>
+          <Link href="/docs#oauth" className="transition hover:text-[#18191B]">OAuth &amp; OIDC</Link>
+          <Link href="/docs" className="transition hover:text-[#18191B]">Docs</Link>
+          <Link href="/docs" className="transition hover:text-[#18191B]">Privacy</Link>
+          <Link href="/docs" className="transition hover:text-[#18191B]">Terms</Link>
+          <span className="text-[#8C8A94]">© 2026 AgentKey Inc. All rights reserved.</span>
         </div>
       </div>
     </footer>

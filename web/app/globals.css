@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg-midnight: #080D12;
-  --bg-navy: #101923;
-  --text-light: #F5F3EF;
-  --bg-ivory: #F4F1EB;
-  --text-dark: #111A22;
-  --electric-cyan: #8BE8E3;
-  --soft-mint: #B5F0D1;
-  --lavender: #B6B8FF;
-  --muted: #9BA7B4;
+  --bg-midnight: #FAF5EE;
+  --bg-navy: #F2ECE1;
+  --text-light: #18191B;
+  --bg-ivory: #FAF5EE;
+  --text-dark: #18191B;
+  --electric-cyan: #18191B;
+  --soft-mint: #0D6E48;
+  --lavender: #4F46E5;
+  --muted: #64646A;
 
-  --bg: #080D12;
-  --surface: #101923;
-  --surface-raised: #182230;
-  --line: rgba(255, 255, 255, 0.08);
-  --ink: #F5F3EF;
-  --accent: #8BE8E3;
-  --accent-mint: #B5F0D1;
-  --accent-lavender: #B6B8FF;
+  --bg: #FAF5EE;
+  --surface: #FFFFFF;
+  --surface-raised: #F2ECE1;
+  --line: rgba(45, 40, 35, 0.1);
+  --ink: #18191B;
+  --accent: #18191B;
+  --accent-mint: #0D6E48;
+  --accent-lavender: #4F46E5;
 }
 
 @theme inline {
@@ -42,42 +42,41 @@
 }
 
 body {
-  background: #080D12;
-  color: #F5F3EF;
+  background: #FAF5EE;
+  color: #18191B;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
-
-/* Glassmorphism & Refraction Primitives */
+/* Glassmorphism & Refraction Primitives (Warm Editorial Theme) */
 .glass-panel-dark {
-  background: rgba(16, 25, 35, 0.65);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(45, 40, 35, 0.1);
+  box-shadow: 0 20px 40px -8px rgba(45, 40, 35, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(17, 26, 34, 0.08);
-  box-shadow: 0 20px 40px -8px rgba(17, 26, 34, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(45, 40, 35, 0.08);
+  box-shadow: 0 20px 40px -8px rgba(45, 40, 35, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .credential-glass {
-  background: linear-gradient(135deg, rgba(22, 34, 48, 0.75) 0%, rgba(12, 19, 27, 0.85) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 240, 230, 0.95) 100%);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(139, 232, 227, 0.25);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 30px rgba(139, 232, 227, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(45, 40, 35, 0.12);
+  box-shadow: 0 30px 80px rgba(45, 40, 35, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 .mint-lavender-gradient {
-  background: linear-gradient(135deg, #B5F0D1 0%, #8BE8E3 50%, #B6B8FF 100%);
+  background: linear-gradient(135deg, #18191B 0%, #35343A 60%, #64646A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -101,7 +100,7 @@ body {
   }
 }
 
-/* Elegant Slim Dark Scrollbars */
+/* Elegant Slim Scrollbars */
 pre::-webkit-scrollbar,
 .overflow-x-auto::-webkit-scrollbar {
   height: 5px;
@@ -109,15 +108,15 @@ pre::-webkit-scrollbar,
 }
 pre::-webkit-scrollbar-track,
 .overflow-x-auto::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(45, 40, 35, 0.04);
   border-radius: 9999px;
 }
 pre::-webkit-scrollbar-thumb,
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(45, 40, 35, 0.18);
   border-radius: 9999px;
 }
 pre::-webkit-scrollbar-thumb:hover,
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 232, 227, 0.35);
+  background: rgba(45, 40, 35, 0.35);
 }

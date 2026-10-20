@@ -23,24 +23,24 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   if ((await auth())?.user) redirect(after);
 
   return (
-    <main className="grid min-h-screen place-items-center px-6 py-16 bg-[#07090e] text-white">
-      <div className="glass-card w-full max-w-md rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/10 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-500" />
+    <main className="grid min-h-screen place-items-center px-6 py-16 bg-[#FAF5EE] text-[#18191B]">
+      <div className="w-full max-w-md rounded-3xl p-8 sm:p-10 shadow-xl border border-[#E5DEC9] bg-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#18191B] via-[#64646A] to-[#18191B]" />
         <div className="mb-4 flex justify-center select-none">
           <img
             src="/images/agentkey-mascot.png"
             alt="AgentKey Verified Robot Mascot"
-            className="w-28 sm:w-32 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+            className="w-28 sm:w-32 h-auto drop-shadow-[0_12px_24px_rgba(40,30,20,0.15)]"
           />
         </div>
         <Logo />
-        <h1 className="mt-4 text-2xl font-bold tracking-tight text-white">Sign in to AgentKey</h1>
-        <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
+        <h1 className="mt-4 text-2xl font-bold tracking-tight text-[#18191B]">Sign in to AgentKey</h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-[#64646A]">
           Sign in or create your account with Google. New here? Continuing creates your workspace.
         </p>
 
         {error && (
-          <p role="alert" className="mt-4 rounded-xl bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-400 border border-rose-500/20">
+          <p role="alert" className="mt-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-xs text-rose-800 border border-rose-200">
             Sign-in did not complete. Use an account with a verified email address and try again.
           </p>
         )}
@@ -56,8 +56,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
             >
               <button className={`flex w-full items-center justify-center gap-3 rounded-full px-4 py-3 text-sm font-semibold transition ${
                 provider.id === "google"
-                  ? "bg-white text-[#1f1f1f] shadow-lg shadow-white/10 hover:bg-slate-100"
-                  : "border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
+                  ? "bg-[#18191B] text-[#FAF5EE] shadow-md hover:bg-[#2C2D33]"
+                  : "border border-[#DDD4C2] bg-white text-[#18191B] hover:border-[#18191B] hover:bg-[#F2ECE1]"
               }`}>
                 {provider.id === "google" && <GoogleMark />}
                 Continue with {provider.name}
