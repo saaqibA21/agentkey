@@ -50,51 +50,6 @@ const useCases = [
   },
 ];
 
-const directoryApps = [
-  {
-    name: "Firecrawl",
-    category: "Data",
-    description: "The web data API for AI agents. Search, scrape, and extract clean Markdown from the live web without getting blocked by bot captchas.",
-    status: "Accepts AgentKey",
-    url: "/docs#oauth",
-  },
-  {
-    name: "Turso",
-    category: "Databases",
-    description: "Per-agent isolated SQLite databases. Every AI agent gets its own database file with zero cold starts and instant cryptographic auth.",
-    status: "Accepts AgentKey",
-    url: "/docs#oauth",
-  },
-  {
-    name: "Keenable",
-    category: "Search & Fetch",
-    description: "Autonomous web search and web extraction API designed exclusively for agents. Signs in via AgentKey with isolated rate allowances.",
-    status: "Accepts AgentKey",
-    url: "/docs#oauth",
-  },
-  {
-    name: "Supermemory",
-    category: "Memory & RAG",
-    description: "Long-term persistent memory and knowledge graphs for autonomous agents with vector embeddings and user profile connectors.",
-    status: "Accepts AgentKey",
-    url: "/docs#oauth",
-  },
-  {
-    name: "E2B",
-    category: "Cloud Sandboxes",
-    description: "Secure isolated cloud environments for autonomous agents. Run code and workflows with verified AgentKey credentials.",
-    status: "Accepts AgentKey",
-    url: "/docs#oauth",
-  },
-  {
-    name: "Cursor & Claude MCP",
-    category: "Developer Tools",
-    description: "Model Context Protocol server enabling autonomous coding agents to authenticate to APIs and external tools with zero human interruptions.",
-    status: "Accepts AgentKey",
-    url: "/dashboard/oauth",
-  },
-];
-
 const authProviders = [
   { name: "Clerk", tag: "OAuth 2.0 / OIDC", href: "/docs#oauth" },
   { name: "Supabase", tag: "Custom OIDC Provider", href: "/docs#oauth" },
@@ -377,46 +332,38 @@ export default function LandingPage() {
       </section>
 
       {/* =========================================================================
-          2. SOCIAL PROOF / PARTNER MARQUEE (Dashed-border like agentid.com)
+          2. STANDARDS & PROTOCOLS MARQUEE
          ========================================================================= */}
-      <section className="border-y border-dashed border-[#DDD4C2] bg-[#F2ECE1]/60 py-10">
+      <section className="border-y border-dashed border-[#DDD4C2] bg-[#F2ECE1]/60 py-8">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16 text-center">
-          <p className="text-sm font-mono text-[#9BA7B4] uppercase tracking-wider mb-8">
-            AI platforms &amp; developer tools letting agents <strong className="text-[#18191B]">sign in</strong>
+          <p className="text-xs font-mono uppercase tracking-widest text-[#64646A] mb-6">
+            Engineered on open protocols &amp; cryptographic standards
           </p>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-8 items-center justify-center opacity-80 hover:opacity-100 transition-opacity font-mono text-xs text-[#18191B]">
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
-              <span className="font-bold tracking-wider">FIRECRAWL</span>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 items-center justify-center font-mono text-xs text-[#18191B]">
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-emerald-600" />
+              <span className="font-bold tracking-wider">OPENID CONNECT</span>
             </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#B5F0D1]" />
-              <span className="font-bold tracking-wider">TURSO</span>
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-indigo-600" />
+              <span className="font-bold tracking-wider">OAUTH 2.1</span>
             </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
-              <span className="font-bold tracking-wider">SUPABASE</span>
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-amber-600" />
+              <span className="font-bold tracking-wider">ED25519 KEYS</span>
             </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#B6B8FF]" />
-              <span className="font-bold tracking-wider">CLERK</span>
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-teal-600" />
+              <span className="font-bold tracking-wider">PKCE S256</span>
             </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
-              <span className="font-bold tracking-wider">AUTH0</span>
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-purple-600" />
+              <span className="font-bold tracking-wider">CLAUDE MCP</span>
             </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#B5F0D1]" />
-              <span className="font-bold tracking-wider">TELNYX</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
-              <span className="font-bold tracking-wider">SUPERMEMORY</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#B6B8FF]" />
-              <span className="font-bold tracking-wider">BETTER AUTH</span>
+            <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-rose-600" />
+              <span className="font-bold tracking-wider">RFC 7807</span>
             </div>
           </div>
         </div>
@@ -752,69 +699,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          7. DIRECTORY: WHERE YOUR AGENTKEY WORKS
-         ========================================================================= */}
-      <section id="directory" className="py-24 bg-[#FAF5EE]">
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest text-[#8BE8E3]">Directory</p>
-              <h2 className="text-3xl font-extrabold sm:text-5xl text-[#18191B] mt-2">
-                Where your AgentKey works.
-              </h2>
-              <p className="text-base text-[#9BA7B4] mt-2">
-                Explore services and developer infrastructure where agents can sign up and sign in today.
-              </p>
-            </div>
-
-            <Link
-              href="/docs#oauth"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#DDD4C2] bg-white px-5 py-2.5 text-xs font-mono text-[#18191B] hover:bg-[#F2ECE1] transition shadow-xs"
-            >
-              <span>Submit your app</span>
-              <span>→</span>
-            </Link>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {directoryApps.map((app) => (
-              <div
-                key={app.name}
-                className="group relative flex flex-col justify-between rounded-xl border border-[#E5DEC9] bg-white p-6 shadow-sm transition-all hover:border-[#18191B]/40 hover:shadow-md"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[11px] text-[#64646A] uppercase font-bold">{app.category}</span>
-                    <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                      {app.status}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-[#18191B] group-hover:text-[#18191B] transition-colors">{app.name}</h3>
-                  <p className="text-xs text-[#9BA7B4] leading-relaxed line-clamp-3">{app.description}</p>
-                </div>
-
-                <div className="pt-6 border-t border-white/10 mt-6 flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-[#9BA7B4]">OIDC Integration</span>
-                  <Link
-                    href={app.url}
-                    className="text-xs font-mono text-[#18191B] font-bold flex items-center gap-1 hover:underline"
-                  >
-                    <span>Connect</span>
-                    <span>→</span>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* =========================================================================
           8. REAL INDUSTRY USE CASES (Preserved from existing landing)
          ========================================================================= */}
-      <section id="agents" className="relative py-24 border-t border-[#E5DEC9] bg-[#F2ECE1]/40">
+      <section id="solutions" className="relative py-24 border-t border-[#E5DEC9] bg-[#F2ECE1]/40">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
             <div>

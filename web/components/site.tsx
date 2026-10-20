@@ -42,7 +42,7 @@ export function SiteNav() {
             <Link href="/#security" className="transition hover:text-[#18191B]">
               Security
             </Link>
-            <Link href="/#directory" className="transition hover:text-[#18191B]">
+            <Link href="/#solutions" className="transition hover:text-[#18191B]">
               Directory
             </Link>
             <Link href="/docs" className="transition hover:text-[#18191B]">
@@ -95,7 +95,7 @@ export function SiteNav() {
             <Link href="/#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">How it works</Link>
             <Link href="/#developers" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">For developers</Link>
             <Link href="/#security" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Security</Link>
-            <Link href="/#directory" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Directory</Link>
+            <Link href="/#solutions" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Solutions</Link>
             <Link href="/docs" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Docs</Link>
             <Link href="/docs#oauth" onClick={() => setMobileOpen(false)} className="hover:text-[#18191B]">Add AgentKey</Link>
           </div>
@@ -127,7 +127,7 @@ export function SiteFooter() {
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-xs">
           <Link href="/#how-it-works" className="transition hover:text-[#18191B]">How it works</Link>
           <Link href="/#developers" className="transition hover:text-[#18191B]">Developers</Link>
-          <Link href="/#directory" className="transition hover:text-[#18191B]">Directory</Link>
+          <Link href="/#solutions" className="transition hover:text-[#18191B]">Solutions</Link>
           <Link href="/docs#oauth" className="transition hover:text-[#18191B]">OAuth &amp; OIDC</Link>
           <Link href="/docs" className="transition hover:text-[#18191B]">Docs</Link>
           <Link href="/docs" className="transition hover:text-[#18191B]">Privacy</Link>
