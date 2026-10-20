@@ -21,6 +21,15 @@ export default async function WebhooksPage() {
       <PageHeader
         title="Webhooks"
         lead="Have events pushed to your server the moment they happen. Every delivery is signed, and failures are retried."
+        aside={
+          <div className="hidden sm:flex select-none shrink-0">
+            <img
+              src="/images/mascot/agentkey-webhook.png"
+              alt="AgentKey Webhook Mascot"
+              className="w-36 lg:w-44 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+        }
       />
       <Card>
         <ActionForm action={createWebhook} submit="Add webhook" className="flex flex-wrap items-start gap-x-6 gap-y-3">

@@ -98,17 +98,16 @@ export function Code({ code, copy = true, title }: { code: string; copy?: boolea
 
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-12 text-center text-[#9BA7B4]">
-      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-[#9BA7B4] mb-2">
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m7.5 4.27 9 5.15" />
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-          <path d="m3.3 7 8.7 5 8.7-5" />
-          <path d="M12 22V12" />
-        </svg>
+    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-10 text-center text-[#9BA7B4]">
+      <div className="mx-auto flex justify-center mb-3 select-none">
+        <img
+          src="/images/mascot/agentkey-empty.png"
+          alt="AgentKey Empty State Mascot"
+          className="w-36 sm:w-44 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+        />
       </div>
-      <p className="font-semibold text-white text-sm">{title}</p>
-      {children && <div className="mx-auto mt-1 max-w-md text-xs text-[#9BA7B4]">{children}</div>}
+      <p className="font-semibold text-white text-base">{title}</p>
+      {children && <div className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-[#9BA7B4] leading-relaxed">{children}</div>}
     </div>
   );
 }

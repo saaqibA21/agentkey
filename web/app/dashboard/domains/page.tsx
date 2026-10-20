@@ -95,6 +95,15 @@ export default async function DomainsPage() {
       <PageHeader
         title="Domains"
         lead="Connect a domain you own to send email from your agents. Mail goes out under your name and your reputation, without the shared-domain AI notice."
+        aside={
+          <div className="hidden sm:flex select-none shrink-0">
+            <img
+              src="/images/mascot/agentkey-domain.png"
+              alt="AgentKey Domain Mascot"
+              className="w-36 lg:w-44 h-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+        }
       />
       <Card>
         <ActionForm action={addDomain} submit="Add domain" className="flex flex-wrap items-center gap-2">
