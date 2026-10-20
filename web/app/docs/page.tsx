@@ -63,7 +63,7 @@ export default function Docs() {
         <main className="min-w-0 max-w-3xl">
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-line">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">AgentKey Documentation</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-[#18191B]">AgentKey Documentation</h1>
               <p className="mt-1.5 text-sm text-muted">
                 OAuth 2.1 &amp; OpenID Connect discovery, Python SDK, zero-token OTP, and Claude MCP server.
               </p>
@@ -72,7 +72,7 @@ export default function Docs() {
               <img
                 src="/images/mascot/agentkey-docs.png"
                 alt="AgentKey Docs Mascot"
-                className="w-32 sm:w-40 h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:scale-105"
+                className="w-32 sm:w-40 h-auto drop-shadow-[0_15px_30px_rgba(40,30,20,0.15)] transition-transform duration-500 hover:scale-105"
               />
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function Docs() {
             <p>
               <b>ChatGPT and Claude apps.</b> These do not take an API key. In the app&apos;s settings, add a custom
               connector (the menu is called Connectors or Apps, depending on the app and plan) and paste{" "}
-              <code>{publicApiUrl}/mcp</code>. The app opens an AIgent page where you sign in, tick what it may do,
+              <code>{publicApiUrl}/mcp</code>. The app opens an AgentKey page where you sign in, tick what it may do,
               and press Allow. You can remove an app again under <b>Identity</b> in the dashboard.
             </p>
             <p>
@@ -190,7 +190,7 @@ export default function Docs() {
             <p>
               External websites can use standard libraries such as NextAuth.js, Passport.js, or Auth0 to add a
               &ldquo;Sign in with AgentKey&rdquo; button. To register clients or inspect claims, visit the{" "}
-              <a href="/dashboard/oauth" className="text-ink underline hover:text-[#8BE8E3]">
+              <a href="/dashboard/oauth" className="text-ink underline hover:text-[#18191B]">
                 OAuth &amp; Connect Portal
               </a>{" "}
               in your dashboard.

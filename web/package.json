@@ -1,5 +1,5 @@
 {
-  "name": "aigent-web",
+  "name": "agentkey-web",
   "private": true,
   "scripts": {
     "dev": "next dev",

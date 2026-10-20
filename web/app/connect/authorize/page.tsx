@@ -41,7 +41,7 @@ export default async function AuthorizePage({ searchParams }: { searchParams: Pr
           </>
         ) : (
           <>
-            <h1 className="mt-6 text-xl font-semibold">Allow {consent.client_name} to use AIgent?</h1>
+            <h1 className="mt-6 text-xl font-semibold">Allow {consent.client_name} to use AgentKey?</h1>
             <p className="mt-2 text-sm text-muted">
               You will be sent back to <b className="text-ink">{consent.redirect_host}</b>. Only continue if that is
               the app you are setting up. Workspace: {consent.workspace}.

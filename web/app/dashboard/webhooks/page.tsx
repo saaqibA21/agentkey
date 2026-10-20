@@ -33,7 +33,7 @@ export default async function WebhooksPage() {
       />
       <Card>
         <ActionForm action={createWebhook} submit="Add webhook" className="flex flex-wrap items-start gap-x-6 gap-y-3">
-          <input name="url" type="url" required placeholder="https://your-app.com/hooks/aigent" className={`w-80 ${inputClass}`} />
+          <input name="url" type="url" required placeholder="https://your-app.com/hooks/agentkey" className={`w-80 ${inputClass}`} />
           <fieldset className="grid basis-full gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-3">
             <legend className="mb-1 text-xs text-muted">Events (none ticked = all)</legend>
             {events.map(([id, label]) => (

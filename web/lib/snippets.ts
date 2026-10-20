@@ -1,25 +1,25 @@
 // Copy-paste snippets shared by the docs and the dashboard quickstart.
 const KEY = "ai_live_YOUR_KEY";
 
-export const sdkInstall = process.env.NEXT_PUBLIC_SDK_INSTALL ?? "pip install agentidentity";
+export const sdkInstall = process.env.NEXT_PUBLIC_SDK_INSTALL ?? "pip install agentkey";
 
 export function snippets(apiUrl: string) {
   return {
-    claudeCode: `claude mcp add --transport http aigent ${apiUrl}/mcp \\
+    claudeCode: `claude mcp add --transport http agentkey ${apiUrl}/mcp \\
   --header "Authorization: Bearer ${KEY}"`,
 
     mcpJson: `{
   "mcpServers": {
-    "aigent": {
+    "agentkey": {
       "url": "${apiUrl}/mcp",
       "headers": { "Authorization": "Bearer ${KEY}" }
     }
   }
 }`,
 
-    python: `from agentidentity import AgentIdentity
+    python: `from agentkey import AgentKey
 
-client = AgentIdentity(api_key="${KEY}", base_url="${apiUrl}")
+client = AgentKey(api_key="${KEY}", base_url="${apiUrl}")
 
 # One inbox per task. The same client_id always returns the same inbox.
 inbox = client.inboxes.create(client_id="signup-task-42")
@@ -41,9 +41,9 @@ curl "${apiUrl}/v1/inboxes/INBOX_ID/wait?for=otp&timeout=60" \\
   -H "Authorization: Bearer ${KEY}"`,
 
     anthropic: `import anthropic
-from agentidentity import AgentIdentity, tools
+from agentkey import AgentKey, tools
 
-aigent = AgentIdentity(api_key="${KEY}", base_url="${apiUrl}")
+agentkey = AgentKey(api_key="${KEY}", base_url="${apiUrl}")
 claude = anthropic.Anthropic()
 messages = [{"role": "user", "content": "Create an inbox and tell me its address."}]
 
@@ -57,18 +57,18 @@ while True:
     messages.append({"role": "assistant", "content": reply.content})
     messages.append({"role": "user", "content": [
         {"type": "tool_result", "tool_use_id": block.id,
-         "content": tools.call_tool(aigent, block.name, block.input)}
+         "content": tools.call_tool(agentkey, block.name, block.input)}
         for block in reply.content if block.type == "tool_use"
     ]})`,
 
-    langchain: `from agentidentity import AgentIdentity, tools
+    langchain: `from agentkey import AgentKey, tools
 
-aigent = AgentIdentity(api_key="${KEY}", base_url="${apiUrl}")
+agentkey = AgentKey(api_key="${KEY}", base_url="${apiUrl}")
 
-agent_tools = tools.langchain_tools(aigent)        # LangChain / LangGraph
-# tools.openai_agents_tools(aigent)                # OpenAI Agents SDK
-# tools.llamaindex_tools(aigent)                   # LlamaIndex
-# tools.crewai_tools(aigent)                       # CrewAI
+agent_tools = tools.langchain_tools(agentkey)        # LangChain / LangGraph
+# tools.openai_agents_tools(agentkey)                # OpenAI Agents SDK
+# tools.llamaindex_tools(agentkey)                   # LlamaIndex
+# tools.crewai_tools(agentkey)                       # CrewAI
 # tools.openai_tools() + tools.call_tool(...)      # raw OpenAI-style function calling`,
 
     webhook: `from agentidentity import verify_webhook_signature

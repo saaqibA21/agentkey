@@ -457,7 +457,7 @@ export default async function OverviewPage() {
               </Link>
 
               <Link
-                href="mailto:support@agentkey.cc"
+                href="mailto:support@agentkey.in"
                 className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"
               >
                 <div className="flex items-center gap-3">

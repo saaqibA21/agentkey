@@ -112,7 +112,7 @@ export default function LandingPage() {
   const [authStep, setAuthStep] = useState<"initial" | "authenticating" | "authenticated">("initial");
 
   const developerPromptText =
-    "Add AgentKey sign-in to this project. Read https://agentkey.dev/docs#oauth for the OpenID Connect discovery reference, then run npm install @agentkey/sdk or configure your auth provider.";
+    "Add AgentKey sign-in to this project. Read https://agentkey.in/docs#oauth for the OpenID Connect discovery reference, then run npm install @agentkey/sdk or configure your auth provider.";
 
   const copyDeveloperPrompt = () => {
     navigator.clipboard.writeText(developerPromptText);
@@ -257,7 +257,7 @@ export default function LandingPage() {
                         <input
                           type="text"
                           readOnly
-                          value="health-bot@agentkey.cc"
+                          value="health-bot@agentkey.in"
                           className="w-full rounded-lg border border-[#DDD4C2] bg-[#FAF5EE] px-3.5 py-2.5 font-mono text-xs text-[#18191B]"
                         />
                       </div>
@@ -340,7 +340,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Agent ID:</span>
-                        <span className="text-[#18191B] font-bold">health-bot@agentkey.cc</span>
+                        <span className="text-[#18191B] font-bold">health-bot@agentkey.in</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Operator:</span>
@@ -481,7 +481,7 @@ export default function LandingPage() {
                 <div className="rounded-xl bg-[#1A1B21] p-4 font-mono text-xs text-[#F2ECE1] leading-relaxed border border-[#2E3038]">
                   <p>
                     Add AgentKey sign-in to this project. Read{" "}
-                    <span className="text-[#8BE8E3]">https://agentkey.dev/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
+                    <span className="text-[#8BE8E3]">https://agentkey.in/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
                     <span className="text-emerald-800 font-medium">npm install @agentkey/sdk</span> from the project root and configure your auth provider.
                   </p>
                 </div>

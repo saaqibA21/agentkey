@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 
-const API_URL = (process.env.AIGENT_API_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "");
+const DEFAULT_API_URL = process.env.NODE_ENV === "production" ? "https://agentkey-api.onrender.com" : "http://127.0.0.1:8000";
+const API_URL = (process.env.AIGENT_API_URL ?? DEFAULT_API_URL).replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(
@@ -36,12 +37,12 @@ async function sessionToken(forceNew = false): Promise<string> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Dashboard-Secret": process.env.AIGENT_DASHBOARD_SECRET ?? "",
+      "X-Dashboard-Secret": process.env.AIGENT_DASHBOARD_SECRET ?? "agentkey-super-secret-dashboard-key-2026",
     },
     body: JSON.stringify({ email: me.email, name: me.name, avatar_url: me.image, provider: me.provider }),
     cache: "no-store",
   });
-  if (!resp.ok) throw new ApiError(resp.status, "Could not start a session with the AIgent API");
+  if (!resp.ok) throw new ApiError(resp.status, "Could not start a session with the AgentKey API");
   const data = (await resp.json()) as { token: string; expires_at: number };
   tokens.set(cacheKey, { token: data.token, expiresAt: data.expires_at });
   return data.token;
@@ -61,7 +62,7 @@ async function call(path: string, init: RequestInit | undefined, retry: boolean)
   return resp.status === 401 && retry ? call(path, init, false) : resp;
 }
 
-/** Call the AIgent API as the signed-in user. Throws ApiError on any non-2xx response. */
+/** Call the AgentKey API as the signed-in user. Throws ApiError on any non-2xx response. */
 export async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const resp = await call(path, init, true);
   if (resp.status === 204) return undefined as T;
@@ -79,7 +80,7 @@ export async function apiRaw(path: string): Promise<Response> {
 
 /** Call operator admin endpoints using X-Admin-Secret. */
 export async function adminApi<T = unknown>(path: string, init?: RequestInit): Promise<T> {
-  const adminSecret = process.env.AIGENT_ADMIN_SECRET ?? "change-me-admin";
+  const adminSecret = process.env.AIGENT_ADMIN_SECRET ?? "_yETXQ0OHXL-BvESlXEyKBrqom7NZaH89W42GKG8Kz0";
   const resp = await fetch(`${API_URL}/v1${path}`, {
     ...init,
     headers: {

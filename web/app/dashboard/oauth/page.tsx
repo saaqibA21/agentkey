@@ -90,7 +90,7 @@ async def verify_agent(email_or_token: str):
   "trust_score": 99.0,
   "operator": {
     "name": "Verified Operator",
-    "email": "operator@agentkey.cc",
+    "email": "operator@agentkey.in",
     "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
     "verified": true
   },
