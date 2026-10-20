@@ -80,18 +80,18 @@ const directoryApps = [
     url: "/docs#oauth",
   },
   {
-    name: "Telnyx",
-    category: "Communication",
-    description: "Global programmable SMS, telephony, and real-time voice infrastructure with sovereign AI agent caller identity.",
+    name: "E2B",
+    category: "Cloud Sandboxes",
+    description: "Secure isolated cloud environments for autonomous agents. Run code and workflows with verified AgentKey credentials.",
     status: "Accepts AgentKey",
     url: "/docs#oauth",
   },
   {
     name: "Cursor & Claude MCP",
     category: "Developer Tools",
-    description: "Model Context Protocol server connecting autonomous coding agents to secure email inboxes, 2FA OTP codes, and HITL guardrails.",
+    description: "Model Context Protocol server enabling autonomous coding agents to authenticate to APIs and external tools with zero human interruptions.",
     status: "Accepts AgentKey",
-    url: "/dashboard/guide",
+    url: "/dashboard/oauth",
   },
 ];
 
@@ -157,7 +157,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="max-w-xl text-base sm:text-lg lg:text-xl text-[#9BA7B4] leading-relaxed">
-                AgentKey gives every agent its own email address, cryptographic keys, and OAuth passport.
+                AgentKey gives every agent its own cryptographic keys, sovereign identity, and OpenID Connect passport.
                 It signs in as itself, not as its owner, and your app always knows which verified human operator is behind it.
               </p>
 
@@ -199,7 +199,7 @@ export default function LandingPage() {
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#B5F0D1]" />
-                  Zero-Token OTP Extraction
+                  Zero-CAPTCHA Cross-Site Auth
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#B6B8FF]" />
@@ -633,7 +633,7 @@ export default function LandingPage() {
               <span className="font-mono text-xs text-[#8BE8E3] font-bold">[ 01 ]</span>
               <h3 className="text-lg font-bold text-white">Get AgentKey</h3>
               <p className="text-sm text-[#9BA7B4] leading-relaxed">
-                The agent receives its own sovereign email address, Ed25519 cryptographic keypair, and OD-ID verifiable passport.
+                The agent receives its own Ed25519 cryptographic keypair, sovereign agent ID, and verifiable passport.
               </p>
             </div>
 
@@ -657,7 +657,7 @@ export default function LandingPage() {
               <span className="font-mono text-xs text-[#8BE8E3] font-bold">[ 04 ]</span>
               <h3 className="text-lg font-bold text-white">Stay connected</h3>
               <p className="text-sm text-[#9BA7B4] leading-relaxed">
-                The application streams onboarding emails, OTP codes, receipts, and webhooks directly to the operator in real time.
+                The application streams verified claims, session tokens, and audit logs directly to the operator dashboard.
               </p>
             </div>
 
@@ -706,7 +706,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2.5">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
-                  <span>Verified email address</span>
+                  <span>Verified agent actor identity</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
@@ -740,7 +740,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2.5 text-white">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
-                  <span>Unscoped inbox reading access</span>
+                  <span>Unscoped private user data</span>
                 </li>
               </ul>
               <p className="text-xs text-[#9BA7B4] leading-relaxed">
@@ -895,7 +895,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-sm sm:text-base text-[#9BA7B4] leading-relaxed max-w-xl mx-auto">
-            Sovereign multi-channel communication, zero-token OTP extraction, and OpenID Connect agent passports.
+            Cryptographic keypairs, zero-CAPTCHA headless authentication, and OpenID Connect agent passports.
           </p>
 
           <div className="pt-6 flex flex-wrap items-center justify-center gap-4">
