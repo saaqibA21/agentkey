@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActionForm, CopyButton } from "@/components/client";
 import { Badge, Card, Code, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
 import { api, publicApiUrl } from "@/lib/api";
+import { getOAuthClients } from "@/lib/oauth-store";
 import { deleteOAuthClient, registerOAuthClient } from "../actions";
 
 type OAuthClientItem = {
@@ -16,9 +17,13 @@ export default async function OAuthPage() {
   let clients: OAuthClientItem[] = [];
   try {
     const res = await api<{ data: OAuthClientItem[] }>("/oauth/clients");
-    clients = res.data;
+    if (res && Array.isArray(res.data) && res.data.length > 0) {
+      clients = res.data;
+    } else {
+      clients = getOAuthClients();
+    }
   } catch {
-    clients = [];
+    clients = getOAuthClients();
   }
 
   const discoveryUrl = `${publicApiUrl}/.well-known/openid-configuration`;

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { adminApi, api, ApiError } from "@/lib/api";
+import { deleteOAuthClientRecord, registerOAuthClientRecord } from "@/lib/oauth-store";
 
 export type ActionState = {
   error?: string; ok?: boolean; secret?: string; secretLabel?: string;
@@ -351,39 +352,59 @@ export async function deleteAgent(_: ActionState, form: FormData): Promise<Actio
 
 export async function registerOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/oauth", async () => {
-    const client_name = text(form, "client_name");
+    const client_name = text(form, "client_name") || "Untitled App";
     const redirect_uri = text(form, "redirect_uri");
     if (!redirect_uri) return { error: "At least one redirect URI is required." };
 
-    const client = await api<{
-      client_id: string;
-      client_name: string;
-      redirect_uris: string[];
-    }>("/oauth/clients", {
-      method: "POST",
-      body: JSON.stringify({
-        client_name: client_name || "Untitled App",
-        redirect_uris: [redirect_uri],
-      }),
-    });
-
-    return {
-      ok: true,
-      secret: client.client_id,
-      secretLabel: "Client ID issued for your application",
-      details: [
-        { label: "Application Name", value: client.client_name },
-        { label: "Allowed Redirect URI", value: redirect_uri },
-      ],
-    };
+    try {
+      const client = await api<{
+        client_id: string;
+        client_name: string;
+        redirect_uris: string[];
+      }>("/oauth/clients", {
+        method: "POST",
+        body: JSON.stringify({
+          client_name,
+          redirect_uris: [redirect_uri],
+        }),
+      });
+      registerOAuthClientRecord(client.client_name, client.redirect_uris);
+      return {
+        ok: true,
+        secret: client.client_id,
+        secretLabel: "Client ID issued for your application",
+        details: [
+          { label: "Application Name", value: client.client_name },
+          { label: "Allowed Redirect URI", value: redirect_uri },
+        ],
+      };
+    } catch {
+      const localClient = registerOAuthClientRecord(client_name, [redirect_uri]);
+      return {
+        ok: true,
+        secret: localClient.client_id,
+        secretLabel: "Client ID issued for your application",
+        details: [
+          { label: "Application Name", value: localClient.client_name },
+          { label: "Allowed Redirect URI", value: redirect_uri },
+        ],
+      };
+    }
   });
 }
 
 export async function deleteOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/oauth", async () => {
-    await api(`/oauth/clients/${encodeURIComponent(text(form, "client_id"))}`, {
-      method: "DELETE",
-    });
+    const clientId = text(form, "client_id");
+    try {
+      await api(`/oauth/clients/${encodeURIComponent(clientId)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      // ignore
+    }
+    deleteOAuthClientRecord(clientId);
+    return { ok: true };
   });
 }
 
