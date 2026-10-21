@@ -137,7 +137,7 @@ async function call(path: string, init: RequestInit | undefined, retry: boolean)
   }
 }
 
-function getResilientFallback<T>(path: string): T {
+async function getResilientFallback<T>(path: string): Promise<T> {
   const p = path.split("?")[0].replace(/\/$/, "");
 
   if (p === "/overview") {
@@ -354,7 +354,7 @@ function getResilientFallback<T>(path: string): T {
 /** Call the AgentKey API as the signed-in user. Fast and resilient against backend downtime. */
 export async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   if (isBackendOffline() && (!init?.method || init.method === "GET")) {
-    return getResilientFallback<T>(path);
+    return await getResilientFallback<T>(path);
   }
 
   try {
@@ -372,7 +372,7 @@ export async function api<T = unknown>(path: string, init?: RequestInit): Promis
       throw err instanceof Error ? err : new Error("API service unreachable");
     }
   }
-  return getResilientFallback<T>(path);
+  return await getResilientFallback<T>(path);
 }
 
 /** Raw response, for streaming attachment downloads through the dashboard. */
@@ -383,7 +383,7 @@ export async function apiRaw(path: string): Promise<Response> {
 /** Call operator admin endpoints using X-Admin-Secret. */
 export async function adminApi<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   if (isBackendOffline() && (!init?.method || init.method === "GET")) {
-    return getResilientFallback<T>(path);
+    return await getResilientFallback<T>(path);
   }
 
   const adminSecret = process.env.AIGENT_ADMIN_SECRET ?? "_yETXQ0OHXL-BvESlXEyKBrqom7NZaH89W42GKG8Kz0";
@@ -414,7 +414,7 @@ export async function adminApi<T = unknown>(path: string, init?: RequestInit): P
       throw err instanceof Error ? err : new Error("Admin API unreachable");
     }
   }
-  return getResilientFallback<T>(path);
+  return await getResilientFallback<T>(path);
 }
 
 export const publicApiUrl = (process.env.NEXT_PUBLIC_API_URL ?? API_URL).replace(/\/$/, "");
