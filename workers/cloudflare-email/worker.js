@@ -52,9 +52,34 @@ function parseMimeSimple(rawText) {
 }
 
 export default {
-  // 1. Health check, test preview, and Dashboard API
+  // 1. Health check, test generator, and Dashboard API
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // Test helper: visit /test in browser to generate a test email in KV immediately
+    if (url.pathname.includes("/test")) {
+      const testMsg = {
+        id: `msg_test_${Date.now()}`,
+        inbox_id: "inbox_primary_agent",
+        thread_id: `thr_${Date.now()}`,
+        channel: "EMAIL",
+        direction: "INBOUND",
+        sender: "saaqibheroindia@gmail.com",
+        recipient: "agent-01@agentkey.in",
+        subject: "AgentKey Test Verification Code",
+        body_text: "Welcome to AgentKey! Your edge verification code is 849201. Boundaries and agent identity verified.",
+        status: "DELIVERED",
+        created_at: new Date().toISOString(),
+        extracted_data: { otp_code: "849201" },
+      };
+      if (env.INBOX_STORE) {
+        await env.INBOX_STORE.put(`msg:${Date.now()}`, JSON.stringify(testMsg));
+      }
+      messageBuffer.unshift(testMsg);
+      return new Response(JSON.stringify({ status: "test_message_created", message: testMsg }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
 
     // Endpoint for Vercel Dashboard to read messages
     if (url.pathname.includes("/messages")) {
@@ -87,7 +112,7 @@ export default {
       JSON.stringify({
         status: "online",
         service: "AgentKey Email Worker",
-        target: "https://www.agentkey.in/api/inbound/ingest",
+        kv_bound: !!env.INBOX_STORE,
         stored_messages: messageBuffer.length,
         time: new Date().toISOString(),
       }),
