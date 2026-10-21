@@ -24,6 +24,10 @@ export default async function OAuthPage() {
     clients = getOAuthClients(userEmail);
   }
 
+  clients = clients.filter(
+    (c) => c && c.client_id !== "cli_claude_desktop" && c.client_id !== "cli_chatgpt_agent"
+  );
+
   const discoveryUrl = `${publicApiUrl}/.well-known/openid-configuration`;
   const authorizeUrl = `${publicApiUrl}/oauth/authorize`;
   const tokenUrl = `${publicApiUrl}/oauth/token`;

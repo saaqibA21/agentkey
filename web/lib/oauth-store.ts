@@ -39,7 +39,11 @@ function loadClients(): OAuthClient[] {
     if (fs.existsSync(STORE_PATH)) {
       const data = fs.readFileSync(STORE_PATH, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (c) => c && c.client_id !== "cli_claude_desktop" && c.client_id !== "cli_chatgpt_agent"
+        );
+      }
     }
   } catch (err) {
     console.error("Error reading oauth clients:", err);
@@ -60,9 +64,15 @@ export function getOAuthClients(userEmail?: string): OAuthClient[] {
     globalForOAuth._agentKeyOAuthClients = loadClients();
   }
   const clients = globalForOAuth._agentKeyOAuthClients;
-  if (!userEmail) return clients;
+  if (!userEmail) return [];
   const lower = userEmail.toLowerCase();
-  return clients.filter((c) => !c.owner_email || c.owner_email.toLowerCase() === lower);
+  return clients.filter(
+    (c) =>
+      c.owner_email &&
+      c.owner_email.toLowerCase() === lower &&
+      c.client_id !== "cli_claude_desktop" &&
+      c.client_id !== "cli_chatgpt_agent"
+  );
 }
 
 export function getOAuthClientById(clientId: string): OAuthClient | undefined {
