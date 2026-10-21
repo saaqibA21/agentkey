@@ -1,7 +1,7 @@
 [project]
-name = "agentidentity"
+name = "agentkey-sdk"
 version = "0.1.0"
-description = "Python SDK for AgentIdentity: email, WhatsApp and SMS identities for AI agents"
+description = "Official Python SDK for AgentKey: email, zero-token OTP extraction, and verifiable agent identity"
 requires-python = ">=3.9"
 dependencies = ["httpx>=0.25", "pydantic>=2.0"]
 
@@ -10,4 +10,4 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["agentidentity"]
+packages = ["agentkey", "agentidentity"]
