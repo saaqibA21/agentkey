@@ -14,6 +14,7 @@ import {
   verifyDomainRecord,
 } from "@/lib/agent-store";
 import { getAllMessages, getMessagesForInbox, storeMessage } from "@/lib/inbox-store";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 import type { Message } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,15 @@ export async function GET(
 
   // Public Agent Verification Endpoint
   if (path === "auth/agent/verify") {
+    const clientIp = getClientIp(req.headers);
+    const rateLimit = checkRateLimit(`verify_ip_${clientIp}`, 60, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many verification requests. Please slow down." },
+        { status: 429, headers: { "Retry-After": Math.ceil(rateLimit.resetMs / 1000).toString() } }
+      );
+    }
+
     return NextResponse.json({
       verified: true,
       is_agent: true,
@@ -226,6 +236,15 @@ export async function POST(
 
   // Public Agent Verification Endpoint
   if (path === "auth/agent/verify") {
+    const clientIp = getClientIp(req.headers);
+    const rateLimit = checkRateLimit(`verify_ip_${clientIp}`, 60, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many verification requests. Please slow down." },
+        { status: 429, headers: { "Retry-After": Math.ceil(rateLimit.resetMs / 1000).toString() } }
+      );
+    }
+
     return NextResponse.json({
       verified: true,
       is_agent: true,
@@ -383,6 +402,38 @@ export async function POST(
       );
     }
 
+    // Rate limit: 30 outbound sends per minute
+    const clientIp = getClientIp(req.headers);
+    const sendRateLimit = checkRateLimit(`send_email_${auth.ownerEmail || clientIp}`, 30, 60000);
+    if (!sendRateLimit.allowed) {
+      return NextResponse.json(
+        { status: 429, title: "Rate Limit Exceeded", detail: "Too many outbound emails sent. Please wait a moment." },
+        { status: 429, headers: { "Retry-After": Math.ceil(sendRateLimit.resetMs / 1000).toString() } }
+      );
+    }
+
+    // Validate email format and recipient count
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const recipients = (Array.isArray(to) ? to : [to])
+      .map((addr: unknown) => String(addr).trim())
+      .filter(Boolean);
+
+    if (recipients.length === 0 || recipients.length > 10) {
+      return NextResponse.json(
+        { status: 400, title: "Bad Request", detail: "Recipients must contain between 1 and 10 email addresses." },
+        { status: 400 }
+      );
+    }
+
+    for (const addr of recipients) {
+      if (!EMAIL_REGEX.test(addr)) {
+        return NextResponse.json(
+          { status: 400, title: "Bad Request", detail: `Invalid recipient email address format: '${addr}'.` },
+          { status: 400 }
+        );
+      }
+    }
+
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
       return NextResponse.json(
@@ -391,8 +442,10 @@ export async function POST(
       );
     }
 
-    const fromAddress = `${inbox.owner_name || "Agent"} <${inbox.email_address}>`;
-    const recipients = Array.isArray(to) ? to : [to];
+    // Sanitize subject and sender against SMTP header injection
+    const cleanSubject = (subject ? String(subject).replace(/[\r\n]+/g, " ") : "Message from AgentKey").slice(0, 250);
+    const cleanOwnerName = (inbox.owner_name || "Agent").replace(/[\r\n<>"]+/g, " ").trim().slice(0, 80);
+    const fromAddress = `${cleanOwnerName} <${inbox.email_address}>`;
 
     try {
       const resendResp = await fetch("https://api.resend.com/emails", {
@@ -404,9 +457,9 @@ export async function POST(
         body: JSON.stringify({
           from: fromAddress,
           to: recipients,
-          subject: subject || "Message from AgentKey",
-          text: text || undefined,
-          html: html || undefined,
+          subject: cleanSubject,
+          text: text ? String(text).slice(0, 100000) : undefined,
+          html: html ? String(html).slice(0, 500000) : undefined,
         }),
       });
 

@@ -210,6 +210,70 @@ export function revokeApiKeyRecord(id: string, ownerEmail?: string): boolean {
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// Security Utilities (Timing Attack & SSRF Protection)
+// ---------------------------------------------------------------------------
+
+export function safeEqual(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+export function isSafeWebhookUrl(rawUrl: string): boolean {
+  try {
+    const parsed = new URL(rawUrl);
+    // Enforce HTTPS in production
+    if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+      return false;
+    }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return false;
+    }
+
+    const host = parsed.hostname.toLowerCase();
+
+    // Block localhost, link-local, loopback, cloud metadata
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1" ||
+      host === "0.0.0.0" ||
+      host === "169.254.169.254" || // AWS / Azure metadata
+      host.endsWith(".local") ||
+      host.endsWith(".internal")
+    ) {
+      if (process.env.NODE_ENV === "production") {
+        return false;
+      }
+    }
+
+    // Block private RFC 1918 IPv4 ranges in production
+    const ipMatch = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipMatch) {
+      const b0 = Number(ipMatch[1]);
+      const b1 = Number(ipMatch[2]);
+      if (
+        b0 === 10 || // 10.0.0.0/8
+        b0 === 127 || // 127.0.0.0/8
+        (b0 === 172 && b1 >= 16 && b1 <= 31) || // 172.16.0.0/12
+        (b0 === 192 && b1 === 168) || // 192.168.0.0/16
+        (b0 === 169 && b1 === 254) // 169.254.0.0/16
+      ) {
+        if (process.env.NODE_ENV === "production") {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function validateApiKey(providedKey: string): {
   valid: boolean;
   scopes: string[];
@@ -219,7 +283,8 @@ export function validateApiKey(providedKey: string): {
   if (!providedKey) return { valid: false, scopes: [] };
   const cleanKey = providedKey.trim().replace(/^Bearer\s+/i, "");
 
-  if (cleanKey === DEFAULT_API_KEY || cleanKey.startsWith("ai_live_8f3a")) {
+  // Timing-safe check against default key
+  if (safeEqual(cleanKey, DEFAULT_API_KEY)) {
     return {
       valid: true,
       scopes: ["read", "send", "manage", "connect"],
@@ -228,12 +293,23 @@ export function validateApiKey(providedKey: string): {
     };
   }
 
+  // Check optional environment master key
+  const envMasterKey = process.env.AGENTKEY_API_KEY || process.env.MASTER_API_KEY;
+  if (envMasterKey && safeEqual(cleanKey, envMasterKey)) {
+    return {
+      valid: true,
+      scopes: ["read", "send", "manage", "connect"],
+      ownerEmail: "operator@agentkey.in",
+      name: "master-env-agent",
+    };
+  }
+
   const hash = crypto.createHash("sha256").update(cleanKey).digest("hex");
-  const prefix = cleanKey.slice(0, 12);
 
   const store = getStore();
+  // Strictly compare key hashes using timing-safe comparison; do NOT use prefix matching
   const match = store.keys.find(
-    (k) => !k.revoked_at && (k.key_hash === hash || (prefix.length >= 8 && k.key_prefix === prefix))
+    (k) => !k.revoked_at && safeEqual(k.key_hash, hash)
   );
 
   if (match) {
@@ -242,15 +318,6 @@ export function validateApiKey(providedKey: string): {
       scopes: match.scopes,
       ownerEmail: match.owner_email,
       name: match.name,
-    };
-  }
-
-  if (cleanKey.startsWith("ai_live_") && cleanKey.length >= 24) {
-    return {
-      valid: true,
-      scopes: ["read", "send", "manage", "connect"],
-      ownerEmail: "operator@agentkey.in",
-      name: "authenticated-agent",
     };
   }
 
@@ -377,6 +444,10 @@ export function createWebhookRecord(
   eventTypes: string[] = ["*"],
   ownerEmail?: string
 ): { webhook: WebhookRecord; secret_token: string } {
+  if (!isSafeWebhookUrl(targetUrl)) {
+    throw new Error("Invalid or prohibited webhook target URL. Must be a valid public HTTPS endpoint.");
+  }
+
   const store = getStore();
   const secret = `whsec_${crypto.randomBytes(24).toString("hex")}`;
   const hook: WebhookRecord = {
@@ -416,6 +487,12 @@ export async function dispatchWebhooks(event: string, payload: any) {
   });
 
   const promises = matching.map(async (w) => {
+    // SSRF safeguard before dispatch
+    if (!isSafeWebhookUrl(w.target_url)) {
+      console.warn(`Skipping dispatch to unsafe webhook URL: ${w.target_url}`);
+      return;
+    }
+
     try {
       const signature = crypto
         .createHmac("sha256", w.secret_token)

@@ -11,16 +11,43 @@ export const metadata = { title: "Sign in with AgentKey" };
 async function submitConsent(formData: FormData) {
   "use server";
 
+  // Enforce server-side authenticated session to prevent user_email impersonation
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+
   const verdict = formData.get("verdict");
   const redirectUri = String(formData.get("redirect_uri") || "");
   const state = String(formData.get("state") || "");
   const clientId = String(formData.get("client_id") || "cli_claude_desktop");
   const codeChallenge = String(formData.get("code_challenge") || "");
-  const userEmail = String(formData.get("user_email") || "operator@agentkey.in");
-  const userName = String(formData.get("user_name") || "Operator");
+
+  const userEmail = session.user.email;
+  const userName = session.user.name || userEmail.split("@")[0];
 
   if (!redirectUri) {
     redirect("/dashboard");
+  }
+
+  // Prevent Open Redirect: Verify redirectUri belongs to registered client
+  const client = getOAuthClientById(clientId);
+  if (!client) {
+    redirect("/dashboard?error=invalid_client");
+  }
+
+  const isAllowedUri = client.redirect_uris.some((registered) => {
+    try {
+      const regUrl = new URL(registered);
+      const reqUrl = new URL(redirectUri);
+      return regUrl.origin === reqUrl.origin && regUrl.pathname === reqUrl.pathname;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!isAllowedUri) {
+    redirect("/dashboard?error=unauthorized_redirect_uri");
   }
 
   const redirectUrl = new URL(redirectUri);
@@ -204,8 +231,6 @@ export default async function AuthorizePage({
           <input type="hidden" name="redirect_uri" value={redirectUri} />
           <input type="hidden" name="state" value={state} />
           <input type="hidden" name="code_challenge" value={codeChallenge} />
-          <input type="hidden" name="user_email" value={userEmail} />
-          <input type="hidden" name="user_name" value={userName} />
 
           <button
             type="submit"

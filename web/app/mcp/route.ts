@@ -163,10 +163,20 @@ export async function POST(req: NextRequest) {
           ? JSON.stringify({ success: true, otp_code: foundOtp })
           : JSON.stringify({ success: false, detail: "Timeout waiting for OTP code." });
       } else if (name === "inbox_send_email") {
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const to = String(args.to || "").trim();
+        if (!to || !EMAIL_REGEX.test(to)) {
+          throw new Error(`Invalid recipient email address format: '${to}'.`);
+        }
+
         const resendApiKey = process.env.RESEND_API_KEY;
         if (!resendApiKey) {
-          throw new Error("RESEND_API_KEY is not configured.");
+          throw new Error("RESEND_API_KEY is not configured on the server.");
         }
+
+        const cleanSubject = String(args.subject || "Message from AgentKey").replace(/[\r\n]+/g, " ").slice(0, 250);
+        const cleanText = String(args.text || "").slice(0, 100000);
+
         const resendResp = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -175,12 +185,16 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             from: "AgentKey <agent-01@agentkey.in>",
-            to: [args.to],
-            subject: args.subject,
-            text: args.text,
+            to: [to],
+            subject: cleanSubject,
+            text: cleanText,
           }),
         });
         const resendData = await resendResp.json();
+        if (!resendResp.ok) {
+          throw new Error(resendData.message || "Failed to send email via Resend.");
+        }
+
         const outboundMsg: Message = {
           id: resendData.id || `msg_${Date.now()}`,
           inbox_id: "inbox_primary_agent",
@@ -188,9 +202,9 @@ export async function POST(req: NextRequest) {
           channel: "EMAIL",
           direction: "OUTBOUND",
           sender: "agent-01@agentkey.in",
-          recipient: args.to,
-          subject: args.subject,
-          body_text: args.text,
+          recipient: to,
+          subject: cleanSubject,
+          body_text: cleanText,
           status: "SENT",
           created_at: new Date().toISOString(),
           extracted_data: {},

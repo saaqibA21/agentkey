@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { consumeAuthCode } from "@/lib/oauth-store";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,19 @@ function verifyPkce(verifier: string, challenge: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 30 token requests per minute per IP to prevent brute-forcing
+  const clientIp = getClientIp(req.headers);
+  const rateLimit = checkRateLimit(`oauth_token_${clientIp}`, 30, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {
+        error: "slow_down",
+        error_description: "Too many token exchange attempts. Please try again later.",
+      },
+      { status: 429, headers: { "Retry-After": Math.ceil(rateLimit.resetMs / 1000).toString() } }
+    );
+  }
+
   try {
     let body: Record<string, string> = {};
     const contentType = req.headers.get("content-type") || "";
@@ -79,7 +93,8 @@ export async function POST(req: NextRequest) {
       exp: Math.floor(Date.now() / 1000) + 3600,
       iat: Math.floor(Date.now() / 1000),
     })));
-    const signature = base64Url(crypto.createHmac("sha256", "agentkey-signing-secret").update(`${idTokenHeader}.${idTokenPayload}`).digest());
+    const signingSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "agentkey-signing-secret";
+    const signature = base64Url(crypto.createHmac("sha256", signingSecret).update(`${idTokenHeader}.${idTokenPayload}`).digest());
     const idToken = `${idTokenHeader}.${idTokenPayload}.${signature}`;
 
     return NextResponse.json({

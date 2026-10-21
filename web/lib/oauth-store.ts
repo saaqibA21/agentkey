@@ -59,11 +59,15 @@ function saveClients(clients: OAuthClient[]) {
   }
 }
 
-export function getOAuthClients(userEmail?: string): OAuthClient[] {
+function getAllClients(): OAuthClient[] {
   if (!globalForOAuth._agentKeyOAuthClients) {
     globalForOAuth._agentKeyOAuthClients = loadClients();
   }
-  const clients = globalForOAuth._agentKeyOAuthClients;
+  return globalForOAuth._agentKeyOAuthClients;
+}
+
+export function getOAuthClients(userEmail?: string): OAuthClient[] {
+  const clients = getAllClients();
   if (!userEmail) return [];
   const lower = userEmail.toLowerCase();
   return clients.filter(
@@ -76,10 +80,8 @@ export function getOAuthClients(userEmail?: string): OAuthClient[] {
 }
 
 export function getOAuthClientById(clientId: string): OAuthClient | undefined {
-  if (!globalForOAuth._agentKeyOAuthClients) {
-    globalForOAuth._agentKeyOAuthClients = loadClients();
-  }
-  const found = globalForOAuth._agentKeyOAuthClients.find((c) => c.client_id === clientId);
+  const clients = getAllClients();
+  const found = clients.find((c) => c.client_id === clientId);
   if (found) return found;
 
   // Built-in system connectors for testing & desktop apps
@@ -103,17 +105,35 @@ export function getOAuthClientById(clientId: string): OAuthClient | undefined {
   return undefined;
 }
 
+export function isValidRedirectUri(uri: string): boolean {
+  try {
+    const parsed = new URL(uri);
+    if (parsed.protocol === "https:") return true;
+    if (parsed.protocol === "http:" && (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export function registerOAuthClientRecord(
   name: string,
   redirectUris: string[],
   ownerEmail?: string
 ): OAuthClient {
-  const clients = getOAuthClients();
+  const clients = getAllClients();
   const idPrefix = name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 16) || "app";
+
+  // Sanitize and validate redirect URIs
+  const validUris = redirectUris.filter(isValidRedirectUri);
+  const finalUris = validUris.length > 0 ? validUris : ["http://localhost:3000/callback"];
+
   const newClient: OAuthClient = {
     client_id: `cli_${idPrefix}_${crypto.randomBytes(4).toString("hex")}`,
-    client_name: name,
-    redirect_uris: redirectUris,
+    client_name: name.slice(0, 64),
+    redirect_uris: finalUris,
     created_at: new Date().toISOString(),
     owner_email: ownerEmail,
   };
@@ -124,7 +144,7 @@ export function registerOAuthClientRecord(
 }
 
 export function deleteOAuthClientRecord(clientId: string, userEmail?: string): boolean {
-  let clients = getOAuthClients();
+  let clients = getAllClients();
   const initialLen = clients.length;
   clients = clients.filter((c) => {
     if (c.client_id !== clientId) return true;

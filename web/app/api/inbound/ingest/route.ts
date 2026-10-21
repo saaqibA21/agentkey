@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storeMessage } from "@/lib/inbox-store";
-import { dispatchWebhooks } from "@/lib/agent-store";
+import { dispatchWebhooks, safeEqual } from "@/lib/agent-store";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 import type { Message } from "@/lib/api";
 
 function extractEdgeData(body: string, subject: string) {
@@ -111,27 +112,54 @@ function parseMimeContent(rawString: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 120 ingest requests per minute per IP
+  const clientIp = getClientIp(req.headers);
+  const rateLimit = checkRateLimit(`ingest_${clientIp}`, 120, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many ingestion requests. Rate limit exceeded." },
+      { status: 429, headers: { "Retry-After": Math.ceil(rateLimit.resetMs / 1000).toString() } }
+    );
+  }
+
+  // Shared secret verification if INGEST_SECRET is configured in environment
+  const expectedSecret = process.env.INGEST_SECRET;
+  if (expectedSecret) {
+    const providedSecret =
+      req.headers.get("x-ingest-secret") ||
+      req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+      "";
+    if (!safeEqual(providedSecret, expectedSecret)) {
+      return NextResponse.json({ error: "Unauthorized. Invalid ingest secret." }, { status: 401 });
+    }
+  }
+
   try {
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (contentLength > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "Payload exceeds 10MB limit." }, { status: 413 });
+    }
+
     const payload = await req.json();
     let bodyText = "";
     let subject = "Inbound Email";
-    let sender = payload.envelope_from || "external@sender.com";
-    const recipient = payload.envelope_to || "agent-01@agentkey.in";
+    let sender = (payload.envelope_from || "external@sender.com").slice(0, 320);
+    const recipient = (payload.envelope_to || "agent-01@agentkey.in").slice(0, 320);
 
     if (payload.raw) {
       // Decode Base64 raw MIME
       try {
         const decoded = Buffer.from(payload.raw, "base64").toString("utf-8");
         const parsed = parseMimeContent(decoded);
-        if (parsed.subject) subject = parsed.subject;
-        if (parsed.sender) sender = parsed.sender;
-        bodyText = parsed.body;
+        if (parsed.subject) subject = parsed.subject.slice(0, 500);
+        if (parsed.sender) sender = parsed.sender.slice(0, 320);
+        bodyText = parsed.body.slice(0, 100000);
       } catch {
-        bodyText = payload.text || payload.body || "Raw message payload";
+        bodyText = (payload.text || payload.body || "Raw message payload").slice(0, 100000);
       }
     } else {
-      bodyText = payload.text || payload.body || "";
-      if (payload.subject) subject = payload.subject;
+      bodyText = (payload.text || payload.body || "").slice(0, 100000);
+      if (payload.subject) subject = String(payload.subject).slice(0, 500);
     }
 
     const extracted = extractEdgeData(bodyText, subject);
