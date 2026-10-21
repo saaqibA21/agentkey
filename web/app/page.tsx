@@ -262,7 +262,9 @@ export default function LandingPage() {
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/20 text-[#FAF5EE]">
-                            ✦
+                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
                           </span>
                           <span className="font-medium text-[#FAF5EE]">Sign in with AgentKey</span>
                         </div>
@@ -318,9 +320,13 @@ export default function LandingPage() {
                     <button
                       type="button"
                       onClick={() => setAuthStep("initial")}
-                      className="w-full rounded-lg border border-[#DDD4C2] bg-white py-2 text-xs font-mono text-[#18191B] hover:bg-[#F2ECE1] transition"
+                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#DDD4C2] bg-white py-2 text-xs font-mono text-[#18191B] hover:bg-[#F2ECE1] transition"
                     >
-                      ↺ Reset Sign-In Simulation
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                      </svg>
+                      <span>Reset Sign-In Simulation</span>
                     </button>
                   </div>
                 )}
@@ -498,9 +504,24 @@ export default function LandingPage() {
               </div>
 
               <div className="pt-2 border-t border-white/10 text-xs font-mono text-[#9BA7B4] space-y-1">
-                <p className="text-rose-700">✕ Agent stalls waiting for human response</p>
-                <p className="text-rose-700">✕ Fragile browser session cookies</p>
-                <p className="text-rose-700">✕ Security risk of sharing human credentials</p>
+                <p className="flex items-center gap-1.5 text-rose-700">
+                  <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <span>Agent stalls waiting for human response</span>
+                </p>
+                <p className="flex items-center gap-1.5 text-rose-700">
+                  <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <span>Fragile browser session cookies</span>
+                </p>
+                <p className="flex items-center gap-1.5 text-rose-700">
+                  <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <span>Security risk of sharing human credentials</span>
+                </p>
               </div>
 
               {/* Free-Standing Mascot: Access Denied (Stern Halt) */}
@@ -532,16 +553,34 @@ export default function LandingPage() {
 
                   <div className="space-y-1 flex flex-col items-end">
                     <div className="text-[#9BA7B4] text-[10px] uppercase">Human Operator Dashboard</div>
-                    <div className="rounded-xl rounded-tr-none border border-emerald-200 bg-emerald-50 p-3 text-emerald-900 max-w-md">
-                      ✓ Verified audit log: Agent 1 authenticated to Firecrawl (Scope: Scrape API, Owner: Verified).
+                    <div className="flex items-center gap-1.5 rounded-xl rounded-tr-none border border-emerald-200 bg-emerald-50 p-3 text-emerald-900 max-w-md">
+                      <svg className="h-3.5 w-3.5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span>Verified audit log: Agent 1 authenticated to Firecrawl (Scope: Scrape API, Owner: Verified).</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-white/10 text-xs font-mono space-y-1">
-                  <p className="text-emerald-800 font-medium">✓ Seamless headless authentication without CAPTCHAs</p>
-                  <p className="text-emerald-800 font-medium">✓ Zero-token automated OTP intercept</p>
-                  <p className="text-emerald-800 font-medium">✓ Isolated credentials with complete auditability</p>
+                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Seamless headless authentication without CAPTCHAs</span>
+                  </p>
+                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Zero-token automated OTP intercept</span>
+                  </p>
+                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Isolated credentials with complete auditability</span>
+                  </p>
                 </div>
               </div>
 
@@ -645,22 +684,38 @@ export default function LandingPage() {
 
             {/* Card 2: Receives (Verified Claims) */}
             <div className="rounded-2xl border border-[#E5DEC9] bg-white p-6 space-y-4 shadow-sm">
-              <p className="font-mono text-xs uppercase text-emerald-400 tracking-wider">Receives</p>
+              <p className="font-mono text-xs uppercase text-emerald-600 tracking-wider font-semibold">Receives</p>
               <ul className="space-y-3 font-mono text-xs text-[#18191B]">
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
                   <span>Verified agent identity</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
                   <span>Verified agent actor identity</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
                   <span>Owner’s name and email</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-500/20 text-emerald-400">✓</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
                   <span>Scoped granular permissions</span>
                 </li>
               </ul>
@@ -671,22 +726,38 @@ export default function LandingPage() {
 
             {/* Card 3: Never Receives (Zero-Trust Security) */}
             <div className="rounded-2xl border border-[#E5DEC9] bg-white p-6 space-y-4 shadow-sm">
-              <p className="font-mono text-xs uppercase text-rose-400 tracking-wider">Never receives</p>
-              <ul className="space-y-3 font-mono text-xs text-[#9BA7B4]">
-                <li className="flex items-center gap-2.5 text-white">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
+              <p className="font-mono text-xs uppercase text-rose-600 tracking-wider font-semibold">Never receives</p>
+              <ul className="space-y-3 font-mono text-xs text-[#64646A]">
+                <li className="flex items-center gap-2.5 text-[#18191B]">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </span>
                   <span>The agent’s master password</span>
                 </li>
-                <li className="flex items-center gap-2.5 text-white">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
+                <li className="flex items-center gap-2.5 text-[#18191B]">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </span>
                   <span>Operator’s personal passwords</span>
                 </li>
-                <li className="flex items-center gap-2.5 text-white">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
+                <li className="flex items-center gap-2.5 text-[#18191B]">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </span>
                   <span>AgentKey master API keys</span>
                 </li>
-                <li className="flex items-center gap-2.5 text-white">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-500/20 text-rose-400">✕</span>
+                <li className="flex items-center gap-2.5 text-[#18191B]">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-700">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </span>
                   <span>Unscoped private user data</span>
                 </li>
               </ul>
@@ -820,7 +891,9 @@ export default function LandingPage() {
               className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition"
               aria-label="Close modal"
             >
-              ✕
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
 
             <h3 className="text-xl font-bold text-[#F5F3EF]">{selectedUseCase.title} Architecture</h3>

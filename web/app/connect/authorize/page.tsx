@@ -154,15 +154,25 @@ export default async function AuthorizePage({
 
           <div className="space-y-2 text-xs">
             <div className="flex items-start gap-2.5 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
-              <span className="text-base leading-none">✉️</span>
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white/5 text-[#8BE8E3]">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+              </span>
               <div>
-                <p className="font-semibold text-white">Agent Inboxes & Edge OTPs</p>
+                <p className="font-semibold text-white">Agent Inboxes &amp; Edge OTPs</p>
                 <p className="text-white/50">Read incoming verification codes from agent-01@agentkey.in without token waste.</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2.5 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
-              <span className="text-base leading-none">✍️</span>
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white/5 text-[#8BE8E3]">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </span>
               <div>
                 <p className="font-semibold text-white">Send Outbound Messages</p>
                 <p className="text-white/50">Deliver emails with Owner-Delegated legal binding signed by {userName}.</p>
@@ -170,7 +180,11 @@ export default async function AuthorizePage({
             </div>
 
             <div className="flex items-start gap-2.5 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
-              <span className="text-base leading-none">🛡️</span>
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white/5 text-[#8BE8E3]">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </span>
               <div>
                 <p className="font-semibold text-white">99.0 Trust Passport Attestation</p>
                 <p className="text-white/50">Verify agent identity without CAPTCHAs across enterprise platforms.</p>

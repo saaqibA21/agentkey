@@ -138,8 +138,10 @@ export default async function OAuthPage() {
       <details className="group rounded-2xl border border-[#E5DEC9] bg-white p-5 shadow-sm transition">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-[#18191B] [&::-webkit-details-marker]:hidden">
           <div className="flex items-center gap-2">
-            <span className="text-[#8C8A94] group-open:rotate-90 transition-transform duration-200">▶</span>
-            <span>Developer Endpoints & OIDC Discovery</span>
+            <svg className="h-3.5 w-3.5 text-[#8C8A94] group-open:rotate-90 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>Developer Endpoints &amp; OIDC Discovery</span>
           </div>
           <span className="text-xs text-[#8C8A94] font-normal group-open:hidden">Click to expand</span>
         </summary>

@@ -247,9 +247,12 @@ export function InboxMessageList({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleAutoDraft(m)}
-                            className="text-accent hover:underline"
+                            className="inline-flex items-center gap-1 text-accent hover:underline"
                           >
-                            ✨ Auto-Draft Response
+                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                            </svg>
+                            <span>Auto-Draft Response</span>
                           </button>
                           <span>·</span>
                           <button
@@ -270,8 +273,11 @@ export function InboxMessageList({
                       />
 
                       {sendSuccess && (
-                        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                          ✓ {sendSuccess}
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>{sendSuccess}</span>
                         </p>
                       )}
 

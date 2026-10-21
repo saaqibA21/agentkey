@@ -98,11 +98,6 @@ export default async function OverviewPage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                OD-ID Active
-              </span>
-
               <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-medium text-[#9BA7B4]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#8BE8E3]" />
                 {o.workspace.plan} tier

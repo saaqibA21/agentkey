@@ -59,18 +59,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           {/* Right Status Controls */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-              <span>DPDP &amp; TRAI Pipes Active</span>
-            </div>
-
-            <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-800">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              <span>Owner Delegated ID</span>
-            </div>
-
             {/* Notification Bell */}
             <button
               type="button"
