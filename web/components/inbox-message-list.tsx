@@ -6,7 +6,7 @@ import { CopyButton, ActionForm } from "@/components/client";
 import { resolveInboxLink } from "@/app/dashboard/actions";
 import type { Message } from "@/lib/api";
 
-const statusTone = { PENDING_APPROVAL: "warn", REJECTED: "bad", FAILED: "bad" } as const;
+const statusTone = { PENDING_APPROVAL: "warn", REJECTED: "bad", FAILED: "bad", SENT: "good" } as const;
 
 export function InboxMessageList({
   initialMessages,
@@ -17,7 +17,10 @@ export function InboxMessageList({
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
 
   async function fetchLatest() {
     try {
@@ -27,7 +30,6 @@ export function InboxMessageList({
         const json = await res.json();
         if (json && Array.isArray(json.data)) {
           setMessages(json.data);
-          setLastUpdated(new Date());
         }
       }
     } catch (e) {
@@ -38,18 +40,58 @@ export function InboxMessageList({
   }
 
   useEffect(() => {
-    // Initial fetch to get latest messages immediately on load
     fetchLatest();
-
-    // Auto-refresh interval every 3 seconds
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
         fetchLatest();
       }
-    }, 3000);
-
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  async function handleSendReply(m: Message) {
+    if (!replyText.trim()) return;
+    setIsSending(true);
+    setSendSuccess(null);
+    try {
+      // Extract clean email address from "Name <email@...>"
+      const emailMatch = m.sender.match(/<([^>]+)>/);
+      const recipientEmail = emailMatch ? emailMatch[1] : m.sender;
+
+      const res = await fetch("/api/inbound/messages/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: recipientEmail,
+          subject: m.subject || "Re: Your message",
+          text: replyText,
+          in_reply_to: m.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSendSuccess(`Delivered reply to ${recipientEmail}!`);
+        setReplyText("");
+        setTimeout(() => {
+          setActiveReplyId(null);
+          setSendSuccess(null);
+        }, 3000);
+        fetchLatest();
+      } else {
+        alert("Sending failed: " + (data.error || "Unknown error"));
+      }
+    } catch (err: unknown) {
+      alert("Network error sending reply: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  function handleAutoDraft(m: Message) {
+    const draft = `Hello,\n\nThank you for reaching out! This is an autonomous response from your AI agent (agent-01@agentkey.in).\n\nWe received your inquiry regarding "${m.subject || "your message"}" and have processed your instructions successfully.\n\nBest regards,\nAgent-01 (AgentKey Autonomous Identity)`;
+    setReplyText(draft);
+  }
 
   return (
     <div className="space-y-3">
@@ -95,6 +137,7 @@ export function InboxMessageList({
         messages.map((m) => {
           const x = m.extracted_data || {};
           const inbound = m.direction === "INBOUND";
+          const isReplying = activeReplyId === m.id;
 
           return (
             <Card key={m.id} className="!p-4 transition-all hover:border-line/80">
@@ -179,6 +222,77 @@ export function InboxMessageList({
                   {m.body_text}
                 </pre>
               </details>
+
+              {/* Inbound Reply Action Bar */}
+              {inbound && (
+                <div className="mt-3.5 pt-3 border-t border-line/40">
+                  {!isReplying ? (
+                    <button
+                      onClick={() => {
+                        setActiveReplyId(m.id);
+                        handleAutoDraft(m);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-accent/40 bg-accent/5 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/10 transition-colors"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 17 4 12 9 7" />
+                        <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+                      </svg>
+                      Reply as Agent
+                    </button>
+                  ) : (
+                    <div className="space-y-2 rounded-lg border border-line bg-subtle/50 p-3">
+                      <div className="flex items-center justify-between text-xs text-muted">
+                        <span>Replying to <b className="text-ink">{m.sender}</b></span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleAutoDraft(m)}
+                            className="text-accent hover:underline"
+                          >
+                            ✨ Auto-Draft Response
+                          </button>
+                          <span>·</span>
+                          <button
+                            onClick={() => setActiveReplyId(null)}
+                            className="hover:text-ink"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Write autonomous agent response..."
+                        rows={4}
+                        className="w-full rounded-md border border-line bg-surface p-2.5 font-sans text-xs text-ink focus:border-accent focus:outline-none"
+                      />
+
+                      {sendSuccess && (
+                        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          ✓ {sendSuccess}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleSendReply(m)}
+                          disabled={isSending || !replyText.trim()}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                        >
+                          <svg className={`h-3 w-3 ${isSending ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                          </svg>
+                          {isSending ? "Sending via Resend..." : "Send Reply"}
+                        </button>
+                        <span className="text-xs text-muted">Delivered from agent-01@agentkey.in</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           );
         })
