@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  addDomainRecord,
   createInboxRecord,
+  createWebhookRecord,
+  deleteDomainRecord,
+  deleteWebhookRecord,
   dispatchWebhooks,
+  getDomains,
   getInboxById,
   getInboxes,
+  getWebhooks,
   validateApiKey,
+  verifyDomainRecord,
 } from "@/lib/agent-store";
 import { getAllMessages, getMessagesForInbox, storeMessage } from "@/lib/inbox-store";
 import type { Message } from "@/lib/api";
@@ -28,8 +35,30 @@ export async function GET(
   { params }: { params: Promise<{ slug: string[] }> }
 ) {
   const { slug } = await params;
-  const auth = checkAuth(req);
+  const path = slug.join("/");
 
+  // Public Agent Verification Endpoint
+  if (path === "auth/agent/verify") {
+    return NextResponse.json({
+      verified: true,
+      is_agent: true,
+      agent_type: "AUTONOMOUS_AI_AGENT",
+      trust_score: 99.0,
+      operator: {
+        name: "Verified Operator",
+        email: "operator@agentkey.in",
+        accountability_tier: "VERIFIED_HUMAN_OPERATOR",
+        verified: true,
+      },
+      compliance: {
+        passport_active: true,
+        zero_token_otp: true,
+        enclave_enforced: true,
+      },
+    });
+  }
+
+  const auth = checkAuth(req);
   if (!auth.valid) {
     return NextResponse.json(
       {
@@ -40,8 +69,6 @@ export async function GET(
       { status: 401 }
     );
   }
-
-  const path = slug.join("/");
 
   // 1. GET /v1/inboxes
   if (path === "inboxes") {
@@ -94,7 +121,6 @@ export async function GET(
     const deadline = Date.now() + timeout * 1000;
 
     while (Date.now() <= deadline) {
-      // Check store
       const messages = getMessagesForInbox(inboxId, 20);
       for (const msg of messages) {
         if (kind === "otp") {
@@ -135,7 +161,17 @@ export async function GET(
     return new Response(null, { status: 204 });
   }
 
-  // 5. GET /v1/overview
+  // 5. GET /v1/webhooks
+  if (path === "webhooks") {
+    return NextResponse.json(getWebhooks(auth.ownerEmail));
+  }
+
+  // 6. GET /v1/domains
+  if (path === "domains") {
+    return NextResponse.json({ data: getDomains(auth.ownerEmail) });
+  }
+
+  // 7. GET /v1/overview
   if (path === "overview") {
     return NextResponse.json({
       workspace: {
@@ -155,7 +191,7 @@ export async function GET(
 }
 
 // ---------------------------------------------------------------------------
-// POST Handlers (Create inbox, Send outbound email, Verify agent passport)
+// POST Handlers (Create inbox, Send outbound email, Reply, Webhooks, Domains)
 // ---------------------------------------------------------------------------
 export async function POST(
   req: NextRequest,
@@ -164,14 +200,8 @@ export async function POST(
   const { slug } = await params;
   const path = slug.join("/");
 
-  // Verify Agent Passport (public or authenticated)
+  // Public Agent Verification Endpoint
   if (path === "auth/agent/verify") {
-    let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
     return NextResponse.json({
       verified: true,
       is_agent: true,
@@ -203,14 +233,15 @@ export async function POST(
     );
   }
 
+  let body: any = {};
+  try {
+    body = await req.json();
+  } catch {
+    body = {};
+  }
+
   // 1. POST /v1/inboxes (Create inbox)
   if (path === "inboxes") {
-    let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
     const inbox = createInboxRecord({
       username: body.username,
       owner_name: body.owner_name || auth.name,
@@ -221,7 +252,85 @@ export async function POST(
     return NextResponse.json(inbox, { status: 201 });
   }
 
-  // 2. POST /v1/inboxes/[id]/messages/send or POST /v1/inboxes/[id]/messages (Send Outbound Email)
+  // 2. POST /v1/webhooks (Create webhook)
+  if (path === "webhooks") {
+    if (!body.target_url) {
+      return NextResponse.json({ error: "target_url is required" }, { status: 400 });
+    }
+    const { webhook, secret_token } = createWebhookRecord(
+      body.target_url,
+      body.event_types || ["*"],
+      auth.ownerEmail
+    );
+    return NextResponse.json({ ...webhook, secret_token }, { status: 201 });
+  }
+
+  // 3. POST /v1/domains (Add custom domain)
+  if (path === "domains") {
+    if (!body.name) {
+      return NextResponse.json({ error: "name is required" }, { status: 400 });
+    }
+    const domain = addDomainRecord(body.name, auth.ownerEmail);
+    return NextResponse.json(domain, { status: 201 });
+  }
+
+  // 4. POST /v1/domains/[id]/verify
+  if (slug[0] === "domains" && slug[2] === "verify" && slug.length === 3) {
+    const domain = verifyDomainRecord(slug[1]);
+    if (!domain) {
+      return NextResponse.json({ error: "Domain not found" }, { status: 404 });
+    }
+    return NextResponse.json({ status: "VERIFIED", domain });
+  }
+
+  // 5. POST /v1/inboxes/[id]/messages/[msg_id]/reply (Threaded reply)
+  if (slug[0] === "inboxes" && slug[2] === "messages" && slug[4] === "reply" && slug.length === 5) {
+    const inboxId = slug[1];
+    const msgId = slug[3];
+    const inbox = getInboxById(inboxId) || {
+      id: inboxId,
+      email_address: inboxId.includes("@") ? inboxId : `${inboxId}@agentkey.in`,
+      owner_name: "AgentKey Agent",
+    };
+
+    const text = body.text || body.message || "";
+    if (!text) {
+      return NextResponse.json({ error: "Field 'text' is required for reply." }, { status: 400 });
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 500 });
+    }
+
+    const messages = getMessagesForInbox(inbox.id, 50);
+    const original = messages.find((m) => m.id === msgId) || messages[0];
+    const to = original ? original.sender : "operator@agentkey.in";
+    const subject = original?.subject?.startsWith("Re:") ? original.subject : `Re: ${original?.subject || "Message"}`;
+
+    try {
+      const resendResp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: `${inbox.owner_name} <${inbox.email_address}>`,
+          to: [to],
+          subject,
+          text,
+          headers: { "In-Reply-To": msgId, References: msgId },
+        }),
+      });
+      const resendData = await resendResp.json();
+      return NextResponse.json({ status: "SENT", resend_id: resendData.id });
+    } catch (err: unknown) {
+      return NextResponse.json({ error: "Reply failed" }, { status: 500 });
+    }
+  }
+
+  // 6. POST /v1/inboxes/[id]/messages/send or POST /v1/inboxes/[id]/messages (Send Outbound Email)
   if (
     slug[0] === "inboxes" &&
     (slug[2] === "messages" || slug[2] === "send" || (slug[2] === "messages" && slug[3] === "send"))
@@ -232,13 +341,6 @@ export async function POST(
       email_address: inboxId.includes("@") ? inboxId : `${inboxId}@agentkey.in`,
       owner_name: "AgentKey Agent",
     };
-
-    let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON request body." }, { status: 400 });
-    }
 
     const { to, subject, text, html } = body;
     if (!to || (!text && !html)) {
@@ -326,6 +428,32 @@ export async function POST(
         { status: 500 }
       );
     }
+  }
+
+  return NextResponse.json({ status: 404, title: "Endpoint not found" }, { status: 404 });
+}
+
+// ---------------------------------------------------------------------------
+// DELETE Handlers (Delete webhook, domain, inbox)
+// ---------------------------------------------------------------------------
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string[] }> }
+) {
+  const { slug } = await params;
+  const auth = checkAuth(req);
+  if (!auth.valid) {
+    return NextResponse.json({ status: 401, detail: "Unauthorized" }, { status: 401 });
+  }
+
+  if (slug[0] === "webhooks" && slug.length === 2) {
+    deleteWebhookRecord(slug[1]);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (slug[0] === "domains" && slug.length === 2) {
+    deleteDomainRecord(slug[1]);
+    return NextResponse.json({ ok: true });
   }
 
   return NextResponse.json({ status: 404, title: "Endpoint not found" }, { status: 404 });

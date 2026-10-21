@@ -354,7 +354,12 @@ export async function adminApi<T = unknown>(path: string, init?: RequestInit): P
   return await getResilientFallback<T>(path);
 }
 
-export const publicApiUrl = (process.env.NEXT_PUBLIC_API_URL ?? API_URL).replace(/\/$/, "");
+export const publicApiUrl = (
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes("api.agentkey.in")
+    ? process.env.NEXT_PUBLIC_API_URL
+    : "https://www.agentkey.in")
+).replace(/\/$/, "");
 
 // ---- shapes returned by the API -----------------------------------------------------------
 
