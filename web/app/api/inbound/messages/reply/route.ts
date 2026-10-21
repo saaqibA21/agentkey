@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { storeMessage } from "@/lib/inbox-store";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 import type { Message } from "@/lib/api";
 
 export async function POST(req: NextRequest) {
+  // Prevent Open Email Relay: Require authenticated dashboard session
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized. Authentication required to send replies." }, { status: 401 });
+  }
+
+  // Rate limit: 20 replies per minute per user/IP
+  const clientIp = getClientIp(req.headers);
+  const rateLimit = checkRateLimit(`reply_${session.user.email || clientIp}`, 20, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many replies sent. Please wait a moment." },
+      { status: 429, headers: { "Retry-After": Math.ceil(rateLimit.resetMs / 1000).toString() } }
+    );
+  }
+
   try {
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
@@ -17,7 +35,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing 'to' or 'text' parameter." }, { status: 400 });
     }
 
-    const replySubject = subject ? (subject.startsWith("Re:") ? subject : `Re: ${subject}`) : "Re: Your message";
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const recipient = String(to).trim();
+    if (!EMAIL_REGEX.test(recipient)) {
+      return NextResponse.json({ error: `Invalid recipient email address: '${recipient}'` }, { status: 400 });
+    }
+
+    // Sanitize against SMTP header injection
+    const rawSubject = subject ? (subject.startsWith("Re:") ? subject : `Re: ${subject}`) : "Re: Your message";
+    const replySubject = rawSubject.replace(/[\r\n]+/g, " ").slice(0, 250);
+    const cleanText = String(text).slice(0, 100000);
     const sender = "Agent-01 <agent-01@agentkey.in>";
 
     // Call Resend to deliver outbound email
@@ -29,12 +56,12 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         from: sender,
-        to: Array.isArray(to) ? to : [to],
+        to: [recipient],
         subject: replySubject,
-        text,
+        text: cleanText,
         headers: in_reply_to ? {
-          "In-Reply-To": in_reply_to,
-          "References": in_reply_to,
+          "In-Reply-To": String(in_reply_to).replace(/[\r\n]+/g, ""),
+          "References": String(in_reply_to).replace(/[\r\n]+/g, ""),
         } : {},
       }),
     });

@@ -40,13 +40,16 @@ export function getAllMessages(): Message[] {
 
 export function getMessagesForInbox(inboxId: string, limit = 50): Message[] {
   const all = getAllMessages();
-  // Match by inbox_id or matching the primary agent
-  const filtered = all.filter(
-    (m) =>
-      m.inbox_id === inboxId ||
-      inboxId === "inbox_primary_agent" ||
-      m.recipient.toLowerCase().includes(inboxId.toLowerCase())
-  );
+  const lowerId = inboxId.toLowerCase();
+
+  // Match strictly by inbox_id or recipient address
+  const filtered = all.filter((m) => {
+    if (m.inbox_id === inboxId) return true;
+    if (inboxId === "inbox_primary_agent" && m.recipient.toLowerCase().includes("agent-01@agentkey.in")) {
+      return true;
+    }
+    return m.recipient.toLowerCase().includes(lowerId);
+  });
   return filtered.slice(0, limit);
 }
 
@@ -54,6 +57,12 @@ export function storeMessage(message: Message): Message {
   const all = getAllMessages();
   // Prepend new message so newest is first
   all.unshift(message);
+
+  // Cap storage to latest 500 messages to prevent memory/disk exhaustion
+  if (all.length > 500) {
+    all.length = 500;
+  }
+
   globalForStore._agentKeyMessages = all;
   saveToDisk(all);
   return message;

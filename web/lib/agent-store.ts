@@ -196,12 +196,25 @@ export function createApiKeyRecord(
 
 export function getApiKeys(ownerEmail?: string): ApiKeyRecord[] {
   const store = getStore();
-  return store.keys.filter((k) => !k.revoked_at);
+  const unrevoked = store.keys.filter((k) => !k.revoked_at);
+  if (!ownerEmail) return unrevoked;
+  const lower = ownerEmail.toLowerCase();
+  return unrevoked.filter(
+    (k) => !k.owner_email || k.owner_email.toLowerCase() === lower
+  );
 }
 
 export function revokeApiKeyRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
-  const key = store.keys.find((k) => k.id === id);
+  const lower = ownerEmail ? ownerEmail.toLowerCase() : undefined;
+  const key = store.keys.find((k) => {
+    if (k.id !== id) return false;
+    if (lower && k.owner_email && k.owner_email.toLowerCase() !== lower) {
+      return false; // Unauthorized: Key belongs to another tenant
+    }
+    return true;
+  });
+
   if (key) {
     key.revoked_at = new Date().toISOString();
     saveStore(store);

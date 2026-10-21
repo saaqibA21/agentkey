@@ -17,3 +17,8 @@ dist/
 build/
 node_modules/
 .wrangler/
+cookies*.txt
+*.png
+!web/public/**/*.png
+!web/public/**/*.jpg
+

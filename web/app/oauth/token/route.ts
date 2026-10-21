@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { consumeAuthCode } from "@/lib/oauth-store";
+import { consumeAuthCode, storeAccessToken } from "@/lib/oauth-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +78,16 @@ export async function POST(req: NextRequest) {
 
     const accessToken = `ai_at_${crypto.randomBytes(24).toString("hex")}`;
     const scopeStr = authCode.scopes.join(" ");
+
+    // Track active token in OAuth store for userinfo endpoint validation
+    storeAccessToken({
+      token: accessToken,
+      client_id: authCode.client_id,
+      user_email: authCode.user_email,
+      user_name: authCode.user_name,
+      scopes: authCode.scopes,
+      expires_at: Date.now() + 3600 * 1000,
+    });
 
     // Simple signable ID token payload for OpenID Connect
     const idTokenHeader = base64Url(Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })));

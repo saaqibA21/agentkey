@@ -21,6 +21,15 @@ export type AuthCodeEntry = {
   expires_at: number;
 };
 
+export type AccessTokenEntry = {
+  token: string;
+  client_id: string;
+  user_email: string;
+  user_name: string;
+  scopes: string[];
+  expires_at: number;
+};
+
 const STORE_PATH = process.env.NODE_ENV === "production"
   ? "/tmp/agentkey_oauth_clients.json"
   : path.join(process.cwd(), ".agentkey_oauth_clients.json");
@@ -28,10 +37,15 @@ const STORE_PATH = process.env.NODE_ENV === "production"
 const globalForOAuth = globalThis as unknown as {
   _agentKeyOAuthClients?: OAuthClient[];
   _agentKeyAuthCodes?: Map<string, AuthCodeEntry>;
+  _agentKeyAccessTokens?: Map<string, AccessTokenEntry>;
 };
 
 if (!globalForOAuth._agentKeyAuthCodes) {
   globalForOAuth._agentKeyAuthCodes = new Map();
+}
+
+if (!globalForOAuth._agentKeyAccessTokens) {
+  globalForOAuth._agentKeyAccessTokens = new Map();
 }
 
 function loadClients(): OAuthClient[] {
@@ -169,6 +183,19 @@ export function consumeAuthCode(code: string): AuthCodeEntry | undefined {
     if (Date.now() < entry.expires_at) {
       return entry;
     }
+  }
+  return undefined;
+}
+
+export function storeAccessToken(entry: AccessTokenEntry) {
+  globalForOAuth._agentKeyAccessTokens!.set(entry.token, entry);
+}
+
+export function validateAccessToken(token: string): AccessTokenEntry | undefined {
+  const clean = token.trim().replace(/^Bearer\s+/i, "");
+  const entry = globalForOAuth._agentKeyAccessTokens!.get(clean);
+  if (entry && Date.now() < entry.expires_at) {
+    return entry;
   }
   return undefined;
 }

@@ -1,9 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { validateApiKey } from "@/lib/agent-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Enforce authentication via Dashboard Session or Bearer API Key
+  const session = await auth();
+  const authHeader = req.headers.get("authorization") || req.headers.get("x-api-key") || "";
+  const apiKeyAuth = authHeader ? validateApiKey(authHeader) : { valid: false };
+
+  if (!session?.user && !apiKeyAuth.valid) {
+    return NextResponse.json(
+      { error: "Unauthorized. Authentication required to access messages." },
+      { status: 401 }
+    );
+  }
+
   try {
     const workerUrl = "https://agentkey-email-worker.saaqibheroindia.workers.dev/messages";
     const res = await fetch(workerUrl, {
