@@ -6,11 +6,10 @@ function extractEdgeData(body: string, subject: string) {
   const combined = `${subject}\n${body}`;
 
   // Deterministic OTP pattern extraction
-  // Matches "code: 123456", "OTP is 123456", "verification code: 829104", or standalone 6-digit number
+  // Matches 4-8 digit codes preceded by keywords, or standalone 6-digit numeric OTP
   let otp_code: string | undefined;
-  const otpLabeledMatch = combined.match(
-    /(?:code|otp|verification|passcode|pin|security code|one-time code|confirm(?:ation)? code)[:\s\n*#]+([0-9A-Z]{4,8})\b/i
-  );
+  const labeledRegex = /(?:otp|verification|passcode|one-time\s*code|security\s*code|confirm(?:ation)?\s*code|code)(?:(?:\s+is|\s*[:=-])?\s*[*#]*\s*)([0-9]{4,8})\b/i;
+  const otpLabeledMatch = combined.match(labeledRegex);
   if (otpLabeledMatch) {
     otp_code = otpLabeledMatch[1];
   } else {

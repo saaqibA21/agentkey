@@ -172,6 +172,18 @@ function getResilientFallback<T>(path: string): T {
   }
 
   if (p.includes("/messages") || p === "/messages") {
+    try {
+      const workerUrl = "https://agentkey-email-worker.saaqibheroindia.workers.dev/messages";
+      const res = await fetch(workerUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && Array.isArray(json.data) && json.data.length > 0) {
+          return json as T;
+        }
+      }
+    } catch {
+      // Fallback to local store
+    }
     const parts = p.split("/");
     const inboxId = parts[2] || "inbox_primary_agent";
     const messages = getMessagesForInbox(inboxId);
