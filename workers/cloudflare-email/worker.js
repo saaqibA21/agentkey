@@ -1,11 +1,12 @@
 /**
- * Cloudflare Email Worker: forwards every message received on the catch-all route to AgentIdentity.
+ * AgentKey Cloudflare Email Ingestion Worker
  *
- * Setup: Email Routing -> Routing rules -> Catch-all -> "Send to a Worker" -> this worker.
- * Secrets (wrangler secret put ...): INGEST_SECRET (same value as the API's INGEST_SECRET).
- * Vars (wrangler.toml): INGEST_URL, e.g. https://api.yourdomain.com/v1/inbound/ingest
+ * Forwards every email received on agentkey.in directly into the AgentKey Vercel dashboard.
+ * - Handles 'email' events triggered by Cloudflare Email Routing.
+ * - Handles 'fetch' events for HTTP preview & health checks.
  */
-const MAX_BYTES = 10 * 1024 * 1024;
+
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB limit
 
 function toBase64(bytes) {
   let binary = "";
@@ -16,45 +17,49 @@ function toBase64(bytes) {
   return btoa(binary);
 }
 
-async function sign(secret, timestamp, body) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
-  );
-  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}.${body}`));
-  return [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 export default {
+  // 1. Health check & browser test preview
+  async fetch(request, env) {
+    return new Response(
+      JSON.stringify({
+        status: "online",
+        service: "AgentKey Email Worker",
+        target: env.INGEST_URL || "https://www.agentkey.in/api/inbound/ingest",
+        time: new Date().toISOString(),
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  },
+
+  // 2. Incoming email handler from Cloudflare Email Routing
   async email(message, env) {
     if (message.rawSize > MAX_BYTES) {
-      message.setReject("Message too large");
+      message.setReject("Message exceeds 10MB size limit");
       return;
     }
+
     const raw = new Uint8Array(await new Response(message.raw).arrayBuffer());
     const body = JSON.stringify({
       raw: toBase64(raw),
       envelope_from: message.from,
       envelope_to: message.to,
+      subject: message.headers.get("subject") || "",
     });
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signature = await sign(env.INGEST_SECRET, timestamp, body);
 
-    const response = await fetch(env.INGEST_URL, {
+    const targetUrl = env.INGEST_URL || "https://www.agentkey.in/api/inbound/ingest";
+
+    const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Ingest-Signature": `t=${timestamp},v1=${signature}`,
       },
       body,
     });
 
-    if (response.status === 404) {
-      // No such inbox: bounce at SMTP time instead of silently accepting mail for unknown users.
-      message.setReject("Address does not exist");
-    } else if (!response.ok) {
-      // Throwing makes Cloudflare return a temporary failure, so the sending server retries later.
-      throw new Error(`ingest failed with HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`AgentKey ingest failed with HTTP status ${response.status}`);
     }
   },
 };

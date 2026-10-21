@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { getMessagesForInbox } from "./inbox-store";
 
 const DEFAULT_API_URL = process.env.NODE_ENV === "production" ? "https://agentkey-api.onrender.com" : "http://127.0.0.1:8000";
 const API_URL = (process.env.AIGENT_API_URL ?? DEFAULT_API_URL).replace(/\/$/, "");
@@ -171,7 +172,10 @@ function getResilientFallback<T>(path: string): T {
   }
 
   if (p.includes("/messages") || p === "/messages") {
-    return { data: [] } as unknown as T;
+    const parts = p.split("/");
+    const inboxId = parts[2] || "inbox_primary_agent";
+    const messages = getMessagesForInbox(inboxId);
+    return { data: messages } as unknown as T;
   }
 
   if (p === "/inboxes" || p.startsWith("/inboxes")) {
