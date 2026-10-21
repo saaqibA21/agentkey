@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createInboxRecord,
+  dispatchWebhooks,
   getInboxById,
   getInboxes,
   validateApiKey,
@@ -303,6 +304,7 @@ export async function POST(
         extracted_data: {},
       };
       storeMessage(outboundMsg);
+      dispatchWebhooks("message.sent", outboundMsg);
 
       return NextResponse.json(
         {

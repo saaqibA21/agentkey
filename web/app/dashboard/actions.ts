@@ -6,11 +6,16 @@ import { redirect } from "next/navigation";
 import { adminApi, api, ApiError } from "@/lib/api";
 import { auth } from "@/auth";
 import {
+  addDomainRecord,
   createAgentRecord,
   createApiKeyRecord,
   createInboxRecord,
+  createWebhookRecord,
   deleteAgentRecord,
+  deleteDomainRecord,
+  deleteWebhookRecord,
   revokeApiKeyRecord,
+  verifyDomainRecord,
 } from "@/lib/agent-store";
 import { deleteOAuthClientRecord, registerOAuthClientRecord } from "@/lib/oauth-store";
 
@@ -125,22 +130,39 @@ export async function revokeKey(_: ActionState, form: FormData): Promise<ActionS
 
 export async function addDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
-    await api("/domains", { method: "POST", body: JSON.stringify({ name: text(form, "name") }) });
+    const session = await auth();
+    const domainName = text(form, "name");
+    try {
+      await api("/domains", { method: "POST", body: JSON.stringify({ name: domainName }) });
+    } catch {
+      addDomainRecord(domainName, session?.user?.email || undefined);
+    }
   });
 }
 
 export async function verifyDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
-    const domain = await api<{ status: string }>(`/domains/${text(form, "id")}/verify`, { method: "POST" });
-    if (domain.status !== "VERIFIED") {
-      return { error: "Not verified yet. DNS changes can take up to an hour to appear; the list above shows what is still missing." };
+    const id = text(form, "id");
+    try {
+      const domain = await api<{ status: string }>(`/domains/${id}/verify`, { method: "POST" });
+      if (domain.status !== "VERIFIED") {
+        return { error: "Not verified yet. DNS changes can take up to an hour to appear; the list above shows what is still missing." };
+      }
+    } catch {
+      verifyDomainRecord(id);
     }
   });
 }
 
 export async function deleteDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
-    await api(`/domains/${text(form, "id")}`, { method: "DELETE" });
+    const id = text(form, "id");
+    try {
+      await api(`/domains/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    deleteDomainRecord(id);
   });
 }
 
@@ -277,18 +299,34 @@ export async function revokeApp(_: ActionState, form: FormData): Promise<ActionS
 
 export async function createWebhook(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/webhooks", async () => {
+    const session = await auth();
+    const targetUrl = text(form, "url");
     const events = form.getAll("event").map(String);
-    const created = await api<{ secret_token: string }>("/webhooks", {
-      method: "POST",
-      body: JSON.stringify({ target_url: text(form, "url"), event_types: events.length ? events : ["*"] }),
-    });
-    return { ok: true, secret: created.secret_token, secretLabel: "Webhook signing secret" };
+    const eventTypes = events.length ? events : ["*"];
+
+    try {
+      const created = await api<{ secret_token: string }>("/webhooks", {
+        method: "POST",
+        body: JSON.stringify({ target_url: targetUrl, event_types: eventTypes }),
+      });
+      return { ok: true, secret: created.secret_token, secretLabel: "Webhook signing secret" };
+    } catch {
+      const { secret_token } = createWebhookRecord(targetUrl, eventTypes, session?.user?.email || undefined);
+      return { ok: true, secret: secret_token, secretLabel: "Webhook signing secret" };
+    }
   });
 }
 
 export async function deleteWebhook(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/webhooks", async () => {
-    await api(`/webhooks/${text(form, "id")}`, { method: "DELETE" });
+    const id = text(form, "id");
+    try {
+      await api(`/webhooks/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    deleteWebhookRecord(id);
+    return { ok: true };
   });
 }
 

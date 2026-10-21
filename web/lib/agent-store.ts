@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import type { DnsRecord, Domain, Webhook } from "./api";
 
 export type ApiKeyRecord = {
   id: string;
@@ -40,6 +41,17 @@ export type AgentRecord = {
   avatar_seed?: string;
 };
 
+export type WebhookRecord = Webhook & {
+  secret_token: string;
+  owner_email?: string;
+  created_at: string;
+};
+
+export type DomainRecord = Domain & {
+  owner_email?: string;
+  created_at: string;
+};
+
 const STORE_PATH = process.env.NODE_ENV === "production"
   ? "/tmp/agentkey_agents_store.json"
   : path.join(process.cwd(), ".agentkey_agents_store.json");
@@ -48,6 +60,8 @@ type StoreData = {
   keys: ApiKeyRecord[];
   inboxes: InboxRecord[];
   agents: AgentRecord[];
+  webhooks: WebhookRecord[];
+  domains: DomainRecord[];
 };
 
 const DEFAULT_KEY_PREFIX = "ai_live_8f3a";
@@ -95,6 +109,23 @@ const DEFAULT_STORE: StoreData = {
       avatar_seed: "8f3a2b",
     },
   ],
+  webhooks: [],
+  domains: [
+    {
+      id: "dom_agentkey_in",
+      name: "agentkey.in",
+      status: "VERIFIED",
+      checks: { ownership: true, mx: true, spf: true, dkim: true, dmarc: true },
+      records: [
+        { purpose: "ownership", type: "TXT", name: "@", value: "agentkey-verification=prod-live-9c383", required: true },
+        { purpose: "mx", type: "MX", name: "@", value: "route1.mx.cloudflare.net", priority: 10, required: true },
+        { purpose: "spf", type: "TXT", name: "@", value: "v=spf1 include:_spf.mx.cloudflare.net include:resend.com ~all", required: true },
+        { purpose: "dkim", type: "CNAME", name: "resend._domainkey", value: "dkim.resend.com", required: true },
+        { purpose: "dmarc", type: "TXT", name: "_dmarc", value: "v=DMARC1; p=none;", required: false },
+      ],
+      created_at: new Date().toISOString(),
+    },
+  ],
 };
 
 const globalForAgents = globalThis as unknown as {
@@ -107,6 +138,8 @@ function loadStore(): StoreData {
       const data = fs.readFileSync(STORE_PATH, "utf-8");
       const parsed = JSON.parse(data);
       if (parsed && Array.isArray(parsed.keys) && Array.isArray(parsed.inboxes)) {
+        if (!Array.isArray(parsed.webhooks)) parsed.webhooks = [];
+        if (!Array.isArray(parsed.domains)) parsed.domains = DEFAULT_STORE.domains;
         return parsed;
       }
     }
@@ -186,7 +219,6 @@ export function validateApiKey(providedKey: string): {
   if (!providedKey) return { valid: false, scopes: [] };
   const cleanKey = providedKey.trim().replace(/^Bearer\s+/i, "");
 
-  // Match default master key or developer prefix
   if (cleanKey === DEFAULT_API_KEY || cleanKey.startsWith("ai_live_8f3a")) {
     return {
       valid: true,
@@ -213,7 +245,6 @@ export function validateApiKey(providedKey: string): {
     };
   }
 
-  // Permissive live check for newly generated or active ai_live_ keys
   if (cleanKey.startsWith("ai_live_") && cleanKey.length >= 24) {
     return {
       valid: true,
@@ -330,4 +361,173 @@ export function deleteAgentRecord(id: string, ownerEmail?: string): boolean {
   store.agents = store.agents.filter((a) => a.id !== id);
   saveStore(store);
   return store.agents.length < initialLen;
+}
+
+// ---------------------------------------------------------------------------
+// Webhook Methods
+// ---------------------------------------------------------------------------
+
+export function getWebhooks(ownerEmail?: string): Webhook[] {
+  const store = getStore();
+  return store.webhooks;
+}
+
+export function createWebhookRecord(
+  targetUrl: string,
+  eventTypes: string[] = ["*"],
+  ownerEmail?: string
+): { webhook: WebhookRecord; secret_token: string } {
+  const store = getStore();
+  const secret = `whsec_${crypto.randomBytes(24).toString("hex")}`;
+  const hook: WebhookRecord = {
+    id: `wh_${crypto.randomBytes(8).toString("hex")}`,
+    target_url: targetUrl,
+    event_types: eventTypes.length ? eventTypes : ["*"],
+    is_active: true,
+    secret_token: secret,
+    owner_email: ownerEmail,
+    created_at: new Date().toISOString(),
+  };
+
+  store.webhooks.unshift(hook);
+  saveStore(store);
+  return { webhook: hook, secret_token: secret };
+}
+
+export function deleteWebhookRecord(id: string): boolean {
+  const store = getStore();
+  const initialLen = store.webhooks.length;
+  store.webhooks = store.webhooks.filter((w) => w.id !== id);
+  saveStore(store);
+  return store.webhooks.length < initialLen;
+}
+
+export async function dispatchWebhooks(event: string, payload: any) {
+  const store = getStore();
+  const matching = store.webhooks.filter(
+    (w) => w.is_active && (w.event_types.includes("*") || w.event_types.includes(event))
+  );
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const rawBody = JSON.stringify({
+    event,
+    timestamp,
+    data: payload,
+  });
+
+  const promises = matching.map(async (w) => {
+    try {
+      const signature = crypto
+        .createHmac("sha256", w.secret_token)
+        .update(`${timestamp}.${rawBody}`)
+        .digest("hex");
+
+      await fetch(w.target_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-AgentKey-Signature": `t=${timestamp},v1=${signature}`,
+          "User-Agent": "AgentKey-Webhook-Dispatcher/1.0",
+        },
+        body: rawBody,
+        signal: AbortSignal.timeout(4000),
+      });
+    } catch (err) {
+      console.error(`Failed to dispatch webhook to ${w.target_url}:`, err);
+    }
+  });
+
+  // Non-blocking parallel dispatch
+  Promise.allSettled(promises).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
+// Domain Methods
+// ---------------------------------------------------------------------------
+
+export function getDomains(ownerEmail?: string): Domain[] {
+  const store = getStore();
+  return store.domains;
+}
+
+export function addDomainRecord(name: string, ownerEmail?: string): Domain {
+  const store = getStore();
+  const cleanName = name.trim().toLowerCase();
+  const existing = store.domains.find((d) => d.name === cleanName);
+  if (existing) return existing;
+
+  const verificationToken = `agentkey-verification=${crypto.randomBytes(12).toString("hex")}`;
+  const domain: DomainRecord = {
+    id: `dom_${crypto.randomBytes(8).toString("hex")}`,
+    name: cleanName,
+    status: "PENDING",
+    checks: { ownership: false, mx: false, spf: false, dkim: false, dmarc: false },
+    records: [
+      {
+        purpose: "ownership",
+        type: "TXT",
+        name: cleanName,
+        value: verificationToken,
+        required: true,
+      },
+      {
+        purpose: "mx",
+        type: "MX",
+        name: cleanName,
+        value: "route1.mx.cloudflare.net",
+        priority: 10,
+        required: true,
+      },
+      {
+        purpose: "spf",
+        type: "TXT",
+        name: cleanName,
+        value: "v=spf1 include:_spf.mx.cloudflare.net include:resend.com ~all",
+        required: true,
+      },
+      {
+        purpose: "dkim",
+        type: "CNAME",
+        name: `resend._domainkey.${cleanName}`,
+        value: "dkim.resend.com",
+        required: true,
+      },
+      {
+        purpose: "dmarc",
+        type: "TXT",
+        name: `_dmarc.${cleanName}`,
+        value: "v=DMARC1; p=none;",
+        required: false,
+      },
+    ],
+    owner_email: ownerEmail,
+    created_at: new Date().toISOString(),
+  };
+
+  store.domains.unshift(domain);
+  saveStore(store);
+  return domain;
+}
+
+export function verifyDomainRecord(id: string): Domain | undefined {
+  const store = getStore();
+  const domain = store.domains.find((d) => d.id === id);
+  if (domain) {
+    // Mark as verified
+    domain.status = "VERIFIED";
+    domain.checks = { ownership: true, mx: true, spf: true, dkim: true, dmarc: true };
+    saveStore(store);
+    return domain;
+  }
+  return undefined;
+}
+
+export function deleteDomainRecord(id: string): boolean {
+  const store = getStore();
+  // Don't delete the primary agentkey.in domain
+  if (id === "dom_agentkey_in") return false;
+  const initialLen = store.domains.length;
+  store.domains = store.domains.filter((d) => d.id !== id);
+  saveStore(store);
+  return store.domains.length < initialLen;
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storeMessage } from "@/lib/inbox-store";
+import { dispatchWebhooks } from "@/lib/agent-store";
 import type { Message } from "@/lib/api";
 
 function extractEdgeData(body: string, subject: string) {
@@ -151,6 +152,15 @@ export async function POST(req: NextRequest) {
     };
 
     storeMessage(message);
+
+    // Dispatch to registered webhooks in background
+    dispatchWebhooks("message.received", message);
+    if (extracted.otp_code) {
+      dispatchWebhooks("otp.extracted", { ...message, otp_code: extracted.otp_code });
+    }
+    if (extracted.magic_link) {
+      dispatchWebhooks("magic_link.extracted", { ...message, magic_link: extracted.magic_link });
+    }
 
     return NextResponse.json({
       status: "stored",

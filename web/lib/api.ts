@@ -3,7 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { getAgents, getApiKeys, getInboxes } from "./agent-store";
+import { getAgents, getApiKeys, getDomains, getInboxes, getWebhooks } from "./agent-store";
 import { getMessagesForInbox } from "./inbox-store";
 
 const DEFAULT_API_URL = process.env.NODE_ENV === "production" ? "https://agentkey-api.onrender.com" : "http://127.0.0.1:8000";
@@ -194,15 +194,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
 
   if (p === "/domains") {
     return {
-      data: [
-        {
-          id: "dom_agentkey_in",
-          name: "agentkey.in",
-          status: "VERIFIED",
-          checks: { ownership: true, mx: true, spf: true, dkim: true, dmarc: true },
-          records: [],
-        },
-      ],
+      data: getDomains(),
     } as unknown as T;
   }
 
@@ -249,7 +241,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/webhooks") {
-    return [] as unknown as T;
+    return getWebhooks() as unknown as T;
   }
 
   if (p === "/admin/stats") {
