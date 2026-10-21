@@ -1,9 +1,21 @@
 [project]
 name = "agentkey-sdk"
 version = "0.1.0"
-description = "Official Python SDK for AgentKey: email, zero-token OTP extraction, and verifiable agent identity"
+description = "Official Python SDK for AgentKey: email inboxes, zero-token OTP extraction, and verifiable agent identity"
+readme = "README.md"
 requires-python = ">=3.9"
 dependencies = ["httpx>=0.25", "pydantic>=2.0"]
+keywords = ["agentkey", "ai-agents", "llm", "inbox", "email", "otp", "identity", "langchain", "mcp"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://www.agentkey.in"
+Documentation = "https://www.agentkey.in/docs"
+Repository = "https://github.com/saaqibA21/agentkey"
 
 [build-system]
 requires = ["setuptools>=68"]

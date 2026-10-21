@@ -1,7 +1,7 @@
 // Copy-paste snippets shared by the docs and the dashboard quickstart.
 const KEY = "ai_live_YOUR_KEY";
 
-export const sdkInstall = process.env.NEXT_PUBLIC_SDK_INSTALL ?? "pip install agentkey";
+export const sdkInstall = process.env.NEXT_PUBLIC_SDK_INSTALL ?? "pip install agentkey-sdk";
 export const nodeInstall = "npm install agentkey";
 
 export function snippets(apiUrl: string) {
