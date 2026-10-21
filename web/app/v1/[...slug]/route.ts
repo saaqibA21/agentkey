@@ -44,6 +44,15 @@ export async function GET(
       is_agent: true,
       agent_type: "AUTONOMOUS_AI_AGENT",
       trust_score: 99.0,
+      agent: {
+        id: "ag_live_primary",
+        name: "Autonomous Task Agent",
+        email: "agent-01@agentkey.in",
+      },
+      owner: {
+        name: "Verified Operator",
+        email: "operator@agentkey.in",
+      },
       operator: {
         name: "Verified Operator",
         email: "operator@agentkey.in",
@@ -171,7 +180,22 @@ export async function GET(
     return NextResponse.json({ data: getDomains(auth.ownerEmail) });
   }
 
-  // 7. GET /v1/overview
+  // 7. GET /v1/vault/items/[id]/export-browser-state
+  if (slug[0] === "vault" && slug[1] === "items" && slug[3] === "export-browser-state") {
+    return NextResponse.json({
+      cookies: [],
+      origins: [
+        {
+          origin: "https://agentkey.in",
+          localStorage: [
+            { name: "agentkey_session", value: "active" },
+          ],
+        },
+      ],
+    });
+  }
+
+  // 8. GET /v1/overview
   if (path === "overview") {
     return NextResponse.json({
       workspace: {
@@ -207,6 +231,15 @@ export async function POST(
       is_agent: true,
       agent_type: "AUTONOMOUS_AI_AGENT",
       trust_score: 99.0,
+      agent: {
+        id: "ag_live_primary",
+        name: "Autonomous Task Agent",
+        email: "agent-01@agentkey.in",
+      },
+      owner: {
+        name: "Verified Operator",
+        email: "operator@agentkey.in",
+      },
       operator: {
         name: "Verified Operator",
         email: "operator@agentkey.in",
