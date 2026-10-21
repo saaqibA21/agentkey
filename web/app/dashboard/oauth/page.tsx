@@ -1,306 +1,192 @@
 import Link from "next/link";
-
+import { auth } from "@/auth";
 import { ActionForm, CopyButton } from "@/components/client";
-import { Badge, Card, Code, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
+import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
 import { api, publicApiUrl } from "@/lib/api";
-import { getOAuthClients } from "@/lib/oauth-store";
+import { getOAuthClients, type OAuthClient } from "@/lib/oauth-store";
 import { deleteOAuthClient, registerOAuthClient } from "../actions";
 
-type OAuthClientItem = {
-  client_id: string;
-  client_name: string;
-  redirect_uris: string[];
-  created_at: string;
-};
+export const metadata = { title: "OAuth Applications · AgentKey" };
 
 export default async function OAuthPage() {
-  let clients: OAuthClientItem[] = [];
+  const session = await auth();
+  const userEmail = session?.user?.email ?? "";
+
+  let clients: OAuthClient[] = [];
   try {
-    const res = await api<{ data: OAuthClientItem[] }>("/oauth/clients");
+    const res = await api<{ data: OAuthClient[] }>("/oauth/clients");
     if (res && Array.isArray(res.data) && res.data.length > 0) {
       clients = res.data;
     } else {
-      clients = getOAuthClients();
+      clients = getOAuthClients(userEmail);
     }
   } catch {
-    clients = getOAuthClients();
+    clients = getOAuthClients(userEmail);
   }
 
   const discoveryUrl = `${publicApiUrl}/.well-known/openid-configuration`;
   const authorizeUrl = `${publicApiUrl}/oauth/authorize`;
   const tokenUrl = `${publicApiUrl}/oauth/token`;
   const userinfoUrl = `${publicApiUrl}/oauth/userinfo`;
-  const verifyUrl = `${publicApiUrl}/v1/auth/agent/verify`;
-
-  const nextAuthSnippet = `// NextAuth.js (v4 or v5) Provider Configuration
-export const authOptions = {
-  providers: [
-    {
-      id: "agentkey",
-      name: "AgentKey Agent ID",
-      type: "oauth",
-      wellKnown: "${discoveryUrl}",
-      authorization: { params: { scope: "openid profile email" } },
-      clientId: process.env.AGENTKEY_CLIENT_ID,
-      clientSecret: "none", // Public OAuth 2.1 client with PKCE (S256)
-      idToken: false,
-      checks: ["pkce", "state"],
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          // Autonomous Agent Verification Claims
-          isAgent: profile.is_agent,         // true
-          agentType: profile.agent_type,     // "AUTONOMOUS_AI_AGENT"
-          trustScore: profile.trust_score,   // 99.0
-          operator: profile.operator,        // { name, email, verified: true }
-        };
-      },
-    },
-  ],
-};`;
-
-  const pythonVerifySnippet = `# Verify an agent's email address or token from Python / FastAPI
-import httpx
-
-async def verify_agent(email_or_token: str):
-    async with httpx.AsyncClient() as client:
-        # 1. Direct OIDC userinfo check
-        resp = await client.get(
-            "${userinfoUrl}",
-            headers={"Authorization": f"Bearer {email_or_token}"}
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            print("Verified Agent:", data["email"])
-            print("Is Agent:", data["is_agent"])             # True
-            print("Trust Score:", data["trust_score"])       # 99.0
-            print("Human Operator:", data["operator"]["email"])
-            return data
-
-        # 2. Or verify by email directly
-        check = await client.get("${verifyUrl}?email=" + email_or_token)
-        return check.json()`;
-
-  const userinfoClaims = `{
-  "sub": "agent_e5d1a8c9...",
-  "name": "Support Agent",
-  "email": "support-agent@agents.example.com",
-  "email_verified": true,
-  "picture": "https://api.dicebear.com/9.x/adventurer/svg?seed=support-agent",
-  "is_agent": true,
-  "agent_type": "AUTONOMOUS_AI_AGENT",
-  "trust_score": 99.0,
-  "operator": {
-    "name": "Verified Operator",
-    "email": "operator@agentkey.in",
-    "accountability_tier": "VERIFIED_HUMAN_OPERATOR",
-    "verified": true
-  },
-  "workspace": {
-    "id": "c1f7a0b2-...",
-    "name": "Production Workspace",
-    "compliance_status": "COMPLIANT"
-  },
-  "iss": "${publicApiUrl}",
-  "aud": "public"
-}`;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
-        title="OAuth 2.1 & OpenID Connect"
-        lead="Allow external websites, SaaS apps, and platforms to authenticate your agents via 'Sign in with AgentKey'. Websites receive standard OIDC claims with cryptographic proof of agent identity and human accountability."
+        title="OAuth Applications"
+        lead="Register external applications and services to authenticate your agents via 'Sign in with AgentKey'."
         aside={
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="hidden md:flex select-none shrink-0">
-              <img
-                src="/images/mascot/agentkey-connected.png"
-                alt="AgentKey Connected Mascot"
-                className="w-36 lg:w-44 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge tone="accent">RFC 8414</Badge>
-              <Badge tone="good">OIDC Core 1.0</Badge>
-            </div>
+          <div className="flex items-center gap-2">
+            <Badge tone="accent">OAuth 2.1</Badge>
+            <Badge tone="good">PKCE S256</Badge>
           </div>
         }
       />
 
-      {/* Discovery Endpoints Box */}
+      {/* Registration Card */}
       <Card>
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-          <div>
-            <h2 className="text-base font-bold text-white">Standard Discovery Endpoints</h2>
-            <p className="mt-0.5 text-xs text-[#9BA7B4]">
-              Plug these standard URLs into any OAuth 2.1 or OpenID Connect client library.
-            </p>
-          </div>
-          <a
-            href={discoveryUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8BE8E3] hover:underline"
-          >
-            <span>View discovery JSON</span>
-            <span>↗</span>
-          </a>
+        <div className="mb-4">
+          <h2 className="text-base font-semibold text-[#18191B]">Register New Application</h2>
+          <p className="text-xs text-[#64646A] mt-0.5">
+            Add an external client (Claude Desktop, custom agents, or web apps) to issue credentials.
+          </p>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
-            <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Discovery Document</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{discoveryUrl}</p>
-            </div>
-            <CopyButton value={discoveryUrl} />
-          </div>
+        <ActionForm action={registerOAuthClient} submit="Register Application" className="space-y-4 max-w-2xl">
+          <label className="block text-sm">
+            <span className="font-medium text-[#18191B]">Application Name</span>
+            <input
+              name="client_name"
+              required
+              maxLength={80}
+              placeholder="e.g. Claude Desktop, Customer Portal, or Agent Script"
+              className={`mt-1.5 w-full ${inputClass}`}
+            />
+            <span className="mt-1 block text-xs text-[#64646A]">
+              Shown to the operator on the consent screen when authenticating.
+            </span>
+          </label>
 
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
-            <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">UserInfo / Agent Claims</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{userinfoUrl}</p>
-            </div>
-            <CopyButton value={userinfoUrl} />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
-            <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Authorization Endpoint</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{authorizeUrl}</p>
-            </div>
-            <CopyButton value={authorizeUrl} />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#080D12] p-3 text-xs">
-            <div className="min-w-0 flex-1 pr-3">
-              <span className="font-semibold text-white">Token Endpoint (PKCE)</span>
-              <p className="truncate font-mono text-[11px] text-[#9BA7B4] mt-0.5">{tokenUrl}</p>
-            </div>
-            <CopyButton value={tokenUrl} />
-          </div>
-        </div>
+          <label className="block text-sm">
+            <span className="font-medium text-[#18191B]">Redirect URI</span>
+            <input
+              name="redirect_uri"
+              required
+              type="url"
+              placeholder="https://your-domain.com/api/auth/callback"
+              className={`mt-1.5 w-full font-mono text-xs ${inputClass}`}
+            />
+            <span className="mt-1 block text-xs text-[#64646A]">
+              Where AgentKey redirects after authorization. Must use HTTPS (or HTTP for localhost).
+            </span>
+          </label>
+        </ActionForm>
       </Card>
 
-      {/* Register Client Drawer */}
-      <details className="group">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-teal-600/20 transition hover:bg-teal-500 [&::-webkit-details-marker]:hidden">
-          <span className="transition group-open:rotate-45">+</span> Register New OAuth Client
-        </summary>
-        <Card className="mt-4 max-w-2xl">
-          <ActionForm action={registerOAuthClient} submit="Register Client" className="space-y-4">
-            <label className="block text-sm">
-              <span className="font-medium text-white">Client / Application Name</span>
-              <input
-                name="client_name"
-                required
-                maxLength={120}
-                placeholder="e.g. My SaaS Platform"
-                className={`mt-1.5 w-full ${inputClass}`}
-              />
-              <span className="mt-1 block text-xs text-[#9BA7B4]">
-                The name shown to the operator when an agent authenticates on your website.
-              </span>
-            </label>
-
-            <label className="block text-sm">
-              <span className="font-medium text-white">Redirect URI</span>
-              <input
-                name="redirect_uri"
-                required
-                type="url"
-                placeholder="https://example.com/api/auth/callback/agentkey"
-                className={`mt-1.5 w-full font-mono text-xs ${inputClass}`}
-              />
-              <span className="mt-1 block text-xs text-[#9BA7B4]">
-                Must use HTTPS (or HTTP on localhost/127.0.0.1 for local development).
-              </span>
-            </label>
-          </ActionForm>
-        </Card>
-      </details>
-
-      {/* Registered Clients List */}
-      <div>
-        <h2 className="mb-3 text-base font-bold text-white">Registered OAuth Applications</h2>
-        <div className="space-y-3">
-          {clients.length === 0 && (
-            <Empty title="No OAuth clients registered yet">
-              Register an application above to generate a client_id for &ldquo;Sign in with AgentKey&rdquo;.
-            </Empty>
-          )}
-
-          {clients.map((c) => (
-            <Card key={c.client_id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between !py-4">
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-white">{c.client_name}</p>
-                  <span className="text-xs text-[#718096]">· {timeAgo(c.created_at)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#9BA7B4]">Client ID:</span>
-                  <code className="font-mono text-xs text-[#8BE8E3] bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                    {c.client_id}
-                  </code>
-                  <CopyButton value={c.client_id} />
-                </div>
-                <div className="flex items-center gap-2 pt-0.5">
-                  <span className="text-[11px] text-[#718096]">Redirects:</span>
-                  <span className="font-mono text-[11px] text-[#9BA7B4] truncate">
-                    {c.redirect_uris.join(", ")}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <ActionForm
-                  action={deleteOAuthClient}
-                  submit="Delete"
-                  variant="danger"
-                  confirm={`Delete OAuth client "${c.client_name}"? Existing integrations will stop working.`}
-                >
-                  <input type="hidden" name="client_id" value={c.client_id} />
-                </ActionForm>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Integration Code & UserInfo Claims */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* NextAuth Integration Code */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">NextAuth / Auth.js Integration</h3>
-            <span className="text-xs text-[#8BE8E3]">Client-side or API</span>
-          </div>
-          <Code code={nextAuthSnippet} title="auth.config.ts" />
-        </div>
-
-        {/* UserInfo Claims Preview */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">Live UserInfo Claims (JSON)</h3>
-            <span className="text-xs text-[#B5F0D1]">GET /oauth/userinfo</span>
-          </div>
-          <Code code={userinfoClaims} title="UserInfo Response" />
-        </div>
-      </div>
-
-      {/* Python / Direct Verification Code */}
+      {/* Registered Applications List */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">Backend Verification in Python (FastAPI / httpx)</h3>
-          <span className="text-xs text-[#9BA7B4]">Cross-site Verification</span>
-        </div>
-        <Code code={pythonVerifySnippet} title="agent_verifier.py" />
+        <h2 className="text-base font-semibold text-[#18191B]">Your Registered Applications</h2>
+
+        {clients.length === 0 ? (
+          <Empty title="No applications registered yet">
+            Register an application above to generate a Client ID for external tools and agents.
+          </Empty>
+        ) : (
+          <div className="space-y-2">
+            {clients.map((c) => (
+              <Card key={c.client_id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between !py-4">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-[#18191B]">{c.client_name}</p>
+                    <span className="text-xs text-[#8C8A94]">· {timeAgo(c.created_at)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#64646A]">Client ID:</span>
+                    <code className="font-mono text-xs text-[#18191B] bg-[#F2ECE1] px-2 py-0.5 rounded border border-[#E5DEC9]">
+                      {c.client_id}
+                    </code>
+                    <CopyButton value={c.client_id} />
+                  </div>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <span className="text-[11px] text-[#8C8A94]">Redirect:</span>
+                    <span className="font-mono text-[11px] text-[#64646A] truncate">
+                      {c.redirect_uris.join(", ")}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  <ActionForm
+                    action={deleteOAuthClient}
+                    submit="Delete"
+                    variant="danger"
+                    confirm={`Delete "${c.client_name}"? Applications using this Client ID will immediately lose access.`}
+                  >
+                    <input type="hidden" name="client_id" value={c.client_id} />
+                  </ActionForm>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Developer Integration Details (Collapsible & Clean) */}
+      <details className="group rounded-2xl border border-[#E5DEC9] bg-white p-5 shadow-sm transition">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-[#18191B] [&::-webkit-details-marker]:hidden">
+          <div className="flex items-center gap-2">
+            <span className="text-[#8C8A94] group-open:rotate-90 transition-transform duration-200">▶</span>
+            <span>Developer Endpoints & OIDC Discovery</span>
+          </div>
+          <span className="text-xs text-[#8C8A94] font-normal group-open:hidden">Click to expand</span>
+        </summary>
 
+        <div className="mt-4 pt-4 border-t border-[#E5DEC9] space-y-3">
+          <p className="text-xs text-[#64646A]">
+            Use these standard endpoints to integrate AgentKey into NextAuth, BetterAuth, Claude Desktop, or custom Python agents.
+          </p>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-xl border border-[#E5DEC9] bg-[#FAF5EE] p-3 text-xs">
+              <div className="min-w-0 flex-1 pr-2">
+                <span className="font-semibold text-[#18191B]">Discovery Document</span>
+                <p className="truncate font-mono text-[11px] text-[#64646A] mt-0.5">{discoveryUrl}</p>
+              </div>
+              <CopyButton value={discoveryUrl} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-[#E5DEC9] bg-[#FAF5EE] p-3 text-xs">
+              <div className="min-w-0 flex-1 pr-2">
+                <span className="font-semibold text-[#18191B]">UserInfo / Agent Claims</span>
+                <p className="truncate font-mono text-[11px] text-[#64646A] mt-0.5">{userinfoUrl}</p>
+              </div>
+              <CopyButton value={userinfoUrl} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-[#E5DEC9] bg-[#FAF5EE] p-3 text-xs">
+              <div className="min-w-0 flex-1 pr-2">
+                <span className="font-semibold text-[#18191B]">Authorization URL</span>
+                <p className="truncate font-mono text-[11px] text-[#64646A] mt-0.5">{authorizeUrl}</p>
+              </div>
+              <CopyButton value={authorizeUrl} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-[#E5DEC9] bg-[#FAF5EE] p-3 text-xs">
+              <div className="min-w-0 flex-1 pr-2">
+                <span className="font-semibold text-[#18191B]">Token URL (PKCE)</span>
+                <p className="truncate font-mono text-[11px] text-[#64646A] mt-0.5">{tokenUrl}</p>
+              </div>
+              <CopyButton value={tokenUrl} />
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center justify-between text-xs text-[#64646A]">
+            <span>Need sample code or SDKs?</span>
+            <Link href="/docs" className="font-semibold text-[#18191B] hover:underline">
+              View API Documentation →
+            </Link>
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

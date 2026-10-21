@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { adminApi, api, ApiError } from "@/lib/api";
+import { auth } from "@/auth";
 import { deleteOAuthClientRecord, registerOAuthClientRecord } from "@/lib/oauth-store";
 
 export type ActionState = {
@@ -352,6 +353,8 @@ export async function deleteAgent(_: ActionState, form: FormData): Promise<Actio
 
 export async function registerOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/oauth", async () => {
+    const session = await auth();
+    const ownerEmail = session?.user?.email ?? undefined;
     const client_name = text(form, "client_name") || "Untitled App";
     const redirect_uri = text(form, "redirect_uri");
     if (!redirect_uri) return { error: "At least one redirect URI is required." };
@@ -368,7 +371,7 @@ export async function registerOAuthClient(_: ActionState, form: FormData): Promi
           redirect_uris: [redirect_uri],
         }),
       });
-      registerOAuthClientRecord(client.client_name, client.redirect_uris);
+      registerOAuthClientRecord(client.client_name, client.redirect_uris, ownerEmail);
       return {
         ok: true,
         secret: client.client_id,
@@ -379,7 +382,7 @@ export async function registerOAuthClient(_: ActionState, form: FormData): Promi
         ],
       };
     } catch {
-      const localClient = registerOAuthClientRecord(client_name, [redirect_uri]);
+      const localClient = registerOAuthClientRecord(client_name, [redirect_uri], ownerEmail);
       return {
         ok: true,
         secret: localClient.client_id,
@@ -395,6 +398,8 @@ export async function registerOAuthClient(_: ActionState, form: FormData): Promi
 
 export async function deleteOAuthClient(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/oauth", async () => {
+    const session = await auth();
+    const ownerEmail = session?.user?.email ?? undefined;
     const clientId = text(form, "client_id");
     try {
       await api(`/oauth/clients/${encodeURIComponent(clientId)}`, {
@@ -403,7 +408,7 @@ export async function deleteOAuthClient(_: ActionState, form: FormData): Promise
     } catch {
       // ignore
     }
-    deleteOAuthClientRecord(clientId);
+    deleteOAuthClientRecord(clientId, ownerEmail);
     return { ok: true };
   });
 }

@@ -7,6 +7,7 @@ export type OAuthClient = {
   client_name: string;
   redirect_uris: string[];
   created_at: string;
+  owner_email?: string;
 };
 
 export type AuthCodeEntry = {
@@ -33,32 +34,17 @@ if (!globalForOAuth._agentKeyAuthCodes) {
   globalForOAuth._agentKeyAuthCodes = new Map();
 }
 
-const DEFAULT_CLIENTS: OAuthClient[] = [
-  {
-    client_id: "cli_claude_desktop",
-    client_name: "Claude Desktop & Claude Code",
-    redirect_uris: ["http://localhost:3000/callback", "https://claude.ai/api/auth/callback"],
-    created_at: new Date().toISOString(),
-  },
-  {
-    client_id: "cli_chatgpt_agent",
-    client_name: "ChatGPT Custom Connector",
-    redirect_uris: ["https://chatgpt.com/api/auth/callback/agentkey", "https://chat.openai.com/aip/callback"],
-    created_at: new Date().toISOString(),
-  },
-];
-
 function loadClients(): OAuthClient[] {
   try {
     if (fs.existsSync(STORE_PATH)) {
       const data = fs.readFileSync(STORE_PATH, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch (err) {
     console.error("Error reading oauth clients:", err);
   }
-  return DEFAULT_CLIENTS;
+  return [];
 }
 
 function saveClients(clients: OAuthClient[]) {
@@ -69,19 +55,49 @@ function saveClients(clients: OAuthClient[]) {
   }
 }
 
-export function getOAuthClients(): OAuthClient[] {
+export function getOAuthClients(userEmail?: string): OAuthClient[] {
   if (!globalForOAuth._agentKeyOAuthClients) {
     globalForOAuth._agentKeyOAuthClients = loadClients();
   }
-  return globalForOAuth._agentKeyOAuthClients;
+  const clients = globalForOAuth._agentKeyOAuthClients;
+  if (!userEmail) return clients;
+  const lower = userEmail.toLowerCase();
+  return clients.filter((c) => !c.owner_email || c.owner_email.toLowerCase() === lower);
 }
 
 export function getOAuthClientById(clientId: string): OAuthClient | undefined {
-  const clients = getOAuthClients();
-  return clients.find((c) => c.client_id === clientId);
+  if (!globalForOAuth._agentKeyOAuthClients) {
+    globalForOAuth._agentKeyOAuthClients = loadClients();
+  }
+  const found = globalForOAuth._agentKeyOAuthClients.find((c) => c.client_id === clientId);
+  if (found) return found;
+
+  // Built-in system connectors for testing & desktop apps
+  if (clientId === "cli_claude_desktop") {
+    return {
+      client_id: "cli_claude_desktop",
+      client_name: "Claude Desktop & Claude Code",
+      redirect_uris: ["http://localhost:3000/callback", "https://claude.ai/api/auth/callback"],
+      created_at: new Date().toISOString(),
+    };
+  }
+  if (clientId === "cli_chatgpt_agent") {
+    return {
+      client_id: "cli_chatgpt_agent",
+      client_name: "ChatGPT Custom Connector",
+      redirect_uris: ["https://chatgpt.com/api/auth/callback/agentkey", "https://chat.openai.com/aip/callback"],
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  return undefined;
 }
 
-export function registerOAuthClientRecord(name: string, redirectUris: string[]): OAuthClient {
+export function registerOAuthClientRecord(
+  name: string,
+  redirectUris: string[],
+  ownerEmail?: string
+): OAuthClient {
   const clients = getOAuthClients();
   const idPrefix = name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 16) || "app";
   const newClient: OAuthClient = {
@@ -89,6 +105,7 @@ export function registerOAuthClientRecord(name: string, redirectUris: string[]):
     client_name: name,
     redirect_uris: redirectUris,
     created_at: new Date().toISOString(),
+    owner_email: ownerEmail,
   };
   clients.unshift(newClient);
   globalForOAuth._agentKeyOAuthClients = clients;
@@ -96,10 +113,16 @@ export function registerOAuthClientRecord(name: string, redirectUris: string[]):
   return newClient;
 }
 
-export function deleteOAuthClientRecord(clientId: string): boolean {
+export function deleteOAuthClientRecord(clientId: string, userEmail?: string): boolean {
   let clients = getOAuthClients();
   const initialLen = clients.length;
-  clients = clients.filter((c) => c.client_id !== clientId);
+  clients = clients.filter((c) => {
+    if (c.client_id !== clientId) return true;
+    if (userEmail && c.owner_email && c.owner_email.toLowerCase() !== userEmail.toLowerCase()) {
+      return true; // Not owned by current user
+    }
+    return false;
+  });
   globalForOAuth._agentKeyOAuthClients = clients;
   saveClients(clients);
   return clients.length < initialLen;
