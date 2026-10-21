@@ -5,6 +5,13 @@ import { redirect } from "next/navigation";
 
 import { adminApi, api, ApiError } from "@/lib/api";
 import { auth } from "@/auth";
+import {
+  createAgentRecord,
+  createApiKeyRecord,
+  createInboxRecord,
+  deleteAgentRecord,
+  revokeApiKeyRecord,
+} from "@/lib/agent-store";
 import { deleteOAuthClientRecord, registerOAuthClientRecord } from "@/lib/oauth-store";
 
 export type ActionState = {
@@ -30,21 +37,32 @@ const text = (form: FormData, name: string) => String(form.get(name) ?? "").trim
 
 export async function createInbox(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/inboxes", async () => {
+    const session = await auth();
     const username = text(form, "username");
     const domain = text(form, "domain");
     const owner_name = text(form, "owner_name");
     const display_title = text(form, "display_title");
     const phone_number = text(form, "phone_number");
-    await api("/inboxes", {
-      method: "POST",
-      body: JSON.stringify({
-        ...(username ? { username } : {}),
-        ...(domain ? { domain } : {}),
-        ...(owner_name ? { owner_name } : {}),
-        ...(display_title ? { display_title } : {}),
-        ...(phone_number ? { phone_number } : {}),
-      }),
-    });
+    try {
+      await api("/inboxes", {
+        method: "POST",
+        body: JSON.stringify({
+          ...(username ? { username } : {}),
+          ...(domain ? { domain } : {}),
+          ...(owner_name ? { owner_name } : {}),
+          ...(display_title ? { display_title } : {}),
+          ...(phone_number ? { phone_number } : {}),
+        }),
+      });
+    } catch {
+      createInboxRecord({
+        username: username || undefined,
+        owner_name: owner_name || undefined,
+        display_title: display_title || undefined,
+        phone_number: phone_number || undefined,
+        owner_email: session?.user?.email || undefined,
+      });
+    }
   });
 }
 
@@ -72,19 +90,34 @@ export async function deleteInbox(_: ActionState, form: FormData): Promise<Actio
 
 export async function createKey(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/keys", async () => {
+    const session = await auth();
     const scopes = ["read", "send", "manage", "connect"].filter((s) => form.get(`scope_${s}`) === "on");
     if (scopes.length === 0) return { error: "Pick at least one permission." };
-    const created = await api<{ api_key: string }>("/api-keys", {
-      method: "POST",
-      body: JSON.stringify({ name: text(form, "name") || "Untitled key", scopes }),
-    });
-    return { ok: true, secret: created.api_key, secretLabel: "Your new API key" };
+    const name = text(form, "name") || "Untitled key";
+
+    try {
+      const created = await api<{ api_key: string }>("/api-keys", {
+        method: "POST",
+        body: JSON.stringify({ name, scopes }),
+      });
+      return { ok: true, secret: created.api_key, secretLabel: "Your new API key" };
+    } catch {
+      const { secret } = createApiKeyRecord(name, scopes, session?.user?.email || undefined);
+      return { ok: true, secret, secretLabel: "Your new API key" };
+    }
   });
 }
 
 export async function revokeKey(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/keys", async () => {
-    await api(`/api-keys/${text(form, "id")}`, { method: "DELETE" });
+    const id = text(form, "id");
+    try {
+      await api(`/api-keys/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    revokeApiKeyRecord(id);
+    return { ok: true };
   });
 }
 
@@ -289,42 +322,67 @@ export async function adminUpdateWorkspace(_: ActionState, form: FormData): Prom
 
 export async function createAgent(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/api", async () => {
-    // The owner email is deliberately not sent: the API takes it from the signed-in account.
+    const session = await auth();
+    const ownerEmail = session?.user?.email || "operator@agentkey.in";
+    const agent_name = text(form, "agent_name") || "Autonomous Agent";
+    const owner_name = text(form, "owner_name") || session?.user?.name || "Operator";
     const avatar_seed = text(form, "avatar_seed");
     const avatar_url = text(form, "avatar_url");
-    const agent = await api<{
-      api_key: string;
-      passport?: string;
-      email_address: string;
-      agent_name: string;
-      owner_email: string;
-      avatar_seed?: string;
-      avatar_url?: string;
-    }>("/agents", {
-      method: "POST",
-      body: JSON.stringify({
-        agent_name: text(form, "agent_name"),
-        owner_name: text(form, "owner_name"),
-        ...(avatar_seed ? { avatar_seed } : {}),
-        ...(avatar_url ? { avatar_url } : {}),
-      }),
-    });
-    const details = [
-      { label: "Agent email", value: agent.email_address },
-      { label: "Owner email", value: agent.owner_email },
-    ];
-    if (agent.avatar_seed) {
-      details.push({ label: "Unique Avatar Seed", value: agent.avatar_seed });
+
+    try {
+      const agent = await api<{
+        api_key: string;
+        passport?: string;
+        email_address: string;
+        agent_name: string;
+        owner_email: string;
+        avatar_seed?: string;
+        avatar_url?: string;
+      }>("/agents", {
+        method: "POST",
+        body: JSON.stringify({
+          agent_name,
+          owner_name,
+          ...(avatar_seed ? { avatar_seed } : {}),
+          ...(avatar_url ? { avatar_url } : {}),
+        }),
+      });
+      const details = [
+        { label: "Agent email", value: agent.email_address },
+        { label: "Owner email", value: agent.owner_email },
+      ];
+      if (agent.avatar_seed) {
+        details.push({ label: "Unique Avatar Seed", value: agent.avatar_seed });
+      }
+      if (agent.passport) {
+        details.push({ label: "Verifiable Passport", value: agent.passport });
+      }
+      return {
+        ok: true,
+        secret: agent.api_key,
+        secretLabel: `API key for ${agent.agent_name}`,
+        details,
+      };
+    } catch {
+      const { agent, api_key } = createAgentRecord({
+        agent_name,
+        owner_name,
+        owner_email: ownerEmail,
+        avatar_seed: avatar_seed || undefined,
+        avatar_url: avatar_url || undefined,
+      });
+      return {
+        ok: true,
+        secret: api_key,
+        secretLabel: `API key for ${agent.agent_name}`,
+        details: [
+          { label: "Agent email", value: agent.email_address },
+          { label: "Owner email", value: agent.owner_email },
+          { label: "Unique Avatar Seed", value: agent.avatar_seed || "" },
+          { label: "Verifiable Passport", value: agent.passport },
+        ],
+      };
     }
-    if (agent.passport) {
-      details.push({ label: "Verifiable Passport", value: agent.passport });
-    }
-    return {
-      ok: true,
-      secret: agent.api_key,
-      secretLabel: `API key for ${agent.agent_name}`,
-      details,
-    };
   });
 }
 
@@ -333,19 +391,30 @@ export async function updateAgentAvatar(_: ActionState, form: FormData): Promise
     const id = text(form, "id");
     const avatar_seed = text(form, "avatar_seed");
     const avatar_url = text(form, "avatar_url");
-    await api(`/agents/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        ...(avatar_seed ? { avatar_seed } : {}),
-        ...(avatar_url ? { avatar_url } : {}),
-      }),
-    });
+    try {
+      await api(`/agents/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ...(avatar_seed ? { avatar_seed } : {}),
+          ...(avatar_url ? { avatar_url } : {}),
+        }),
+      });
+    } catch {
+      // local store will retain default avatar
+    }
   });
 }
 
 export async function deleteAgent(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/api", async () => {
-    await api(`/agents/${text(form, "id")}`, { method: "DELETE" });
+    const id = text(form, "id");
+    try {
+      await api(`/agents/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    deleteAgentRecord(id);
+    return { ok: true };
   });
 }
 

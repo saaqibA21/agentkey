@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { getAgents, getApiKeys, getInboxes } from "./agent-store";
 import { getMessagesForInbox } from "./inbox-store";
 
 const DEFAULT_API_URL = process.env.NODE_ENV === "production" ? "https://agentkey-api.onrender.com" : "http://127.0.0.1:8000";
@@ -159,16 +160,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/api-keys") {
-    return [
-      {
-        id: "ak_live_default_primary",
-        name: "default-production-agent",
-        key_prefix: "ai_live_8f3a",
-        scopes: ["read", "send", "manage", "connect"],
-        created_at: new Date().toISOString(),
-        revoked_at: null,
-      },
-    ] as unknown as T;
+    return getApiKeys() as unknown as T;
   }
 
   if (p.includes("/messages") || p === "/messages") {
@@ -191,30 +183,13 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/inboxes" || p.startsWith("/inboxes")) {
+    const inboxes = getInboxes();
     if (p.includes("/") && p.split("/").length > 2 && !p.endsWith("/inboxes")) {
-      return {
-        id: "inbox_primary_agent",
-        email_address: "agent-01@agentkey.in",
-        status: "ACTIVE",
-        client_id: "agent-core-runner",
-        owner_name: "Autonomous Task Agent",
-        display_title: "Core Verification Agent",
-        phone_number: "+91 98765 43210",
-        created_at: new Date().toISOString(),
-      } as unknown as T;
+      const id = p.split("/")[2];
+      const match = inboxes.find((i) => i.id === id || i.email_address === id);
+      return (match || inboxes[0]) as unknown as T;
     }
-    return [
-      {
-        id: "inbox_primary_agent",
-        email_address: "agent-01@agentkey.in",
-        status: "ACTIVE",
-        client_id: "agent-core-runner",
-        owner_name: "Autonomous Task Agent",
-        display_title: "Core Verification Agent",
-        phone_number: "+91 98765 43210",
-        created_at: new Date().toISOString(),
-      },
-    ] as unknown as T;
+    return inboxes as unknown as T;
   }
 
   if (p === "/domains") {
@@ -232,20 +207,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/oauth/clients") {
-    return {
-      data: [
-        {
-          client_id: "cli_claude_desktop",
-          client_name: "Claude Desktop & Cursor MCP",
-          redirect_uris: ["http://localhost:3000/callback", "https://claude.ai/api/auth/callback"],
-          grant_types: ["authorization_code", "refresh_token"],
-          response_types: ["code"],
-          scope: "openid profile email agent:verify",
-          is_agent: true,
-          created_at: new Date().toISOString(),
-        },
-      ],
-    } as unknown as T;
+    return { data: [] } as unknown as T;
   }
 
   if (p === "/oauth/grants") {
@@ -275,24 +237,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/agents") {
-    return {
-      data: [
-        {
-          id: "ag_live_primary",
-          agent_name: "Autonomous Task Agent",
-          owner_name: "Operator",
-          owner_email: "operator@agentkey.in",
-          email_address: "agent-01@agentkey.in",
-          inbox_id: "inbox_primary_agent",
-          api_key_prefix: "ai_live_8f3a",
-          scopes: ["read", "send", "manage", "connect"],
-          created_at: new Date().toISOString(),
-          passport: "agpass_live_98a72b1c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
-          avatar_url: "/images/mascot/agentkey-badge.png",
-          avatar_seed: "8f3a2b",
-        },
-      ],
-    } as unknown as T;
+    return { data: getAgents() } as unknown as T;
   }
 
   if (p.startsWith("/hitl/pending") || p.startsWith("/hitl/held")) {
