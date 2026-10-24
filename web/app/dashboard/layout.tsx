@@ -94,7 +94,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           <div className="space-y-4 pt-6">
             {/* Operator Profile Card */}
-            <div className="rounded-2xl border border-[#E5DEC9] bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-[#DDD4C2] bg-[#F2ECE1] p-4 shadow-xs">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#18191B] font-bold text-[#FAF5EE] text-sm">
                   {initial}

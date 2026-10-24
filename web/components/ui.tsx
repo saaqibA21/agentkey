@@ -4,7 +4,7 @@ import { CopyButton } from "./client";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-[#E5DEC9] bg-white p-6 sm:p-7 shadow-sm text-[#18191B] transition-all duration-150 ${className}`}>
+    <div className={`rounded-2xl border border-[#DDD4C2] bg-[#F2ECE1] p-6 sm:p-7 shadow-sm text-[#18191B] transition-all duration-150 ${className}`}>
       {children}
     </div>
   );
@@ -62,12 +62,12 @@ export function StatCard({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-[#E5DEC9] bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 ${toneClasses[tone]}`}
+      className={`relative overflow-hidden rounded-2xl border border-[#DDD4C2] bg-[#F2ECE1] p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 ${toneClasses[tone]}`}
     >
       <div className="flex items-center justify-between text-[#64646A]">
         <span className="text-[11px] font-bold uppercase tracking-wider text-[#64646A]">{title}</span>
         {icon && (
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#F2ECE1] text-[#18191B]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#DDD4C2] bg-white text-[#18191B]">
             {icon}
           </span>
         )}

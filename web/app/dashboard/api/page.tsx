@@ -60,22 +60,22 @@ export default async function ApiPage() {
       />
 
       {/* OAuth Banner */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-sky-500/25 bg-[#0F172A] p-4 backdrop-blur-md shadow-xl shadow-black/20">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-sky-400/30 bg-[#F2ECE1] p-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-400">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-100 text-sky-700">
             <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-white">Looking for OAuth &amp; &ldquo;Sign in with AgentKey&rdquo;?</p>
-            <p className="text-[11px] text-[#9BA7B4]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
+            <p className="text-xs font-bold text-[#18191B]">Looking for OAuth &amp; &ldquo;Sign in with AgentKey&rdquo;?</p>
+            <p className="text-[11px] text-[#57534E]">Give external websites OpenID Connect discovery and client IDs to authenticate your agents.</p>
           </div>
         </div>
         <Link
           href="/dashboard/oauth"
-          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-sky-500/30 bg-sky-500/10 px-3.5 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/20 hover:border-sky-400/50 transition shadow-sm"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-sky-400/40 bg-sky-100 px-3.5 py-1.5 text-xs font-semibold text-sky-800 hover:bg-sky-200 transition shadow-xs"
         >
           <span>OAuth &amp; Connect Portal</span>
           <span>→</span>
@@ -160,8 +160,8 @@ const { verified, agent, owner, trust_score } = await res.json();`;
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-white">{a.agent_name}</p>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                      <p className="font-semibold text-[#18191B]">{a.agent_name}</p>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                           <path d="m9 12 2 2 4-4" />
@@ -169,16 +169,16 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                         99.0 Verified
                       </span>
                       {a.avatar_seed && (
-                        <span className="hidden sm:inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-mono text-[#9BA7B4]">
+                        <span className="hidden sm:inline-flex items-center rounded-md border border-[#DDD4C2] bg-white px-2 py-0.5 text-[10px] font-mono text-[#57534E]">
                           id: {a.avatar_seed}
                         </span>
                       )}
                     </div>
                     <div className="mt-1.5 flex items-center gap-2">
-                      <code className="truncate font-mono text-sm text-sky-400">{a.email_address}</code>
+                      <code className="truncate font-mono text-sm text-sky-800 font-semibold">{a.email_address}</code>
                       <CopyButton value={a.email_address} />
                     </div>
-                    <p className="mt-1 text-xs text-[#9BA7B4]">
+                    <p className="mt-1 text-xs text-[#57534E]">
                       Owner {a.owner_name} ({a.owner_email}) · key {a.api_key_prefix}… · created {timeAgo(a.created_at)}
                     </p>
                   </div>
@@ -196,7 +196,7 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                   </div>
                   <a
                     href={a.inbox_id ? `/dashboard/inboxes/${a.inbox_id}` : "/dashboard/inboxes"}
-                    className="rounded-xl border border-line px-3.5 py-2 text-sm font-medium hover:bg-white/5"
+                    className="rounded-xl border border-[#DDD4C2] bg-white px-3.5 py-2 text-sm font-medium text-[#18191B] hover:bg-[#FAF5EE] shadow-xs"
                   >
                     Open inbox
                   </a>
