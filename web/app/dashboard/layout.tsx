@@ -75,7 +75,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.7)]" />
             </button>
 
             {/* Profile Circle */}
@@ -104,7 +104,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                     {email}
                   </p>
                   <div className="mt-0.5 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500 shadow-[0_0_6px_rgba(14,165,233,0.6)]" />
                     <span className="text-[11px] text-[#64646A]">Operator (Verified)</span>
                   </div>
                 </div>

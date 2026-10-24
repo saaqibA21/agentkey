@@ -167,7 +167,7 @@ def generate_human_avatar_svg(seed: str) -> str:
 
   <!-- Background Circle Badge -->
   <circle cx="60" cy="60" r="56" fill="url(#bgGrad)" stroke="#223142" stroke-width="2"/>
-  <circle cx="60" cy="60" r="54" fill="none" stroke="#8BE8E3" stroke-width="1" opacity="0.3"/>
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#38BDF8" stroke-width="1" opacity="0.4"/>
 
   <!-- Character Group Clipped to Circle -->
   <g clip-path="url(#circleClip)">

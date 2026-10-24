@@ -102,7 +102,7 @@ export default function LandingPage() {
             {/* Left Column: High-Impact Typography & Action Suite */}
             <div className="lg:col-span-7 space-y-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#DDD4C2] bg-white px-3.5 py-1 text-xs font-mono uppercase tracking-wider text-[#18191B] shadow-xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-500 shadow-[0_0_6px_rgba(14,165,233,0.7)] animate-pulse" />
                 The sign-in button &amp; identity OS for AI agents
               </div>
 
@@ -153,7 +153,7 @@ export default function LandingPage() {
                   Standard OpenID Connect (OIDC)
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-500 shadow-[0_0_6px_rgba(14,165,233,0.6)]" />
                   Zero-CAPTCHA Cross-Site Auth
                 </span>
                 <span className="flex items-center gap-2">
@@ -278,19 +278,19 @@ export default function LandingPage() {
 
                 {authStep === "authenticating" && (
                   <div className="py-14 text-center space-y-4">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[#8BE8E3] border-t-transparent" />
-                    <p className="font-mono text-xs text-[#8BE8E3]">Verifying Ed25519 Agent Signature &amp; Operator Token...</p>
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-sky-400 border-t-transparent" />
+                    <p className="font-mono text-xs text-sky-400">Verifying Ed25519 Agent Signature &amp; Operator Token...</p>
                   </div>
                 )}
 
                 {authStep === "authenticated" && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <div className="flex items-center gap-2 text-sky-600">
+                      <span className="h-2 w-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(56,189,248,0.7)] animate-pulse" />
                       <span className="font-mono text-xs font-bold uppercase tracking-wider">Agent Authenticated (200 OK)</span>
                     </div>
 
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 space-y-2 text-xs font-mono text-emerald-950">
+                    <div className="rounded-xl border border-sky-200 bg-sky-50/80 p-4 space-y-2 text-xs font-mono text-sky-950">
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Actor Type:</span>
                         <span className="text-[#18191B] font-bold">autonomous_agent</span>
@@ -301,7 +301,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Operator:</span>
-                        <span className="text-emerald-800 font-bold">Verified Human</span>
+                        <span className="text-sky-700 font-bold">Verified Human</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9BA7B4]">Passport Trust:</span>
@@ -348,7 +348,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 items-center justify-center font-mono text-xs text-[#18191B]">
             <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-emerald-600" />
+              <span className="h-2 w-2 rounded-full bg-sky-500 shadow-[0_0_6px_rgba(14,165,233,0.5)]" />
               <span className="font-bold tracking-wider">OPENID CONNECT</span>
             </div>
             <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
@@ -360,7 +360,7 @@ export default function LandingPage() {
               <span className="font-bold tracking-wider">ED25519 KEYS</span>
             </div>
             <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-teal-600" />
+              <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)]" />
               <span className="font-bold tracking-wider">PKCE S256</span>
             </div>
             <div className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-[#DDD4C2] bg-white shadow-xs">
@@ -419,7 +419,7 @@ export default function LandingPage() {
               <div className="rounded-2xl border border-[#E5DEC9] bg-white p-6 shadow-md space-y-4 text-[#18191B]">
                 <div className="flex items-center justify-between pb-3 border-b border-[#E5DEC9]">
                   <div className="flex items-center gap-2 font-mono text-xs text-[#18191B]">
-                    <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
+                    <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                     <span>Paste this prompt to your coding agent (Cursor, Claude, Copilot)</span>
                   </div>
                   <button
@@ -434,8 +434,8 @@ export default function LandingPage() {
                 <div className="rounded-xl bg-[#1A1B21] p-4 font-mono text-xs text-[#F2ECE1] leading-relaxed border border-[#2E3038]">
                   <p>
                     Add AgentKey sign-in to this project. Read{" "}
-                    <span className="text-[#8BE8E3]">https://agentkey.in/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
-                    <span className="text-emerald-800 font-medium">npm install @agentkey/sdk</span> from the project root and configure your auth provider.
+                    <span className="text-sky-400">https://agentkey.in/docs#oauth</span> for the OpenID Connect discovery reference, then run{" "}
+                    <span className="text-sky-300 font-medium">npm install @agentkey/sdk</span> from the project root and configure your auth provider.
                   </p>
                 </div>
 
@@ -468,7 +468,7 @@ export default function LandingPage() {
       <section className="py-24 border-t border-[#E5DEC9] bg-[#F2ECE1]/40">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <p className="font-mono text-xs uppercase tracking-widest text-[#8BE8E3]">The Solution</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-sky-600 font-semibold">The Solution</p>
             <h2 className="text-3xl font-extrabold sm:text-5xl text-[#18191B]">
               Give your agent its own identity.
             </h2>
@@ -537,9 +537,9 @@ export default function LandingPage() {
             {/* The AgentKey Way: Sovereign & Automated */}
             <div className="rounded-2xl border border-[#DDD4C2] bg-white p-7 space-y-6 shadow-md flex flex-col justify-between">
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div className="flex items-center justify-between pb-4 border-b border-[#E5DEC9]">
                   <span className="font-mono text-xs uppercase tracking-wider text-[#18191B] font-bold">With AgentKey</span>
-                  <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-mono text-emerald-800 font-bold">ZERO FRICTION</span>
+                  <span className="rounded bg-sky-100 border border-sky-300/40 px-2 py-0.5 text-[10px] font-mono text-sky-800 font-bold">ZERO FRICTION</span>
                 </div>
 
                 {/* Chat Simulation */}
@@ -553,8 +553,8 @@ export default function LandingPage() {
 
                   <div className="space-y-1 flex flex-col items-end">
                     <div className="text-[#9BA7B4] text-[10px] uppercase">Human Operator Dashboard</div>
-                    <div className="flex items-center gap-1.5 rounded-xl rounded-tr-none border border-emerald-200 bg-emerald-50 p-3 text-emerald-900 max-w-md">
-                      <svg className="h-3.5 w-3.5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="flex items-center gap-1.5 rounded-xl rounded-tr-none border border-sky-200 bg-sky-50/80 p-3 text-sky-950 max-w-md">
+                      <svg className="h-3.5 w-3.5 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                       <span>Verified audit log: Agent 1 authenticated to Firecrawl (Scope: Scrape API, Owner: Verified).</span>
@@ -562,21 +562,21 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-white/10 text-xs font-mono space-y-1">
-                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <div className="pt-2 border-t border-[#E5DEC9] text-xs font-mono space-y-1">
+                  <p className="flex items-center gap-1.5 text-sky-900 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     <span>Seamless headless authentication without CAPTCHAs</span>
                   </p>
-                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <p className="flex items-center gap-1.5 text-sky-900 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     <span>Zero-token automated OTP intercept</span>
                   </p>
-                  <p className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                    <svg className="h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <p className="flex items-center gap-1.5 text-sky-900 font-medium">
+                    <svg className="h-3 w-3 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     <span>Isolated credentials with complete auditability</span>
@@ -604,11 +604,11 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 bg-[#FAF5EE]">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
           <div className="mb-16 space-y-3">
-            <p className="font-mono text-xs uppercase tracking-widest text-[#8BE8E3]">How it works — for agents</p>
-            <h2 className="text-3xl font-extrabold sm:text-5xl text-white">
+            <p className="font-mono text-xs uppercase tracking-widest text-sky-600 font-semibold">How it works — for agents</p>
+            <h2 className="text-3xl font-extrabold sm:text-5xl text-[#18191B]">
               Sign in with Google, built for agents.
             </h2>
-            <p className="text-base text-[#9BA7B4]">
+            <p className="text-base text-[#64646A]">
               A complete identity lifecycle for autonomous bots, coding agents, and AI copilots.
             </p>
           </div>
@@ -657,11 +657,11 @@ export default function LandingPage() {
       <section id="security" className="py-24 border-t border-[#E5DEC9] bg-[#F2ECE1]/40">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
           <div className="mb-16 space-y-3">
-            <p className="font-mono text-xs uppercase tracking-widest text-[#8BE8E3]">How it works — for apps</p>
-            <h2 className="text-3xl font-extrabold sm:text-5xl text-white">
+            <p className="font-mono text-xs uppercase tracking-widest text-sky-600 font-semibold">How it works — for apps</p>
+            <h2 className="text-3xl font-extrabold sm:text-5xl text-[#18191B]">
               A verified agent identity.
             </h2>
-            <p className="text-base text-[#9BA7B4]">
+            <p className="text-base text-[#64646A]">
               Registered applications receive the verified human operator identity with every autonomous sign-in.
             </p>
           </div>
@@ -670,7 +670,7 @@ export default function LandingPage() {
             
             {/* Card 1: Signed In As */}
             <div className="rounded-2xl border border-[#E5DEC9] bg-white p-6 space-y-4 shadow-sm">
-              <p className="font-mono text-xs uppercase text-[#8BE8E3] tracking-wider">Signed in as</p>
+              <p className="font-mono text-xs uppercase text-sky-600 tracking-wider font-semibold">Signed in as</p>
               <div className="rounded-lg bg-[#FAF5EE] p-4 font-mono text-xs space-y-2 border border-[#E5DEC9]">
                 <p className="text-[#18191B] font-bold">support@acme.agentkey.cc</p>
                 <p className="text-[#9BA7B4]">actor_type: autonomous_agent</p>
@@ -684,10 +684,10 @@ export default function LandingPage() {
 
             {/* Card 2: Receives (Verified Claims) */}
             <div className="rounded-2xl border border-[#E5DEC9] bg-white p-6 space-y-4 shadow-sm">
-              <p className="font-mono text-xs uppercase text-emerald-600 tracking-wider font-semibold">Receives</p>
+              <p className="font-mono text-xs uppercase text-sky-600 tracking-wider font-semibold">Receives</p>
               <ul className="space-y-3 font-mono text-xs text-[#18191B]">
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-sky-100 text-sky-700">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -695,7 +695,7 @@ export default function LandingPage() {
                   <span>Verified agent identity</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-sky-100 text-sky-700">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -703,7 +703,7 @@ export default function LandingPage() {
                   <span>Verified agent actor identity</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-sky-100 text-sky-700">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -711,7 +711,7 @@ export default function LandingPage() {
                   <span>Owner’s name and email</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-sky-100 text-sky-700">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -779,14 +779,14 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
             <div>
-              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-[#8BE8E3]">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-sky-600 font-semibold">
                 Industry Solutions
               </p>
               <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl text-[#18191B]">
                 From personal copilots <br className="hidden sm:inline" />
                 to enterprise teams.
               </h2>
-              <p className="mt-2 text-[#9BA7B4] text-base max-w-xl">
+              <p className="mt-2 text-[#64646A] text-base max-w-xl">
                 Powering the next generation of verified autonomous agents across critical sectors.
               </p>
             </div>
@@ -805,7 +805,7 @@ export default function LandingPage() {
               <div
                 key={uc.id}
                 onClick={() => setSelectedUseCase(uc)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.08] p-6 h-64 flex flex-col justify-end transition-all duration-300 hover:-translate-y-1 hover:border-[#8BE8E3]/50 hover:shadow-2xl hover:shadow-[#8BE8E3]/10"
+                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.08] p-6 h-64 flex flex-col justify-end transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/50 hover:shadow-2xl hover:shadow-sky-500/15"
               >
                 <img
                   src={uc.image}
@@ -816,14 +816,14 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#080D12] via-[#080D12]/70 to-[#080D12]/20 transition-opacity duration-300 group-hover:via-[#080D12]/50" />
                 <div className="relative z-10 space-y-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-[#F5F3EF] group-hover:text-[#8BE8E3] transition-colors">
+                    <h3 className="text-lg font-bold text-[#F5F3EF] group-hover:text-sky-300 transition-colors">
                       {uc.title}
                     </h3>
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs text-[#F5F3EF] backdrop-blur-md transition-all group-hover:translate-x-1 group-hover:bg-[#8BE8E3] group-hover:text-[#080D12]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs text-[#F5F3EF] backdrop-blur-md transition-all group-hover:translate-x-1 group-hover:bg-sky-400 group-hover:text-[#080D12]">
                       →
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-[#64646A] leading-relaxed group-hover:text-slate-200 transition-colors">
+                  <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed group-hover:text-white transition-colors">
                     {uc.description}
                   </p>
                 </div>
@@ -897,12 +897,12 @@ export default function LandingPage() {
             </button>
 
             <h3 className="text-xl font-bold text-[#F5F3EF]">{selectedUseCase.title} Architecture</h3>
-            <p className="mt-3 text-sm text-[#64646A] leading-relaxed">{selectedUseCase.detail}</p>
+            <p className="mt-3 text-sm text-slate-300 leading-relaxed">{selectedUseCase.detail}</p>
 
             <div className="mt-6 flex justify-end">
               <Link
                 href="/dashboard"
-                className="rounded-lg bg-[#8BE8E3] px-5 py-2 text-xs font-semibold text-[#080D12] hover:bg-[#B5F0D1]"
+                className="rounded-lg bg-sky-400 px-5 py-2 text-xs font-semibold text-[#080D12] hover:bg-sky-300 shadow-md shadow-sky-500/20 transition-all"
               >
                 Deploy {selectedUseCase.title} Agent →
               </Link>

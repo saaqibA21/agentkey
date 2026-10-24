@@ -93,20 +93,20 @@ export default async function OverviewPage() {
 
           <div className="flex flex-col items-start gap-3 lg:items-end shrink-0">
             {/* Handwritten / Callout Quote */}
-            <p className="font-serif italic text-xs sm:text-sm text-[#8BE8E3]/85 lg:text-right max-w-xs">
+            <p className="font-serif italic text-xs sm:text-sm text-sky-300/85 lg:text-right max-w-xs">
               &ldquo;Build agents that respect people, not just the internet.&rdquo;
             </p>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-medium text-[#9BA7B4]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#8BE8E3]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-medium text-[#9BA7B4]">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                 {o.workspace.plan} tier
               </span>
 
               {isAdmin ? (
                 <Link
                   href="/dashboard/admin"
-                  className="inline-flex items-center gap-1 rounded-full border border-[#8BE8E3]/40 bg-[#132A26] px-4 py-1 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833] hover:border-[#8BE8E3]/60 shadow-sm"
+                  className="inline-flex items-center gap-1 rounded-full border border-sky-500/35 bg-sky-500/10 px-4 py-1 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 hover:border-sky-400/50 shadow-sm"
                 >
                   <span>Admin Console</span>
                   <span>→</span>
@@ -114,7 +114,7 @@ export default async function OverviewPage() {
               ) : (
                 <Link
                   href="/dashboard/guide"
-                  className="inline-flex items-center gap-1 rounded-full border border-[#8BE8E3]/40 bg-[#132A26] px-4 py-1 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833] hover:border-[#8BE8E3]/60 shadow-sm"
+                  className="inline-flex items-center gap-1 rounded-full border border-sky-500/35 bg-sky-500/10 px-4 py-1 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 hover:border-sky-400/50 shadow-sm"
                 >
                   <span>User Guide</span>
                   <span>→</span>
@@ -144,19 +144,19 @@ export default async function OverviewPage() {
         <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0E151E] lg:col-span-8 shadow-xl shadow-black/20">
           <div className="grid md:grid-cols-12 h-full">
             {/* Scenic Left Subcard */}
-            <div className="relative flex flex-col justify-end p-6 md:p-8 md:col-span-5 bg-gradient-to-b from-[#102324] to-[#091517] overflow-hidden min-h-[240px]">
+            <div className="relative flex flex-col justify-end p-6 md:p-8 md:col-span-5 bg-gradient-to-b from-[#0F172A] via-[#0B0F17] to-[#080D12] overflow-hidden min-h-[240px]">
               <Image
                 src="/images/mountain-landscape-v2.jpg"
                 alt="Scenic Sunrise"
                 fill
                 className="object-cover opacity-25 filter contrast-125"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0A1617] via-[#0A1617]/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080D12] via-[#080D12]/75 to-transparent" />
 
               <div className="relative z-10 space-y-3">
                 <Link
                   href="/dashboard/api"
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-[#8BE8E3]/50 bg-[#8BE8E3]/20 text-[#8BE8E3] shadow-lg shadow-[#8BE8E3]/25 transition hover:scale-105 hover:bg-[#8BE8E3]/30"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-400/40 bg-sky-500/15 text-sky-300 shadow-lg shadow-sky-500/25 transition hover:scale-105 hover:bg-sky-500/25 hover:border-sky-400/60"
                   title="Create Agent"
                 >
                   <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -165,7 +165,7 @@ export default async function OverviewPage() {
                 </Link>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#8BE8E3]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400">
                     GET SET UP
                   </span>
                   <h3 className="text-lg font-bold text-white">Create. Connect. Deploy.</h3>
@@ -181,7 +181,7 @@ export default async function OverviewPage() {
               <div className="space-y-4">
                 {/* Step 1 */}
                 <div className="flex items-start gap-3.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -189,7 +189,7 @@ export default async function OverviewPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">Create an API key</p>
-                      <Link href="/dashboard/keys" className="text-xs text-[#8BE8E3] hover:underline font-medium">
+                      <Link href="/dashboard/keys" className="text-xs text-sky-400 hover:text-sky-300 hover:underline font-medium">
                         View keys →
                       </Link>
                     </div>
@@ -201,7 +201,7 @@ export default async function OverviewPage() {
 
                 {/* Step 2 */}
                 <div className="flex items-start gap-3.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -209,7 +209,7 @@ export default async function OverviewPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">Create an inbox</p>
-                      <Link href="/dashboard/inboxes" className="text-xs text-[#8BE8E3] hover:underline font-medium">
+                      <Link href="/dashboard/inboxes" className="text-xs text-sky-400 hover:text-sky-300 hover:underline font-medium">
                         View inboxes →
                       </Link>
                     </div>
@@ -223,7 +223,7 @@ export default async function OverviewPage() {
                 <div className="flex items-start gap-3.5">
                   <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
                     canSend
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                      ? "bg-sky-500/15 text-sky-400 border border-sky-500/30"
                       : "bg-white/5 text-[#718096] border border-white/10"
                   }`}>
                     {canSend ? (
@@ -237,7 +237,7 @@ export default async function OverviewPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">Unlock sending</p>
-                      <Link href="/dashboard/domains" className="text-xs text-[#8BE8E3] hover:underline font-medium">
+                      <Link href="/dashboard/domains" className="text-xs text-sky-400 hover:text-sky-300 hover:underline font-medium">
                         Add domain →
                       </Link>
                     </div>
@@ -252,17 +252,17 @@ export default async function OverviewPage() {
         </div>
 
         {/* Right Card (approx 35% width): Your Agent. Your Rules. */}
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#0F1D1B] via-[#0B1516] to-[#070D0E] p-6 lg:p-8 lg:col-span-4 shadow-xl shadow-black/20">
-          {/* Ambient Glowing Glass Shape Visual */}
-          <div className="pointer-events-none absolute -top-8 -right-8 h-48 w-48 rounded-full bg-gradient-to-br from-[#8BE8E3]/20 via-emerald-500/10 to-transparent blur-2xl" />
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#0F172A] via-[#0B0F17] to-[#080D12] p-6 lg:p-8 lg:col-span-4 shadow-xl shadow-black/20">
+          {/* Ambient Glowing Glass Shape Visual matching the mascot's eyes and hologram */}
+          <div className="pointer-events-none absolute -top-8 -right-8 h-48 w-48 rounded-full bg-gradient-to-br from-sky-500/20 via-blue-500/10 to-transparent blur-2xl" />
 
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#8BE8E3]/35 bg-[#8BE8E3]/10 text-[#8BE8E3]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-400">
               <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
             </div>
-            <span className="text-[10px] font-mono text-[#8BE8E3] tracking-widest uppercase">
+            <span className="text-[10px] font-mono text-sky-400 tracking-widest uppercase">
               SOVEREIGN
             </span>
           </div>
@@ -302,7 +302,7 @@ export default async function OverviewPage() {
         {/* Left (approx 65% width): Connect Your Agent Code Blocks */}
         <div className="space-y-4 lg:col-span-8">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 text-[#8BE8E3]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-400">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -321,21 +321,21 @@ export default async function OverviewPage() {
             <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0E151E]">
               <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                   <span className="text-xs font-semibold text-white">
                     Claude Code <span className="text-[#9BA7B4] font-normal">(hosted MCP, nothing to install)</span>
                   </span>
                 </div>
                 <CopyButton value={s.claudeCode} />
               </div>
-              <div className="p-4 bg-[#080D12] overflow-x-auto text-xs font-mono text-[#8BE8E3]">
+              <div className="p-4 bg-[#080D12] overflow-x-auto text-xs font-mono text-[#E2E8F0]">
                 <pre>{s.claudeCode}</pre>
               </div>
               <div className="flex items-center justify-between border-t border-white/[0.08] px-4 py-2 text-[11px] text-[#718096]">
                 <span>
-                  Replace <code className="text-[#8BE8E3]">ai_live_YOUR_KEY</code> with a key from <Link href="/dashboard/keys" className="underline text-white">API keys</Link>
+                  Replace <code className="text-sky-300">ai_live_YOUR_KEY</code> with a key from <Link href="/dashboard/keys" className="underline text-white">API keys</Link>
                 </span>
-                <Link href="/docs" className="text-[#8BE8E3] hover:underline">
+                <Link href="/docs" className="text-sky-400 hover:text-sky-300 hover:underline">
                   More in the docs →
                 </Link>
               </div>
@@ -345,21 +345,21 @@ export default async function OverviewPage() {
             <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0E151E]">
               <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
+                  <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                   <span className="text-xs font-semibold text-white">
                     Cursor and other MCP clients
                   </span>
                 </div>
                 <CopyButton value={s.mcpJson} />
               </div>
-              <div className="p-4 bg-[#080D12] overflow-x-auto text-xs font-mono text-[#B5F0D1]">
+              <div className="p-4 bg-[#080D12] overflow-x-auto text-xs font-mono text-[#E2E8F0]">
                 <pre>{s.mcpJson}</pre>
               </div>
               <div className="flex items-center justify-between border-t border-white/[0.08] px-4 py-2 text-[11px] text-[#718096]">
                 <span>
-                  Paste into <code className="text-[#8BE8E3]">.cursor/mcp.json</code>
+                  Paste into <code className="text-sky-300">.cursor/mcp.json</code>
                 </span>
-                <Link href="/docs" className="text-[#8BE8E3] hover:underline">
+                <Link href="/docs" className="text-sky-400 hover:text-sky-300 hover:underline">
                   More in the docs →
                 </Link>
               </div>
@@ -369,7 +369,7 @@ export default async function OverviewPage() {
             <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0E151E]">
               <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-purple-400" />
+                  <span className="h-2 w-2 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
                   <span className="text-xs font-semibold text-white">
                     Python
                   </span>
@@ -396,7 +396,7 @@ export default async function OverviewPage() {
                 className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 text-[#8BE8E3]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-400">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
                       <path d="M6 6h10" /><path d="M6 10h10" />
@@ -451,7 +451,7 @@ export default async function OverviewPage() {
                 className="group flex items-center justify-between rounded-xl p-3 transition hover:bg-white/[0.04]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 text-[#8BE8E3]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-400">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     </svg>
@@ -502,11 +502,11 @@ export default async function OverviewPage() {
             </div>
           </div>
 
-          {/* Sovereign by Design Card with subtle contour curves */}
+          {/* Sovereign by Design Card */}
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0E151E] p-6 shadow-xl">
             {/* Topographic line decoration */}
             <svg
-              className="pointer-events-none absolute bottom-0 right-0 h-36 w-56 text-[#8BE8E3]/5"
+              className="pointer-events-none absolute bottom-0 right-0 h-36 w-56 text-sky-400/5"
               viewBox="0 0 200 120"
               fill="none"
               stroke="currentColor"
@@ -518,7 +518,7 @@ export default async function OverviewPage() {
             </svg>
 
             <div className="relative z-10 flex items-start gap-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-400">
                 <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>

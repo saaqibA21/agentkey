@@ -83,7 +83,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
             <div className="flex items-center gap-2">
               <Link
                 href="/dashboard/api"
-                className="rounded-xl border border-[#8BE8E3]/35 bg-[#132A26] px-4 py-2 text-xs font-semibold text-[#8BE8E3] transition hover:bg-[#1A3833]"
+                className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 hover:border-sky-400/50"
               >
                 API Reference →
               </Link>
@@ -108,9 +108,9 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
       {/* Visual Roadmap / 5-Step Architecture */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-mono text-[#8BE8E3]">
+          <div className="flex items-center justify-between text-xs font-mono text-sky-400">
             <span>STEP 01</span>
-            <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
+            <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
           </div>
           <h3 className="mt-2 text-sm font-bold text-white">Create Inbox</h3>
           <p className="mt-1 text-xs text-[#9BA7B4]">
@@ -119,9 +119,9 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
         </div>
 
         <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-mono text-emerald-400">
+          <div className="flex items-center justify-between text-xs font-mono text-sky-400">
             <span>STEP 02</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
           </div>
           <h3 className="mt-2 text-sm font-bold text-white">Connect Agent</h3>
           <p className="mt-1 text-xs text-[#9BA7B4]">
@@ -130,9 +130,9 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
         </div>
 
         <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-mono text-teal-400">
+          <div className="flex items-center justify-between text-xs font-mono text-cyan-400">
             <span>STEP 03</span>
-            <span className="h-2 w-2 rounded-full bg-teal-400" />
+            <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
           </div>
           <h3 className="mt-2 text-sm font-bold text-white">Automate 2FA</h3>
           <p className="mt-1 text-xs text-[#9BA7B4]">
@@ -143,7 +143,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
         <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 relative overflow-hidden">
           <div className="flex items-center justify-between text-xs font-mono text-purple-400">
             <span>STEP 04</span>
-            <span className="h-2 w-2 rounded-full bg-purple-400" />
+            <span className="h-2 w-2 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
           </div>
           <h3 className="mt-2 text-sm font-bold text-white">HITL Guardrails</h3>
           <p className="mt-1 text-xs text-[#9BA7B4]">
@@ -154,7 +154,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
         <div className="rounded-2xl border border-white/[0.08] bg-[#0E151E] p-4 relative overflow-hidden">
           <div className="flex items-center justify-between text-xs font-mono text-indigo-400">
             <span>STEP 05</span>
-            <span className="h-2 w-2 rounded-full bg-indigo-400" />
+            <span className="h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.7)]" />
           </div>
           <h3 className="mt-2 text-sm font-bold text-white">Verifiable ID</h3>
           <p className="mt-1 text-xs text-[#9BA7B4]">
@@ -166,7 +166,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
       {/* Deep-Dive Step 1 */}
       <Card>
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#8BE8E3]/30 bg-[#8BE8E3]/10 font-bold text-[#8BE8E3]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 font-bold text-sky-400">
             1
           </div>
           <div className="space-y-3 flex-1">
@@ -176,7 +176,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               </h2>
               <Link
                 href="/dashboard/inboxes"
-                className="text-xs text-[#8BE8E3] hover:underline font-semibold"
+                className="text-xs text-sky-400 hover:text-sky-300 hover:underline font-semibold"
               >
                 Go to Inboxes &amp; Channels →
               </Link>
@@ -219,7 +219,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               <div className="rounded-xl border border-white/[0.08] bg-[#080D12] p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                     Claude Code (MCP)
                   </span>
                   <CopyButton value={s.claudeCode} />
@@ -227,7 +227,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
                 <p className="text-xs text-[#718096]">
                   Run this single command in your terminal to equip Claude with autonomous email powers:
                 </p>
-                <pre className="text-xs font-mono text-[#8BE8E3] overflow-x-auto p-2.5 bg-black/50 rounded-lg">
+                <pre className="text-xs font-mono text-[#E2E8F0] overflow-x-auto p-2.5 bg-black/50 rounded-lg">
                   {s.claudeCode}
                 </pre>
               </div>
@@ -236,7 +236,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               <div className="rounded-xl border border-white/[0.08] bg-[#080D12] p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-[#8BE8E3]" />
+                    <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
                     Cursor IDE (.cursor/mcp.json)
                   </span>
                   <CopyButton value={s.mcpJson} />
@@ -244,7 +244,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
                 <p className="text-xs text-[#718096]">
                   Paste into your project&apos;s <code>.cursor/mcp.json</code> file:
                 </p>
-                <pre className="text-xs font-mono text-[#B5F0D1] overflow-x-auto p-2.5 bg-black/50 rounded-lg max-h-32">
+                <pre className="text-xs font-mono text-[#E2E8F0] overflow-x-auto p-2.5 bg-black/50 rounded-lg max-h-32">
                   {s.mcpJson}
                 </pre>
               </div>
@@ -265,7 +265,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
       {/* Deep-Dive Step 3 */}
       <Card>
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-500/30 bg-teal-500/10 font-bold text-teal-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 font-bold text-sky-400">
             3
           </div>
           <div className="space-y-3 flex-1">
@@ -286,7 +286,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               <Code code={curlWaitOtp} title="Long-Poll OTP Endpoint" />
             </div>
 
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-emerald-300">
+            <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 text-xs text-sky-300">
               <b>Tip:</b> If the email contains a magic link button instead of a 6-digit number, use <code>/wait?for=magic_link</code> to extract the clean URL directly!
             </div>
           </div>
@@ -341,7 +341,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               </h2>
               <Link
                 href="/dashboard/oauth"
-                className="text-xs text-[#8BE8E3] hover:underline font-semibold"
+                className="text-xs text-sky-400 hover:text-sky-300 hover:underline font-semibold"
               >
                 Open OAuth &amp; Connect Portal →
               </Link>
@@ -353,7 +353,7 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               With <b>Owner Delegated ID (OD-ID)</b> and <b>OAuth 2.1 OpenID Connect</b>, third-party apps can implement &ldquo;Sign in with AgentKey&rdquo;. The external app receives cryptographic claims confirming the agent&apos;s identity, trust score, and the verified human operator legally responsible for the agent.
             </p>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#080D12] p-4 text-xs font-mono text-[#8BE8E3]">
+            <div className="rounded-xl border border-white/[0.08] bg-[#080D12] p-4 text-xs font-mono text-sky-300">
               <p className="text-[#9BA7B4] mb-2 font-sans font-semibold text-xs">Standard OIDC Discovery URL:</p>
               <code>{publicApiUrl}/.well-known/openid-configuration</code>
             </div>
@@ -368,21 +368,21 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
           <Card className="!p-5 space-y-2">
             <h4 className="text-sm font-bold text-white">Can my agent send emails immediately?</h4>
             <p className="text-xs text-[#9BA7B4] leading-relaxed">
-              Inbound receiving and OTP extraction work instantly on your free inbox. To send outbound emails, you can either enable the outbound sandbox or connect your own domain under <Link href="/dashboard/domains" className="text-[#8BE8E3] underline">Domains &amp; DNS</Link>.
+              Inbound receiving and OTP extraction work instantly on your free inbox. To send outbound emails, you can either enable the outbound sandbox or connect your own domain under <Link href="/dashboard/domains" className="text-sky-400 hover:text-sky-300 underline">Domains &amp; DNS</Link>.
             </p>
           </Card>
 
           <Card className="!p-5 space-y-2">
             <h4 className="text-sm font-bold text-white">Where do I find my API key?</h4>
             <p className="text-xs text-[#9BA7B4] leading-relaxed">
-              Head over to <Link href="/dashboard/keys" className="text-[#8BE8E3] underline">API Keys</Link> in the sidebar to create read-only or read/write API keys for your agents. Never share keys publicly.
+              Head over to <Link href="/dashboard/keys" className="text-sky-400 hover:text-sky-300 underline">API Keys</Link> in the sidebar to create read-only or read/write API keys for your agents. Never share keys publicly.
             </p>
           </Card>
 
           <Card className="!p-5 space-y-2">
             <h4 className="text-sm font-bold text-white">How does Webhook delivery work?</h4>
             <p className="text-xs text-[#9BA7B4] leading-relaxed">
-              Under <Link href="/dashboard/webhooks" className="text-[#8BE8E3] underline">Webhooks</Link>, register your HTTPS endpoint. Every time an email arrives or an approval status changes, AgentKey signs a HMAC SHA-256 payload and delivers it in under 100ms.
+              Under <Link href="/dashboard/webhooks" className="text-sky-400 hover:text-sky-300 underline">Webhooks</Link>, register your HTTPS endpoint. Every time an email arrives or an approval status changes, AgentKey signs a HMAC SHA-256 payload and delivers it in under 100ms.
             </p>
           </Card>
 

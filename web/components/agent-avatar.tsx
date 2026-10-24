@@ -34,7 +34,7 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
     const initials = name.slice(0, 2).toUpperCase() || "AI";
     return (
       <div
-        className={`flex shrink-0 items-center justify-center rounded-full border border-[#8BE8E3]/30 bg-[#080D12] font-mono font-bold text-[#8BE8E3] shadow-inner ${sizeClasses} ${className}`}
+        className={`flex shrink-0 items-center justify-center rounded-full border border-sky-500/30 bg-[#080D12] font-mono font-bold text-sky-400 shadow-inner ${sizeClasses} ${className}`}
       >
         {initials}
       </div>
@@ -43,7 +43,7 @@ export function AgentAvatar({ seed, url, name, size = "md", className = "" }: Ag
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-[#182230] to-[#0A0F14] p-0.5 shadow-lg shadow-black/60 ring-2 ring-[#8BE8E3]/25 ${sizeClasses} ${className}`}
+      className={`relative shrink-0 overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-[#182230] to-[#0A0F14] p-0.5 shadow-lg shadow-black/60 ring-2 ring-sky-500/25 ${sizeClasses} ${className}`}
     >
       <img
         src={avatarSrc}

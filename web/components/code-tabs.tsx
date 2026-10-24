@@ -33,7 +33,7 @@ export function CodeTabs({ tabs }: { tabs: CodeTab[] }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
                   activeTab === tab.id
-                    ? "bg-[#2E3038] text-[#8BE8E3] font-semibold"
+                    ? "bg-[#2E3038] text-sky-300 font-semibold"
                     : "text-[#9BA7B4] hover:bg-white/5 hover:text-white"
                 }`}
               >

@@ -60,7 +60,7 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
         <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
           Unique Human Persona Avatar
         </label>
-        <span className="text-[11px] text-[#8BE8E3] font-medium">Guaranteed Unique</span>
+        <span className="text-[11px] text-sky-400 font-medium">Guaranteed Unique</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-4">
@@ -76,14 +76,14 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
                 setSeed(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
               }}
               placeholder="unique-human-seed"
-              className="flex-1 rounded-xl border border-line bg-black/40 px-3 py-1.5 font-mono text-xs text-[#8BE8E3] focus:border-[#8BE8E3] focus:outline-none"
+              className="flex-1 rounded-xl border border-line bg-black/40 px-3 py-1.5 font-mono text-xs text-sky-400 focus:border-sky-400 focus:outline-none"
             />
             <button
               type="button"
               onClick={handleRandomize}
               className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-95"
             >
-              <svg className="h-3.5 w-3.5 text-[#8BE8E3]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
               </svg>
               Randomize
@@ -100,7 +100,7 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
                 onClick={() => setStyle(s.id)}
                 className={`rounded-lg border px-2 py-0.5 text-[10px] transition ${
                   style === s.id
-                    ? "border-[#8BE8E3]/60 bg-[#8BE8E3]/15 text-[#8BE8E3] font-semibold"
+                    ? "border-sky-500/60 bg-sky-500/15 text-sky-400 font-semibold"
                     : "border-line/60 bg-white/[0.03] text-[#9BA7B4] hover:text-white"
                 }`}
               >
@@ -117,7 +117,7 @@ export function AvatarPicker({ defaultName = "New Agent" }: { defaultName?: stri
                 key={p.seed}
                 type="button"
                 onClick={() => handlePresetSelect(p.seed)}
-                className="rounded-lg border border-line/60 bg-white/[0.03] px-2 py-0.5 text-[10px] text-[#9BA7B4] hover:border-[#8BE8E3]/40 hover:text-white transition"
+                className="rounded-lg border border-line/60 bg-white/[0.03] px-2 py-0.5 text-[10px] text-[#9BA7B4] hover:border-sky-500/40 hover:text-white transition"
               >
                 {p.label.split(" ")[0]}
               </button>

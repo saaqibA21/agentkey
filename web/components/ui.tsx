@@ -24,11 +24,12 @@ export function PageHeader({ title, lead, aside }: { title: string; lead?: strin
 
 const tones = {
   neutral: "bg-[#F2ECE1] text-[#64646A] border border-[#E5DEC9]",
-  good: "bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold",
+  good: "bg-sky-50 text-sky-800 border border-sky-200 font-semibold",
   warn: "bg-amber-50 text-amber-800 border border-amber-200",
   bad: "bg-rose-50 text-rose-800 border border-rose-200",
   accent: "bg-[#18191B] text-[#FAF5EE] border border-[#18191B] font-semibold",
   purple: "bg-purple-50 text-purple-800 border border-purple-200 font-semibold",
+  sky: "bg-sky-50 text-sky-800 border border-sky-200 font-semibold",
 };
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: keyof typeof tones }) {
