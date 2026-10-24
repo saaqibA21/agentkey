@@ -147,6 +147,7 @@ export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
           <Link
             key={item.href}
             href={item.href}
+            prefetch={false}
             className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
               isActive
                 ? "bg-[#18191B] text-[#FAF5EE] shadow-sm font-semibold"
