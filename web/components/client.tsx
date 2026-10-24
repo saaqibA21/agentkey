@@ -71,7 +71,7 @@ export function ActionForm({
       {children}
       <Submit variant={variant} confirm={confirm}>{submit}</Submit>
       {state?.error && (
-        <p role="alert" className="basis-full text-sm text-danger">{state.error}</p>
+        <p role="alert" className="basis-full text-sm text-rose-600 font-medium">{state.error}</p>
       )}
       {state?.secret && (
         <div className="basis-full rounded-lg border border-accent/40 bg-accent/5 p-3">

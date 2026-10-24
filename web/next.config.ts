@@ -4,6 +4,9 @@ const config: NextConfig = {
   poweredByHeader: false,
   experimental: {
     cpus: 4,
+    serverActions: {
+      allowedOrigins: ["www.agentkey.in", "agentkey.in", "localhost:3000"],
+    },
   },
   env: {
     AUTH_URL: "https://www.agentkey.in",

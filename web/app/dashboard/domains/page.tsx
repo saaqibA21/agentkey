@@ -13,9 +13,12 @@ const purposeLabel: Record<DnsRecord["purpose"], string> = {
 };
 
 /** DNS hosts want the record name relative to the domain ("@" for the domain itself). */
-function hostLabel(recordName: string, domain: string): string {
-  if (recordName === domain) return "@";
-  return recordName.endsWith(`.${domain}`) ? recordName.slice(0, -domain.length - 1) : recordName;
+function hostLabel(recordName?: string, domain?: string): string {
+  const rec = String(recordName ?? "").trim();
+  const dom = String(domain ?? "").trim();
+  if (!rec || rec === dom || rec === "@") return "@";
+  if (dom && rec.endsWith(`.${dom}`)) return rec.slice(0, -dom.length - 1) || "@";
+  return rec;
 }
 
 function DomainCard({ domain }: { domain: Domain }) {

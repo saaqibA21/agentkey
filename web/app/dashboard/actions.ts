@@ -142,7 +142,10 @@ export async function revokeKey(_: ActionState, form: FormData): Promise<ActionS
 export async function addDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
     const session = await auth();
-    const domainName = text(form, "name");
+    const domainName = text(form, "name").trim().toLowerCase();
+    if (!domainName) {
+      return { error: "Please enter a valid domain name." };
+    }
     try {
       await api("/domains", { method: "POST", body: JSON.stringify({ name: domainName }) });
     } catch {
@@ -154,9 +157,10 @@ export async function addDomain(_: ActionState, form: FormData): Promise<ActionS
 export async function verifyDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
     const id = text(form, "id");
+    if (!id) return { error: "Domain ID is missing" };
     try {
       const domain = await api<{ status: string }>(`/domains/${id}/verify`, { method: "POST" });
-      if (domain.status !== "VERIFIED") {
+      if (domain?.status !== "VERIFIED") {
         return { error: "Not verified yet. DNS changes can take up to an hour to appear; the list above shows what is still missing." };
       }
     } catch {
@@ -168,6 +172,7 @@ export async function verifyDomain(_: ActionState, form: FormData): Promise<Acti
 export async function deleteDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
     const id = text(form, "id");
+    if (!id) return { error: "Domain ID is missing" };
     try {
       await api(`/domains/${id}`, { method: "DELETE" });
     } catch {
