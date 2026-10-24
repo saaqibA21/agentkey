@@ -69,11 +69,19 @@ export function ActionForm({
     try {
       return await action(prevState, formData);
     } catch (err: unknown) {
-      console.error("Action execution caught error:", err);
-      if (typeof window !== "undefined") {
-        window.location.reload();
+      console.warn("Action execution error:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.includes("Failed to find Server Action") ||
+        msg.includes("Action not found") ||
+        msg.includes("Loading chunk")
+      ) {
+        if (typeof window !== "undefined") {
+          setTimeout(() => window.location.reload(), 400);
+        }
+        return { error: "Application was updated. Reloading page..." };
       }
-      return { error: "Refreshing page to apply updates..." };
+      return { error: msg || "Request could not be completed. Please try again." };
     }
   };
   const [state, formAction] = useActionState(wrappedAction, null);
