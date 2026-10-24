@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/client";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { InboxMessageList } from "@/components/inbox-message-list";
+import { getInboxById } from "@/lib/agent-store";
 import { api, ApiError, type Inbox, type Message } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -11,15 +12,36 @@ export const revalidate = 0;
 
 export default async function InboxPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let inbox: Inbox;
+  let inbox: Inbox | null = null;
   try {
-    inbox = await api<Inbox>(`/inboxes/${id}`);
+    const fetched = await api<Inbox>(`/inboxes/${id}`);
+    if (fetched && fetched.id) {
+      inbox = fetched;
+    }
   } catch (err) {
     if (err instanceof ApiError && (err.status === 404 || err.status === 422)) notFound();
-    throw err;
   }
-  const messagesRaw = await api<{ data: Message[] }>(`/inboxes/${id}/messages?limit=50`);
-  const messages = messagesRaw ?? { data: [] };
+
+  if (!inbox) {
+    const local = getInboxById(id);
+    if (local) {
+      inbox = local as unknown as Inbox;
+    }
+  }
+
+  if (!inbox) {
+    notFound();
+  }
+
+  let messages = { data: [] as Message[] };
+  try {
+    const messagesRaw = await api<{ data: Message[] }>(`/inboxes/${id}/messages?limit=50`);
+    if (messagesRaw && Array.isArray(messagesRaw.data)) {
+      messages = messagesRaw;
+    }
+  } catch {
+    messages = { data: [] };
+  }
 
   return (
     <>

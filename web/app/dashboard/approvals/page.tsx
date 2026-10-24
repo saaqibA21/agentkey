@@ -6,8 +6,8 @@ import { createPolicy, decide, deletePolicy } from "../actions";
 
 export default async function ApprovalsPage() {
   const [pendingRaw, policiesRaw] = await Promise.all([
-    api<{ data: Message[] }>("/hitl/pending"),
-    api<Policy[] | { data: Policy[] }>("/hitl/policies"),
+    api<{ data: Message[] }>("/hitl/pending").catch(() => ({ data: [] })),
+    api<Policy[] | { data: Policy[] }>("/hitl/policies").catch(() => []),
   ]);
   const pending: { data: Message[] } = pendingRaw?.data ? pendingRaw : { data: [] };
   const policies: Policy[] = Array.isArray(policiesRaw)
@@ -39,7 +39,7 @@ export default async function ApprovalsPage() {
             <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-subtle p-3 font-sans text-sm">
               {m.body_text}
             </pre>
-            <p className="mt-2 text-xs text-muted">Matched: {m.extracted_data.hitl?.matched.join(", ")}</p>
+            <p className="mt-2 text-xs text-muted">Matched: {m.extracted_data?.hitl?.matched?.join(", ") || "Rule"}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <ActionForm action={decide} submit="Approve and send">
                 <input type="hidden" name="id" value={m.id} />

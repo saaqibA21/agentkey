@@ -7,29 +7,46 @@ import { api, type Domain, type Inbox, type Overview } from "@/lib/api";
 import { createInbox, deleteInbox } from "../actions";
 
 export default async function InboxesPage() {
-  const [inboxesRaw, overviewRaw, domainsRaw] = await Promise.all([
-    api<Inbox[] | { data: Inbox[] }>("/inboxes?limit=200"),
-    api<Overview>("/overview"),
-    api<{ data: Domain[] }>("/domains"),
-  ]);
-  const inboxes: Inbox[] = Array.isArray(inboxesRaw)
-    ? inboxesRaw
-    : (Array.isArray((inboxesRaw as any)?.data) ? (inboxesRaw as any).data : []);
-  const overview = overviewRaw ?? {
+  let inboxes: Inbox[] = [];
+  let overview: Overview = {
     workspace: { id: "ws_default", name: "Workspace", plan: "pro", outbound_enabled: true, daily_send_limit: 1000, max_inboxes: 50, inbound_daily_limit: 5000, pii_masking_enabled: true },
     usage: { sent_today: 0, received_today: 0 },
     counts: { inboxes: 1, messages: 0, pending_approvals: 0, api_keys: 1, verified_domains: 1 },
     mail_domain: "agentkey.in",
   };
-  const domainsList = domainsRaw?.data ?? [];
-  const verified = domainsList.filter((d) => d.status === "VERIFIED");
-  const atLimit = inboxes.length >= (overview.workspace?.max_inboxes ?? 50);
+  let domainsList: Domain[] = [];
+
+  try {
+    const [inboxesRaw, overviewRaw, domainsRaw] = await Promise.all([
+      api<Inbox[] | { data: Inbox[] }>("/inboxes?limit=200").catch(() => []),
+      api<Overview>("/overview").catch(() => null),
+      api<{ data: Domain[] }>("/domains").catch(() => ({ data: [] })),
+    ]);
+
+    if (Array.isArray(inboxesRaw)) {
+      inboxes = inboxesRaw;
+    } else if (Array.isArray((inboxesRaw as any)?.data)) {
+      inboxes = (inboxesRaw as any).data;
+    }
+
+    if (overviewRaw && overviewRaw.workspace) {
+      overview = overviewRaw;
+    }
+
+    domainsList = (domainsRaw as any)?.data ?? (Array.isArray(domainsRaw) ? (domainsRaw as unknown as Domain[]) : []);
+  } catch (err) {
+    console.error("Error loading inboxes page data:", err);
+  }
+
+  const verified = (domainsList || []).filter((d) => d && d.status === "VERIFIED");
+  const maxInboxes = overview?.workspace?.max_inboxes ?? 50;
+  const atLimit = inboxes.length >= maxInboxes;
 
   return (
     <>
       <PageHeader
         title="Inboxes"
-        lead={`${inboxes.length} of ${overview.workspace.max_inboxes} in use. Provision dedicated email, WhatsApp, and SMS identities with Owner-Delegated legal binding.`}
+        lead={`${inboxes.length} of ${maxInboxes} in use. Provision dedicated email, WhatsApp, and SMS identities with Owner-Delegated legal binding.`}
       />
 
       <Card className="transition-all hover:border-line/80">
@@ -45,7 +62,7 @@ export default async function InboxesPage() {
             />
             <span className="text-muted">@</span>
             <select name="domain" className={inputClass} aria-label="Domain">
-              <option value="">{overview.mail_domain}</option>
+              <option value="">{overview?.mail_domain || "agentkey.in"}</option>
               {verified.map((d) => (
                 <option key={d.id} value={d.name}>{d.name}</option>
               ))}

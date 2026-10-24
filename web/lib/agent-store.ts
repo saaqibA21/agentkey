@@ -136,17 +136,29 @@ function loadStore(): StoreData {
   try {
     if (fs.existsSync(STORE_PATH)) {
       const data = fs.readFileSync(STORE_PATH, "utf-8");
-      const parsed = JSON.parse(data);
-      if (parsed && Array.isArray(parsed.keys) && Array.isArray(parsed.inboxes)) {
-        if (!Array.isArray(parsed.webhooks)) parsed.webhooks = [];
-        if (!Array.isArray(parsed.domains)) parsed.domains = DEFAULT_STORE.domains;
-        return parsed;
+      if (data && data.trim()) {
+        const parsed = JSON.parse(data);
+        if (parsed && typeof parsed === "object") {
+          return {
+            keys: Array.isArray(parsed.keys) ? parsed.keys : [...DEFAULT_STORE.keys],
+            inboxes: Array.isArray(parsed.inboxes) ? parsed.inboxes : [...DEFAULT_STORE.inboxes],
+            agents: Array.isArray(parsed.agents) ? parsed.agents : [...DEFAULT_STORE.agents],
+            webhooks: Array.isArray(parsed.webhooks) ? parsed.webhooks : [],
+            domains: Array.isArray(parsed.domains) ? parsed.domains : [...DEFAULT_STORE.domains],
+          };
+        }
       }
     }
   } catch (err) {
     console.error("Error loading agent store:", err);
   }
-  return DEFAULT_STORE;
+  return {
+    keys: [...DEFAULT_STORE.keys],
+    inboxes: [...DEFAULT_STORE.inboxes],
+    agents: [...DEFAULT_STORE.agents],
+    webhooks: [...DEFAULT_STORE.webhooks],
+    domains: [...DEFAULT_STORE.domains],
+  };
 }
 
 function saveStore(data: StoreData) {
@@ -161,7 +173,13 @@ function getStore(): StoreData {
   if (!globalForAgents._agentKeyData) {
     globalForAgents._agentKeyData = loadStore();
   }
-  return globalForAgents._agentKeyData;
+  const s = globalForAgents._agentKeyData;
+  if (!Array.isArray(s.keys)) s.keys = [...DEFAULT_STORE.keys];
+  if (!Array.isArray(s.inboxes)) s.inboxes = [...DEFAULT_STORE.inboxes];
+  if (!Array.isArray(s.agents)) s.agents = [...DEFAULT_STORE.agents];
+  if (!Array.isArray(s.webhooks)) s.webhooks = [];
+  if (!Array.isArray(s.domains)) s.domains = [...DEFAULT_STORE.domains];
+  return s;
 }
 
 // ---------------------------------------------------------------------------
@@ -354,45 +372,48 @@ export function isOperatorOrAdmin(email?: string): boolean {
 
 export function getInboxes(ownerEmail?: string): InboxRecord[] {
   const store = getStore();
-  if (!ownerEmail) return store.inboxes;
+  const inboxes = (store.inboxes || []).filter(Boolean);
+  if (!ownerEmail) return inboxes;
   const lower = ownerEmail.toLowerCase().trim();
   if (isOperatorOrAdmin(lower)) {
-    return store.inboxes;
+    return inboxes;
   }
-  return store.inboxes.filter(
-    (i) => i.owner_email && i.owner_email.toLowerCase().trim() === lower
+  return inboxes.filter(
+    (i) => i && i.owner_email && i.owner_email.toLowerCase().trim() === lower
   );
 }
 
 export function getInboxById(id: string): InboxRecord | undefined {
   const store = getStore();
-  return store.inboxes.find(
-    (i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase()
+  const inboxes = (store.inboxes || []).filter(Boolean);
+  return inboxes.find(
+    (i) => i && (i.id === id || (i.email_address && i.email_address.toLowerCase() === id.toLowerCase()))
   );
 }
 
 export function getOrCreateDefaultInbox(ownerEmail: string, ownerName?: string): InboxRecord {
   const store = getStore();
-  const lower = ownerEmail.toLowerCase().trim();
-  const existing = store.inboxes.find(
-    (i) => i.owner_email && i.owner_email.toLowerCase().trim() === lower
+  const lower = (ownerEmail || "").toLowerCase().trim();
+  const inboxes = (store.inboxes || []).filter(Boolean);
+  const existing = inboxes.find(
+    (i) => i && i.owner_email && i.owner_email.toLowerCase().trim() === lower
   );
   if (existing) return existing;
 
   // Clean and derive friendly agent username from the email prefix
-  const rawPrefix = lower.split("@")[0].replace(/[^a-z0-9_-]/g, "");
+  const rawPrefix = (lower.split("@")[0] || "agent").replace(/[^a-z0-9_-]/g, "");
   const baseUsername = rawPrefix.slice(0, 18) || "agent";
 
   // Check if candidate email is already taken
   let candidateUsername = `${baseUsername}-bot`;
   const isTaken = (u: string) =>
-    store.inboxes.some((i) => i.email_address.toLowerCase() === `${u}@agentkey.in`.toLowerCase());
+    inboxes.some((i) => i && i.email_address && i.email_address.toLowerCase() === `${u}@agentkey.in`.toLowerCase());
 
   if (isTaken(candidateUsername)) {
     candidateUsername = `${baseUsername}-${crypto.randomBytes(2).toString("hex")}`;
   }
 
-  const name = ownerName || ownerEmail.split("@")[0] || "Operator";
+  const name = ownerName || (ownerEmail ? ownerEmail.split("@")[0] : "") || "Operator";
   const newInbox = createInboxRecord({
     username: candidateUsername,
     owner_name: name,
@@ -416,7 +437,8 @@ export function createInboxRecord(params: {
     .replace(/[^a-z0-9_-]/g, "");
 
   const emailAddress = username.includes("@") ? username : `${username}@agentkey.in`;
-  const existing = store.inboxes.find((i) => i.email_address.toLowerCase() === emailAddress.toLowerCase());
+  if (!Array.isArray(store.inboxes)) store.inboxes = [];
+  const existing = store.inboxes.find((i) => i && i.email_address && i.email_address.toLowerCase() === emailAddress.toLowerCase());
   if (existing) return existing;
 
   const inbox: InboxRecord = {
@@ -461,13 +483,14 @@ export function deleteInboxRecord(id: string, ownerEmail?: string): boolean {
 
 export function getAgents(ownerEmail?: string): AgentRecord[] {
   const store = getStore();
-  if (!ownerEmail) return store.agents;
+  const agents = (store.agents || []).filter(Boolean);
+  if (!ownerEmail) return agents;
   const lower = ownerEmail.toLowerCase().trim();
   if (isOperatorOrAdmin(lower)) {
-    return store.agents;
+    return agents;
   }
-  return store.agents.filter(
-    (a) => a.owner_email && a.owner_email.toLowerCase().trim() === lower
+  return agents.filter(
+    (a) => a && a.owner_email && a.owner_email.toLowerCase().trim() === lower
   );
 }
 
@@ -506,6 +529,7 @@ export function createAgentRecord(params: {
     avatar_url: params.avatar_url || `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}`,
   };
 
+  if (!Array.isArray(store.agents)) store.agents = [];
   store.agents.unshift(agent);
   saveStore(store);
   return { agent, api_key: secret };
@@ -513,17 +537,19 @@ export function createAgentRecord(params: {
 
 export function deleteAgentRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
+  if (id === "ag_live_primary") return false;
+  if (!Array.isArray(store.agents)) store.agents = [];
   const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
   const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
 
-  const agent = store.agents.find((a) => a.id === id);
+  const agent = store.agents.find((a) => a && a.id === id);
   if (!agent) return false;
   if (!isAdmin && agent.owner_email && agent.owner_email.toLowerCase().trim() !== lower) {
     return false; // Unauthorized
   }
 
   const initialLen = store.agents.length;
-  store.agents = store.agents.filter((a) => a.id !== id);
+  store.agents = store.agents.filter((a) => a && a.id !== id);
   saveStore(store);
   return store.agents.length < initialLen;
 }
@@ -534,13 +560,14 @@ export function deleteAgentRecord(id: string, ownerEmail?: string): boolean {
 
 export function getWebhooks(ownerEmail?: string): Webhook[] {
   const store = getStore();
-  if (!ownerEmail) return store.webhooks;
+  const webhooks = (store.webhooks || []).filter(Boolean);
+  if (!ownerEmail) return webhooks;
   const lower = ownerEmail.toLowerCase().trim();
   if (isOperatorOrAdmin(lower)) {
-    return store.webhooks;
+    return webhooks;
   }
-  return store.webhooks.filter(
-    (w) => w.owner_email && w.owner_email.toLowerCase().trim() === lower
+  return webhooks.filter(
+    (w) => w && w.owner_email && w.owner_email.toLowerCase().trim() === lower
   );
 }
 
@@ -638,20 +665,25 @@ export async function dispatchWebhooks(event: string, payload: any) {
 
 export function getDomains(ownerEmail?: string): Domain[] {
   const store = getStore();
-  if (!ownerEmail) return store.domains;
+  const domains = (store.domains || []).filter(Boolean);
+  if (!ownerEmail) return domains;
   const lower = ownerEmail.toLowerCase().trim();
   if (isOperatorOrAdmin(lower)) {
-    return store.domains;
+    return domains;
   }
-  return store.domains.filter(
-    (d) => d.id === "dom_agentkey_in" || (d.owner_email && d.owner_email.toLowerCase().trim() === lower)
+  return domains.filter(
+    (d) => d && (d.id === "dom_agentkey_in" || (d.owner_email && d.owner_email.toLowerCase().trim() === lower))
   );
 }
 
 export function addDomainRecord(name: string, ownerEmail?: string): Domain {
   const store = getStore();
-  const cleanName = name.trim().toLowerCase();
-  const existing = store.domains.find((d) => d.name === cleanName);
+  const cleanName = (name || "").trim().toLowerCase();
+  if (!cleanName) {
+    throw new Error("Domain name cannot be empty");
+  }
+  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
+  const existing = store.domains.find((d) => d && d.name === cleanName);
   if (existing) return existing;
 
   const verificationToken = `agentkey-verification=${crypto.randomBytes(12).toString("hex")}`;
@@ -698,7 +730,7 @@ export function addDomainRecord(name: string, ownerEmail?: string): Domain {
         required: false,
       },
     ],
-    owner_email: ownerEmail,
+    owner_email: ownerEmail ? ownerEmail.toLowerCase().trim() : undefined,
     created_at: new Date().toISOString(),
   };
 
@@ -709,7 +741,8 @@ export function addDomainRecord(name: string, ownerEmail?: string): Domain {
 
 export function verifyDomainRecord(id: string): Domain | undefined {
   const store = getStore();
-  const domain = store.domains.find((d) => d.id === id);
+  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
+  const domain = store.domains.find((d) => d && d.id === id);
   if (domain) {
     // Mark as verified
     domain.status = "VERIFIED";
@@ -724,8 +757,9 @@ export function deleteDomainRecord(id: string): boolean {
   const store = getStore();
   // Don't delete the primary agentkey.in domain
   if (id === "dom_agentkey_in") return false;
+  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
   const initialLen = store.domains.length;
-  store.domains = store.domains.filter((d) => d.id !== id);
+  store.domains = store.domains.filter((d) => d && d.id !== id);
   saveStore(store);
   return store.domains.length < initialLen;
 }

@@ -28,7 +28,11 @@ export type ActionState = {
 async function run(path: string, work: () => Promise<ActionState | void>): Promise<ActionState> {
   try {
     const result = await work();
-    revalidatePath(path);
+    try {
+      revalidatePath(path);
+    } catch (e) {
+      console.error(`revalidatePath(${path}) failed:`, e);
+    }
     return result ?? { ok: true };
   } catch (err) {
     if (err instanceof ApiError) return { error: err.detail ?? err.title };

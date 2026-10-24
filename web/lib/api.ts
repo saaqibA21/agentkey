@@ -148,104 +148,109 @@ async function call(path: string, init: RequestInit | undefined, retry: boolean)
 }
 
 async function getResilientFallback<T>(path: string): Promise<T> {
-  const p = path.split("?")[0].replace(/\/$/, "");
-  const me = await identity();
-  const userEmail = me.email?.toLowerCase().trim();
+  try {
+    const p = path.split("?")[0].replace(/\/$/, "");
+    const me = await identity();
+    const userEmail = me.email?.toLowerCase().trim();
 
-  // If user is logged in (not default operator fallback), ensure they have a default inbox
-  if (userEmail && userEmail !== "operator@agentkey.in") {
-    getOrCreateDefaultInbox(userEmail, me.name);
-  }
-
-  const userInboxes = getInboxes(userEmail);
-  const userKeys = getApiKeys(userEmail);
-  const userDomains = getDomains(userEmail);
-  const userAgents = getAgents(userEmail);
-  const userWebhooks = getWebhooks(userEmail);
-
-  if (p === "/overview") {
-    return {
-      workspace: {
-        id: `ws_${userEmail ? Buffer.from(userEmail).toString("hex").slice(0, 12) : "live_primary"}`,
-        name: `${me.name}'s Workspace`,
-        plan: "pro",
-        outbound_enabled: true,
-        daily_send_limit: 1000,
-        max_inboxes: 50,
-        inbound_daily_limit: 5000,
-        pii_masking_enabled: true,
-      },
-      usage: { sent_today: 0, received_today: 0 },
-      counts: {
-        inboxes: userInboxes.length,
-        messages: 0,
-        pending_approvals: 0,
-        api_keys: userKeys.length,
-        verified_domains: userDomains.filter((d) => d.status === "VERIFIED").length,
-      },
-      mail_domain: "agentkey.in",
-    } as unknown as T;
-  }
-
-  if (p === "/api-keys") {
-    return userKeys as unknown as T;
-  }
-
-  if (p.includes("/messages") || p === "/messages") {
-    const parts = p.split("/");
-    let inboxId = "";
-    if (parts[1] === "inboxes" && parts[2]) {
-      inboxId = parts[2];
-    } else {
-      inboxId = userInboxes[0]?.id || "inbox_primary_agent";
+    // If user is logged in (not default operator fallback), ensure they have a default inbox
+    if (userEmail && userEmail !== "operator@agentkey.in") {
+      try {
+        getOrCreateDefaultInbox(userEmail, me.name);
+      } catch (err) {
+        console.error("Default inbox auto-provision fallback failed:", err);
+      }
     }
 
-    const inbox = getInboxById(inboxId);
-    const targetEmail = inbox ? inbox.email_address.toLowerCase().trim() : "";
+    const userInboxes = getInboxes(userEmail);
+    const userKeys = getApiKeys(userEmail);
+    const userDomains = getDomains(userEmail);
+    const userAgents = getAgents(userEmail);
+    const userWebhooks = getWebhooks(userEmail);
 
-    let workerMessages: Message[] = [];
-    try {
-      const workerQuery = targetEmail ? `?recipient=${encodeURIComponent(targetEmail)}` : `?inbox_id=${encodeURIComponent(inboxId)}`;
-      const workerUrl = `https://agentkey-email-worker.saaqibheroindia.workers.dev/messages${workerQuery}`;
-      const res = await fetch(workerUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) });
-      if (res.ok) {
-        const json = await res.json();
-        if (json && Array.isArray(json.data)) {
-          workerMessages = json.data;
+    if (p === "/overview") {
+      return {
+        workspace: {
+          id: `ws_${userEmail ? Buffer.from(userEmail).toString("hex").slice(0, 12) : "live_primary"}`,
+          name: `${me.name || "Operator"}'s Workspace`,
+          plan: "pro",
+          outbound_enabled: true,
+          daily_send_limit: 1000,
+          max_inboxes: 50,
+          inbound_daily_limit: 5000,
+          pii_masking_enabled: true,
+        },
+        usage: { sent_today: 0, received_today: 0 },
+        counts: {
+          inboxes: userInboxes.length,
+          messages: 0,
+          pending_approvals: 0,
+          api_keys: userKeys.length,
+          verified_domains: (userDomains || []).filter((d) => d && d.status === "VERIFIED").length,
+        },
+        mail_domain: "agentkey.in",
+      } as unknown as T;
+    }
+
+    if (p === "/api-keys") {
+      return userKeys as unknown as T;
+    }
+
+    if (p.includes("/messages") || p === "/messages") {
+      const parts = p.split("/");
+      let inboxId = "";
+      if (parts[1] === "inboxes" && parts[2]) {
+        inboxId = parts[2];
+      } else {
+        inboxId = userInboxes[0]?.id || "inbox_primary_agent";
+      }
+
+      const inbox = getInboxById(inboxId);
+      const targetEmail = inbox ? inbox.email_address.toLowerCase().trim() : "";
+
+      let workerMessages: Message[] = [];
+      try {
+        const workerQuery = targetEmail ? `?recipient=${encodeURIComponent(targetEmail)}` : `?inbox_id=${encodeURIComponent(inboxId)}`;
+        const workerUrl = `https://agentkey-email-worker.saaqibheroindia.workers.dev/messages${workerQuery}`;
+        const res = await fetch(workerUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.data)) {
+            workerMessages = json.data;
+          }
+        }
+      } catch {
+        // Fallback to local store
+      }
+
+      // Strictly filter worker messages to prevent multi-tenant data leaks
+      const filteredWorker = workerMessages.filter((m: Message) => {
+        if (!m) return false;
+        const recipient = (m.recipient || "").toLowerCase().trim();
+        if (targetEmail) {
+          return recipient.includes(targetEmail);
+        }
+        if (inbox && inbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {
+          return recipient.includes("agent-01@agentkey.in");
+        }
+        return false;
+      });
+
+      const localMessages = getMessagesForInbox(inboxId);
+
+      // Merge and deduplicate by ID
+      const seenIds = new Set<string>();
+      const merged: Message[] = [];
+      for (const m of [...filteredWorker, ...localMessages]) {
+        if (m && m.id && !seenIds.has(m.id)) {
+          seenIds.add(m.id);
+          merged.push(m);
         }
       }
-    } catch {
-      // Fallback to local store
+      merged.sort((a, b) => (new Date(b?.created_at || 0).getTime() - new Date(a?.created_at || 0).getTime()));
+
+      return { data: merged } as unknown as T;
     }
-
-    // Strictly filter worker messages to prevent multi-tenant data leaks
-    const filteredWorker = workerMessages.filter((m: Message) => {
-      if (!m) return false;
-      const recipient = (m.recipient || "").toLowerCase().trim();
-      if (targetEmail) {
-        return recipient.includes(targetEmail);
-      }
-      if (inbox && inbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {
-        return recipient.includes("agent-01@agentkey.in");
-      }
-      return false;
-    });
-
-    const localMessages = getMessagesForInbox(inboxId);
-
-    // Merge and deduplicate by ID
-    const seenIds = new Set<string>();
-    const merged: Message[] = [];
-    for (const m of [...filteredWorker, ...localMessages]) {
-      if (m && m.id && !seenIds.has(m.id)) {
-        seenIds.add(m.id);
-        merged.push(m);
-      }
-    }
-    merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    return { data: merged } as unknown as T;
-  }
 
   if (p === "/inboxes" || p.startsWith("/inboxes")) {
     if (p.includes("/") && p.split("/").length > 2 && !p.endsWith("/inboxes")) {
@@ -360,6 +365,13 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   return { data: [] } as unknown as T;
+  } catch (err) {
+    console.error(`Error in getResilientFallback for path ${path}:`, err);
+    if (path.includes("/api-keys") || path.includes("/hitl/policies")) {
+      return [] as unknown as T;
+    }
+    return { data: [] } as unknown as T;
+  }
 }
 
 /** Call the AgentKey API as the signed-in user. Fast and resilient against backend downtime. */
@@ -451,7 +463,7 @@ export type Inbox = {
   id: string;
   email_address: string;
   status: string;
-  client_id: string | null;
+  client_id?: string | null;
   owner_name?: string | null;
   display_title?: string | null;
   phone_number?: string | null;

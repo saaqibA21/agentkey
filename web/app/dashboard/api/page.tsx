@@ -221,30 +221,30 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                     Verifiable Passport &amp; Integration Snippet
                   </summary>
 
-                  <div className="mt-3 space-y-3 rounded-xl border border-line bg-black/40 p-4">
+                  <div className="mt-3 space-y-3 rounded-xl border border-[#2E3038] bg-[#1A1B21] p-4 text-[#F2ECE1]">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
                           Cryptographic Passport Token (HMAC-SHA256)
                         </span>
                         <CopyButton value={a.passport} />
                       </div>
-                      <div className="mt-1.5 overflow-x-auto rounded-lg border border-line/80 bg-black/60 p-2.5 font-mono text-xs text-sky-300">
+                      <div className="mt-1.5 overflow-x-auto rounded-lg border border-[#2E3038] bg-[#141518] p-2.5 font-mono text-xs text-sky-300">
                         {a.passport}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-4 text-xs">
-                      <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
-                        <span className="text-muted block">Accountability</span>
-                        <span className="font-medium text-white">VERIFIED_HUMAN_OPERATOR</span>
+                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
+                        <span className="text-[#8C8A94] block">Accountability</span>
+                        <span className="font-medium text-[#FAF5EE]">VERIFIED_HUMAN_OPERATOR</span>
                       </div>
-                      <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
-                        <span className="text-muted block">Trust Score</span>
+                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
+                        <span className="text-[#8C8A94] block">Trust Score</span>
                         <span className="font-semibold text-sky-400">99.0 / 100</span>
                       </div>
-                      <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
-                        <span className="text-muted block">Unique Avatar</span>
+                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
+                        <span className="text-[#8C8A94] block">Unique Avatar</span>
                         <a
                           href={a.avatar_url ?? `/v1/agents/${a.id}/avatar.svg`}
                           target="_blank"
@@ -254,8 +254,8 @@ const { verified, agent, owner, trust_score } = await res.json();`;
                           View Vector SVG
                         </a>
                       </div>
-                      <div className="rounded-lg border border-line/50 bg-white/[0.02] p-2.5">
-                        <span className="text-muted block">Public Attestation</span>
+                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
+                        <span className="text-[#8C8A94] block">Public Attestation</span>
                         <a
                           href={`/v1/auth/agent/verify/${a.id}`}
                           target="_blank"
@@ -269,28 +269,27 @@ const { verified, agent, owner, trust_score } = await res.json();`;
 
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
                           OAuth 2.1 &amp; OpenID Connect UserInfo URL
                         </span>
                         <CopyButton value={`${publicApiUrl}/oauth/userinfo`} />
                       </div>
-                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line/80 bg-black/60 p-2.5 font-mono text-xs text-sky-300">
+                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#2E3038] bg-[#141518] p-2.5 font-mono text-xs text-sky-300">
                         <span>GET {publicApiUrl}/oauth/userinfo</span>
-                        <Link href="/dashboard/oauth" className="text-xs text-white underline hover:text-sky-300">
+                        <Link href="/dashboard/oauth" className="text-xs text-sky-400 underline hover:text-sky-300">
                           Register Client ID &amp; OAuth Portal →
                         </Link>
                       </div>
                     </div>
 
-
                     <div className="pt-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
                           Third-Party Website Middleware (Node.js / Express)
                         </span>
                         <CopyButton value={verifySnippet} />
                       </div>
-                      <pre className="mt-1.5 overflow-x-auto rounded-lg border border-line/80 bg-black/60 p-3 font-mono text-xs text-muted">
+                      <pre className="mt-1.5 overflow-x-auto rounded-lg border border-[#2E3038] bg-[#141518] p-3 font-mono text-xs text-[#8C8A94]">
                         {verifySnippet}
                       </pre>
                     </div>

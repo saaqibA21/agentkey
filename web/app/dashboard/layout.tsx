@@ -17,7 +17,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   // Auto-provision a fresh dedicated inbox for any new user upon first dashboard visit
   if (email && email.toLowerCase() !== "operator@agentkey.in") {
-    getOrCreateDefaultInbox(email, session.user.name ?? undefined);
+    try {
+      getOrCreateDefaultInbox(email, session.user.name ?? undefined);
+    } catch (err) {
+      console.error("Auto-provision default inbox failed in layout:", err);
+    }
   }
 
   const adminEmails = (process.env.ADMIN_EMAILS ?? "")

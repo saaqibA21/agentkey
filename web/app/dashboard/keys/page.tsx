@@ -12,8 +12,14 @@ const scopes = [
 ] as const;
 
 export default async function KeysPage() {
-  const keysRaw = await api<ApiKey[]>("/api-keys");
-  const keys: ApiKey[] = (Array.isArray(keysRaw) ? keysRaw : ((keysRaw as any)?.data ?? [])).filter((k: ApiKey) => !k?.revoked_at && k?.name !== "root");
+  let keys: ApiKey[] = [];
+  try {
+    const keysRaw = await api<ApiKey[]>("/api-keys");
+    const arr = Array.isArray(keysRaw) ? keysRaw : ((keysRaw as any)?.data ?? []);
+    keys = (Array.isArray(arr) ? arr : []).filter((k: ApiKey) => k && !k.revoked_at && k.name !== "root");
+  } catch (err) {
+    console.error("Error loading keys:", err);
+  }
 
   return (
     <>
@@ -51,23 +57,26 @@ export default async function KeysPage() {
 
       <div className="mt-4 space-y-2">
         {keys.length === 0 && <Empty title="No keys yet">Create one above and paste it into your agent&apos;s config.</Empty>}
-        {keys.map((key) => (
-          <Card key={key.id} className="flex flex-wrap items-center gap-3 !py-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{key.name}</p>
-              <p className="font-mono text-xs text-muted">{key.key_prefix}… · created {timeAgo(key.created_at)}</p>
-            </div>
-            <div className="flex gap-1">
-              {key.scopes.map((s) => (
-                <Badge key={s} tone={s === "send" || s === "connect" ? "warn" : "neutral"}>{s}</Badge>
-              ))}
-            </div>
-            <ActionForm action={revokeKey} submit="Revoke" variant="danger"
-                        confirm={`Revoke "${key.name}"? Agents using it stop working immediately.`}>
-              <input type="hidden" name="id" value={key.id} />
-            </ActionForm>
-          </Card>
-        ))}
+        {keys.map((key) => {
+          const scopesList = Array.isArray(key?.scopes) ? key.scopes : [];
+          return (
+            <Card key={key.id} className="flex flex-wrap items-center gap-3 !py-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">{key.name}</p>
+                <p className="font-mono text-xs text-muted">{key.key_prefix}… · created {timeAgo(key.created_at)}</p>
+              </div>
+              <div className="flex gap-1">
+                {scopesList.map((s) => (
+                  <Badge key={s} tone={s === "send" || s === "connect" ? "warn" : "neutral"}>{s}</Badge>
+                ))}
+              </div>
+              <ActionForm action={revokeKey} submit="Revoke" variant="danger"
+                          confirm={`Revoke "${key.name}"? Agents using it stop working immediately.`}>
+                <input type="hidden" name="id" value={key.id} />
+              </ActionForm>
+            </Card>
+          );
+        })}
       </div>
     </>
   );

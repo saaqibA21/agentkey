@@ -41,11 +41,11 @@ export default async function IdentityPage({
   const error = params?.error;
 
   const [appsRaw, providersRaw, connectionsRaw, loginsRaw, requestsRaw] = await Promise.all([
-    api<{ data: { client_id: string; client_name: string; redirect_host: string; scopes: string[]; last_authorized_at: string }[] }>("/oauth/grants"),
-    api<{ data: { id: string; name: string }[] }>("/connections/providers"),
-    api<{ data: Connection[] }>("/connections"),
-    api<{ data: Login[] }>("/vault/items"),
-    api<{ data: AccessRequest[] }>("/vault/requests"),
+    api<{ data: { client_id: string; client_name: string; redirect_host: string; scopes: string[]; last_authorized_at: string }[] }>("/oauth/grants").catch(() => ({ data: [] })),
+    api<{ data: { id: string; name: string }[] }>("/connections/providers").catch(() => ({ data: [] })),
+    api<{ data: Connection[] }>("/connections").catch(() => ({ data: [] })),
+    api<{ data: Login[] }>("/vault/items").catch(() => ({ data: [] })),
+    api<{ data: AccessRequest[] }>("/vault/requests").catch(() => ({ data: [] })),
   ]);
   const apps = appsRaw ?? { data: [] };
   const providers = providersRaw ?? { data: [] };
