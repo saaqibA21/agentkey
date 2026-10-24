@@ -337,13 +337,31 @@ export function validateApiKey(providedKey: string): {
   return { valid: false, scopes: [] };
 }
 
+export function isOperatorOrAdmin(email?: string): boolean {
+  if (!email) return false;
+  const lower = email.toLowerCase().trim();
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .toLowerCase()
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
+  return lower === "operator@agentkey.in" || adminEmails.includes(lower);
+}
+
 // ---------------------------------------------------------------------------
 // Inbox Methods
 // ---------------------------------------------------------------------------
 
 export function getInboxes(ownerEmail?: string): InboxRecord[] {
   const store = getStore();
-  return store.inboxes;
+  if (!ownerEmail) return store.inboxes;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return store.inboxes;
+  }
+  return store.inboxes.filter(
+    (i) => i.owner_email && i.owner_email.toLowerCase().trim() === lower
+  );
 }
 
 export function getInboxById(id: string): InboxRecord | undefined {
@@ -351,6 +369,38 @@ export function getInboxById(id: string): InboxRecord | undefined {
   return store.inboxes.find(
     (i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase()
   );
+}
+
+export function getOrCreateDefaultInbox(ownerEmail: string, ownerName?: string): InboxRecord {
+  const store = getStore();
+  const lower = ownerEmail.toLowerCase().trim();
+  const existing = store.inboxes.find(
+    (i) => i.owner_email && i.owner_email.toLowerCase().trim() === lower
+  );
+  if (existing) return existing;
+
+  // Clean and derive friendly agent username from the email prefix
+  const rawPrefix = lower.split("@")[0].replace(/[^a-z0-9_-]/g, "");
+  const baseUsername = rawPrefix.slice(0, 18) || "agent";
+
+  // Check if candidate email is already taken
+  let candidateUsername = `${baseUsername}-bot`;
+  const isTaken = (u: string) =>
+    store.inboxes.some((i) => i.email_address.toLowerCase() === `${u}@agentkey.in`.toLowerCase());
+
+  if (isTaken(candidateUsername)) {
+    candidateUsername = `${baseUsername}-${crypto.randomBytes(2).toString("hex")}`;
+  }
+
+  const name = ownerName || ownerEmail.split("@")[0] || "Operator";
+  const newInbox = createInboxRecord({
+    username: candidateUsername,
+    owner_name: name,
+    display_title: `${name}'s Agent`,
+    owner_email: lower,
+  });
+
+  return newInbox;
 }
 
 export function createInboxRecord(params: {
@@ -377,7 +427,7 @@ export function createInboxRecord(params: {
     owner_name: params.owner_name || "Autonomous Agent",
     display_title: params.display_title || "Agent Mailbox",
     phone_number: params.phone_number || undefined,
-    owner_email: params.owner_email || undefined,
+    owner_email: params.owner_email ? params.owner_email.toLowerCase().trim() : undefined,
     created_at: new Date().toISOString(),
   };
 
@@ -386,13 +436,39 @@ export function createInboxRecord(params: {
   return inbox;
 }
 
+export function deleteInboxRecord(id: string, ownerEmail?: string): boolean {
+  const store = getStore();
+  if (id === "inbox_primary_agent") return false; // Protected system inbox
+
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const inbox = store.inboxes.find((i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase());
+  if (!inbox) return false;
+  if (!isAdmin && inbox.owner_email && inbox.owner_email.toLowerCase().trim() !== lower) {
+    return false; // Unauthorized
+  }
+
+  const initialLen = store.inboxes.length;
+  store.inboxes = store.inboxes.filter((i) => i.id !== inbox.id);
+  saveStore(store);
+  return store.inboxes.length < initialLen;
+}
+
 // ---------------------------------------------------------------------------
 // Agent Methods
 // ---------------------------------------------------------------------------
 
 export function getAgents(ownerEmail?: string): AgentRecord[] {
   const store = getStore();
-  return store.agents;
+  if (!ownerEmail) return store.agents;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return store.agents;
+  }
+  return store.agents.filter(
+    (a) => a.owner_email && a.owner_email.toLowerCase().trim() === lower
+  );
 }
 
 export function createAgentRecord(params: {
@@ -437,6 +513,15 @@ export function createAgentRecord(params: {
 
 export function deleteAgentRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const agent = store.agents.find((a) => a.id === id);
+  if (!agent) return false;
+  if (!isAdmin && agent.owner_email && agent.owner_email.toLowerCase().trim() !== lower) {
+    return false; // Unauthorized
+  }
+
   const initialLen = store.agents.length;
   store.agents = store.agents.filter((a) => a.id !== id);
   saveStore(store);
@@ -449,7 +534,14 @@ export function deleteAgentRecord(id: string, ownerEmail?: string): boolean {
 
 export function getWebhooks(ownerEmail?: string): Webhook[] {
   const store = getStore();
-  return store.webhooks;
+  if (!ownerEmail) return store.webhooks;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return store.webhooks;
+  }
+  return store.webhooks.filter(
+    (w) => w.owner_email && w.owner_email.toLowerCase().trim() === lower
+  );
 }
 
 export function createWebhookRecord(
@@ -469,7 +561,7 @@ export function createWebhookRecord(
     event_types: eventTypes.length ? eventTypes : ["*"],
     is_active: true,
     secret_token: secret,
-    owner_email: ownerEmail,
+    owner_email: ownerEmail ? ownerEmail.toLowerCase().trim() : undefined,
     created_at: new Date().toISOString(),
   };
 
@@ -478,8 +570,17 @@ export function createWebhookRecord(
   return { webhook: hook, secret_token: secret };
 }
 
-export function deleteWebhookRecord(id: string): boolean {
+export function deleteWebhookRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const hook = store.webhooks.find((w) => w.id === id);
+  if (!hook) return false;
+  if (!isAdmin && hook.owner_email && hook.owner_email.toLowerCase().trim() !== lower) {
+    return false; // Unauthorized
+  }
+
   const initialLen = store.webhooks.length;
   store.webhooks = store.webhooks.filter((w) => w.id !== id);
   saveStore(store);
@@ -537,7 +638,14 @@ export async function dispatchWebhooks(event: string, payload: any) {
 
 export function getDomains(ownerEmail?: string): Domain[] {
   const store = getStore();
-  return store.domains;
+  if (!ownerEmail) return store.domains;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return store.domains;
+  }
+  return store.domains.filter(
+    (d) => d.id === "dom_agentkey_in" || (d.owner_email && d.owner_email.toLowerCase().trim() === lower)
+  );
 }
 
 export function addDomainRecord(name: string, ownerEmail?: string): Domain {

@@ -100,6 +100,16 @@ export default {
         }
       }
 
+      // Filter by recipient or inbox if query param supplied
+      const reqRecipient = url.searchParams.get("recipient") || url.searchParams.get("to");
+      const reqInboxId = url.searchParams.get("inbox_id");
+      if (reqRecipient) {
+        const lower = reqRecipient.toLowerCase().trim();
+        messages = messages.filter((m) => m.recipient && m.recipient.toLowerCase().includes(lower));
+      } else if (reqInboxId) {
+        messages = messages.filter((m) => m.inbox_id === reqInboxId);
+      }
+
       return new Response(JSON.stringify({ data: messages }), {
         headers: {
           "Content-Type": "application/json",

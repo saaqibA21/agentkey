@@ -3,7 +3,16 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { getAgents, getApiKeys, getDomains, getInboxes, getWebhooks } from "./agent-store";
+import {
+  getAgents,
+  getApiKeys,
+  getDomains,
+  getInboxById,
+  getInboxes,
+  getOrCreateDefaultInbox,
+  getWebhooks,
+  isOperatorOrAdmin,
+} from "./agent-store";
 import { getMessagesForInbox } from "./inbox-store";
 
 const DEFAULT_API_URL = process.env.NODE_ENV === "production" ? "https://agentkey-api.onrender.com" : "http://127.0.0.1:8000";
@@ -140,12 +149,25 @@ async function call(path: string, init: RequestInit | undefined, retry: boolean)
 
 async function getResilientFallback<T>(path: string): Promise<T> {
   const p = path.split("?")[0].replace(/\/$/, "");
+  const me = await identity();
+  const userEmail = me.email?.toLowerCase().trim();
+
+  // If user is logged in (not default operator fallback), ensure they have a default inbox
+  if (userEmail && userEmail !== "operator@agentkey.in") {
+    getOrCreateDefaultInbox(userEmail, me.name);
+  }
+
+  const userInboxes = getInboxes(userEmail);
+  const userKeys = getApiKeys(userEmail);
+  const userDomains = getDomains(userEmail);
+  const userAgents = getAgents(userEmail);
+  const userWebhooks = getWebhooks(userEmail);
 
   if (p === "/overview") {
     return {
       workspace: {
-        id: "ws_live_primary",
-        name: "Autonomous Workspace",
+        id: `ws_${userEmail ? Buffer.from(userEmail).toString("hex").slice(0, 12) : "live_primary"}`,
+        name: `${me.name}'s Workspace`,
         plan: "pro",
         outbound_enabled: true,
         daily_send_limit: 1000,
@@ -154,47 +176,99 @@ async function getResilientFallback<T>(path: string): Promise<T> {
         pii_masking_enabled: true,
       },
       usage: { sent_today: 0, received_today: 0 },
-      counts: { inboxes: 1, messages: 0, pending_approvals: 0, api_keys: 1, verified_domains: 1 },
+      counts: {
+        inboxes: userInboxes.length,
+        messages: 0,
+        pending_approvals: 0,
+        api_keys: userKeys.length,
+        verified_domains: userDomains.filter((d) => d.status === "VERIFIED").length,
+      },
       mail_domain: "agentkey.in",
     } as unknown as T;
   }
 
   if (p === "/api-keys") {
-    return getApiKeys() as unknown as T;
+    return userKeys as unknown as T;
   }
 
   if (p.includes("/messages") || p === "/messages") {
+    const parts = p.split("/");
+    let inboxId = "";
+    if (parts[1] === "inboxes" && parts[2]) {
+      inboxId = parts[2];
+    } else {
+      inboxId = userInboxes[0]?.id || "inbox_primary_agent";
+    }
+
+    const inbox = getInboxById(inboxId);
+    const targetEmail = inbox ? inbox.email_address.toLowerCase().trim() : "";
+
+    let workerMessages: Message[] = [];
     try {
-      const workerUrl = "https://agentkey-email-worker.saaqibheroindia.workers.dev/messages";
+      const workerQuery = targetEmail ? `?recipient=${encodeURIComponent(targetEmail)}` : `?inbox_id=${encodeURIComponent(inboxId)}`;
+      const workerUrl = `https://agentkey-email-worker.saaqibheroindia.workers.dev/messages${workerQuery}`;
       const res = await fetch(workerUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) });
       if (res.ok) {
         const json = await res.json();
-        if (json && Array.isArray(json.data) && json.data.length > 0) {
-          return json as T;
+        if (json && Array.isArray(json.data)) {
+          workerMessages = json.data;
         }
       }
     } catch {
       // Fallback to local store
     }
-    const parts = p.split("/");
-    const inboxId = parts[2] || "inbox_primary_agent";
-    const messages = getMessagesForInbox(inboxId);
-    return { data: messages } as unknown as T;
+
+    // Strictly filter worker messages to prevent multi-tenant data leaks
+    const filteredWorker = workerMessages.filter((m: Message) => {
+      if (!m) return false;
+      const recipient = (m.recipient || "").toLowerCase().trim();
+      if (targetEmail) {
+        return recipient.includes(targetEmail);
+      }
+      if (inbox && inbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {
+        return recipient.includes("agent-01@agentkey.in");
+      }
+      return false;
+    });
+
+    const localMessages = getMessagesForInbox(inboxId);
+
+    // Merge and deduplicate by ID
+    const seenIds = new Set<string>();
+    const merged: Message[] = [];
+    for (const m of [...filteredWorker, ...localMessages]) {
+      if (m && m.id && !seenIds.has(m.id)) {
+        seenIds.add(m.id);
+        merged.push(m);
+      }
+    }
+    merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    return { data: merged } as unknown as T;
   }
 
   if (p === "/inboxes" || p.startsWith("/inboxes")) {
-    const inboxes = getInboxes();
     if (p.includes("/") && p.split("/").length > 2 && !p.endsWith("/inboxes")) {
       const id = p.split("/")[2];
-      const match = inboxes.find((i) => i.id === id || i.email_address === id);
-      return (match || inboxes[0]) as unknown as T;
+      const match = userInboxes.find((i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase());
+      if (match) return match as unknown as T;
+
+      // Allow operator/admin access to any inbox
+      if (isOperatorOrAdmin(userEmail)) {
+        const all = getInboxes();
+        const adminMatch = all.find((i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase());
+        if (adminMatch) return adminMatch as unknown as T;
+      }
+
+      if (userInboxes.length > 0) return userInboxes[0] as unknown as T;
+      throw new ApiError(404, "Inbox not found");
     }
-    return inboxes as unknown as T;
+    return userInboxes as unknown as T;
   }
 
   if (p === "/domains") {
     return {
-      data: getDomains(),
+      data: userDomains,
     } as unknown as T;
   }
 
@@ -229,7 +303,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/agents") {
-    return { data: getAgents() } as unknown as T;
+    return { data: userAgents } as unknown as T;
   }
 
   if (p.startsWith("/hitl/pending") || p.startsWith("/hitl/held")) {
@@ -241,7 +315,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/webhooks") {
-    return getWebhooks() as unknown as T;
+    return userWebhooks as unknown as T;
   }
 
   if (p === "/admin/stats") {

@@ -13,6 +13,7 @@ import {
   createWebhookRecord,
   deleteAgentRecord,
   deleteDomainRecord,
+  deleteInboxRecord,
   deleteWebhookRecord,
   revokeApiKeyRecord,
   verifyDomainRecord,
@@ -87,7 +88,13 @@ export async function resolveInboxLink(_: ActionState, form: FormData): Promise<
 
 export async function deleteInbox(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/inboxes", async () => {
-    await api(`/inboxes/${text(form, "id")}?purge=${form.get("purge") === "on"}`, { method: "DELETE" });
+    const session = await auth();
+    const id = text(form, "id");
+    try {
+      await api(`/inboxes/${id}?purge=${form.get("purge") === "on"}`, { method: "DELETE" });
+    } catch {
+      deleteInboxRecord(id, session?.user?.email || undefined);
+    }
   });
 }
 

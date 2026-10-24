@@ -25,7 +25,7 @@ export function InboxMessageList({
   async function fetchLatest() {
     try {
       setIsRefreshing(true);
-      const res = await fetch("/api/inbound/messages?t=" + Date.now(), { cache: "no-store" });
+      const res = await fetch(`/api/inbound/messages?inbox_id=${encodeURIComponent(inboxId)}&t=${Date.now()}`, { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data)) {
@@ -89,7 +89,7 @@ export function InboxMessageList({
   }
 
   function handleAutoDraft(m: Message) {
-    const draft = `Hello,\n\nThank you for reaching out! This is an autonomous response from your AI agent (agent-01@agentkey.in).\n\nWe received your inquiry regarding "${m.subject || "your message"}" and have processed your instructions successfully.\n\nBest regards,\nAgent-01 (AgentKey Autonomous Identity)`;
+    const draft = `Hello,\n\nThank you for reaching out! This is an autonomous response from your AI agent.\n\nWe received your inquiry regarding "${m.subject || "your message"}" and have processed your instructions successfully.\n\nBest regards,\nAgentKey Autonomous Identity`;
     setReplyText(draft);
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storeMessage } from "@/lib/inbox-store";
-import { dispatchWebhooks, safeEqual } from "@/lib/agent-store";
+import { dispatchWebhooks, getInboxById, getInboxes, safeEqual } from "@/lib/agent-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 import type { Message } from "@/lib/api";
 
@@ -164,9 +164,15 @@ export async function POST(req: NextRequest) {
 
     const extracted = extractEdgeData(bodyText, subject);
 
+    const cleanRecipient = recipient.toLowerCase().trim();
+    const matchedInbox =
+      getInboxById(cleanRecipient) ||
+      getInboxes().find((i) => i.email_address.toLowerCase().trim() === cleanRecipient);
+    const assignedInboxId = matchedInbox ? matchedInbox.id : (payload.inbox_id || "inbox_primary_agent");
+
     const message: Message = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      inbox_id: "inbox_primary_agent",
+      inbox_id: assignedInboxId,
       thread_id: `thr_${Date.now()}`,
       channel: "EMAIL",
       direction: "INBOUND",

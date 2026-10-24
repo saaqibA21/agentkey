@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { auth, signOut } from "@/auth";
 import { DashboardNav } from "@/components/nav";
 import { Logo } from "@/components/site";
+import { getOrCreateDefaultInbox } from "@/lib/agent-store";
 
 export const metadata = { title: "Dashboard · AgentKey" };
 
@@ -13,6 +14,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   const email = session.user.email ?? "";
   const initial = email.charAt(0).toUpperCase() || "S";
+
+  // Auto-provision a fresh dedicated inbox for any new user upon first dashboard visit
+  if (email && email.toLowerCase() !== "operator@agentkey.in") {
+    getOrCreateDefaultInbox(email, session.user.name ?? undefined);
+  }
 
   const adminEmails = (process.env.ADMIN_EMAILS ?? "")
     .toLowerCase()

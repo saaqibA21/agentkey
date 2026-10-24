@@ -10,6 +10,7 @@ import {
   getInboxById,
   getInboxes,
   getWebhooks,
+  isOperatorOrAdmin,
   validateApiKey,
   verifyDomainRecord,
 } from "@/lib/agent-store";
@@ -105,21 +106,53 @@ export async function GET(
         { status: 404 }
       );
     }
+    if (
+      inbox.owner_email &&
+      auth.ownerEmail &&
+      inbox.owner_email.toLowerCase().trim() !== auth.ownerEmail.toLowerCase().trim() &&
+      !isOperatorOrAdmin(auth.ownerEmail)
+    ) {
+      return NextResponse.json(
+        { status: 403, title: "Forbidden", detail: "You do not have permission to access this inbox." },
+        { status: 403 }
+      );
+    }
     return NextResponse.json(inbox);
   }
 
   // 3. GET /v1/inboxes/[id]/messages
   if (slug[0] === "inboxes" && slug[2] === "messages" && slug.length === 3) {
     const inboxId = slug[1];
-    // Sync latest from Cloudflare worker KV
+    const inbox = getInboxById(inboxId);
+    if (!inbox) {
+      return NextResponse.json(
+        { status: 404, title: "Not Found", detail: `Inbox '${inboxId}' not found.` },
+        { status: 404 }
+      );
+    }
+    if (
+      inbox.owner_email &&
+      auth.ownerEmail &&
+      inbox.owner_email.toLowerCase().trim() !== auth.ownerEmail.toLowerCase().trim() &&
+      !isOperatorOrAdmin(auth.ownerEmail)
+    ) {
+      return NextResponse.json(
+        { status: 403, title: "Forbidden", detail: "You do not have permission to view messages from this inbox." },
+        { status: 403 }
+      );
+    }
+
+    // Sync latest from Cloudflare worker KV filtered strictly by recipient
     try {
-      const workerUrl = "https://agentkey-email-worker.saaqibheroindia.workers.dev/messages";
+      const workerUrl = `https://agentkey-email-worker.saaqibheroindia.workers.dev/messages?recipient=${encodeURIComponent(inbox.email_address)}`;
       const cfRes = await fetch(workerUrl, { cache: "no-store", signal: AbortSignal.timeout(2500) });
       if (cfRes.ok) {
         const json = await cfRes.json();
         if (json && Array.isArray(json.data)) {
           for (const m of json.data) {
-            storeMessage(m);
+            if (m.recipient && m.recipient.toLowerCase().includes(inbox.email_address.toLowerCase())) {
+              storeMessage(m);
+            }
           }
         }
       }
@@ -127,7 +160,7 @@ export async function GET(
       // ignore network errors
     }
 
-    const messages = getMessagesForInbox(inboxId, 50);
+    const messages = getMessagesForInbox(inbox.id, 50);
     return NextResponse.json({ data: messages });
   }
 

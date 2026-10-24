@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createInboxRecord,
+  getInboxById,
   getInboxes,
+  isOperatorOrAdmin,
   validateApiKey,
 } from "@/lib/agent-store";
 import { getMessagesForInbox, storeMessage } from "@/lib/inbox-store";
@@ -135,33 +137,53 @@ export async function POST(req: NextRequest) {
         resultText = JSON.stringify(inboxes, null, 2);
       } else if (name === "inbox_get_messages") {
         const inboxId = args.inbox_id || "inbox_primary_agent";
-        const messages = getMessagesForInbox(inboxId, args.limit || 20);
-        resultText = JSON.stringify({ count: messages.length, messages }, null, 2);
+        const inbox = getInboxById(inboxId);
+        if (
+          inbox?.owner_email &&
+          auth.ownerEmail &&
+          inbox.owner_email.toLowerCase().trim() !== auth.ownerEmail.toLowerCase().trim() &&
+          !isOperatorOrAdmin(auth.ownerEmail)
+        ) {
+          resultText = JSON.stringify({ error: "Forbidden: You do not own this inbox." });
+        } else {
+          const messages = getMessagesForInbox(inboxId, args.limit || 20);
+          resultText = JSON.stringify({ count: messages.length, messages }, null, 2);
+        }
       } else if (name === "inbox_wait_otp") {
         const inboxId = args.inbox_id || "inbox_primary_agent";
-        const timeout = Math.min(Number(args.timeout_seconds || 15), 25);
-        const deadline = Date.now() + timeout * 1000;
-        let foundOtp: string | null = null;
+        const inbox = getInboxById(inboxId);
+        if (
+          inbox?.owner_email &&
+          auth.ownerEmail &&
+          inbox.owner_email.toLowerCase().trim() !== auth.ownerEmail.toLowerCase().trim() &&
+          !isOperatorOrAdmin(auth.ownerEmail)
+        ) {
+          resultText = JSON.stringify({ error: "Forbidden: You do not own this inbox." });
+        } else {
+          const timeout = Math.min(Number(args.timeout_seconds || 15), 25);
+          const deadline = Date.now() + timeout * 1000;
+          let foundOtp: string | null = null;
 
-        while (Date.now() <= deadline) {
-          const messages = getMessagesForInbox(inboxId, 10);
-          for (const msg of messages) {
-            const otp =
-              msg.extracted_data?.otp_code ||
-              msg.body_text?.match(/\b\d{4,8}\b/)?.[0] ||
-              (msg.subject ? msg.subject.match(/\b\d{4,8}\b/)?.[0] : null);
-            if (otp) {
-              foundOtp = otp;
-              break;
+          while (Date.now() <= deadline) {
+            const messages = getMessagesForInbox(inboxId, 10);
+            for (const msg of messages) {
+              const otp =
+                msg.extracted_data?.otp_code ||
+                msg.body_text?.match(/\b\d{4,8}\b/)?.[0] ||
+                (msg.subject ? msg.subject.match(/\b\d{4,8}\b/)?.[0] : null);
+              if (otp) {
+                foundOtp = otp;
+                break;
+              }
             }
+            if (foundOtp) break;
+            await new Promise((r) => setTimeout(r, 1000));
           }
-          if (foundOtp) break;
-          await new Promise((r) => setTimeout(r, 1000));
-        }
 
-        resultText = foundOtp
-          ? JSON.stringify({ success: true, otp_code: foundOtp })
-          : JSON.stringify({ success: false, detail: "Timeout waiting for OTP code." });
+          resultText = foundOtp
+            ? JSON.stringify({ success: true, otp_code: foundOtp })
+            : JSON.stringify({ success: false, detail: "Timeout waiting for OTP code." });
+        }
       } else if (name === "inbox_send_email") {
         const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const to = String(args.to || "").trim();
