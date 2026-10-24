@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 
 export default function DashboardError({
@@ -10,8 +10,32 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const autoReloaded = useRef(false);
+
   useEffect(() => {
     console.error("AgentKey Dashboard Error:", error);
+
+    // Auto-reload once on stale-build errors (server action not found, chunk load failures)
+    if (!autoReloaded.current) {
+      const msg = (error?.message ?? "").toLowerCase();
+      const digest = (error?.digest ?? "").toLowerCase();
+      const isStale =
+        msg.includes("chunk") ||
+        msg.includes("loading chunk") ||
+        msg.includes("action") ||
+        msg.includes("not found") ||
+        msg.includes("failed to fetch") ||
+        msg.includes("server action") ||
+        msg.includes("invalid server") ||
+        digest.includes("action") ||
+        digest.includes("redirect");
+
+      if (isStale) {
+        autoReloaded.current = true;
+        window.location.reload();
+        return;
+      }
+    }
   }, [error]);
 
   return (
@@ -27,26 +51,25 @@ export default function DashboardError({
             />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-[#18191B]">Dashboard View Resumed</h2>
+        <h2 className="text-xl font-bold text-[#18191B]">New update available</h2>
         <p className="mt-2 text-xs text-[#64646A] leading-relaxed">
-          {error?.message && !error.message.includes("Minified")
-            ? error.message
-            : "An unexpected condition occurred while rendering this workspace view. The session has been safely preserved."}
+          A new version of AgentKey was deployed. Please refresh to load the latest changes.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => window.location.reload()}
             className="w-full sm:w-auto rounded-full bg-[#18191B] px-5 py-2 text-xs font-semibold text-[#FAF5EE] shadow-sm transition hover:bg-black"
           >
-            Retry View
+            Refresh Now
           </button>
-          <Link
-            href="/dashboard"
+          <button
+            type="button"
+            onClick={() => reset()}
             className="w-full sm:w-auto rounded-full border border-[#DDD4C2] bg-white px-5 py-2 text-xs font-semibold text-[#18191B] transition hover:bg-[#F7F2EB]"
           >
-            Refresh Dashboard
-          </Link>
+            Try Again
+          </button>
         </div>
       </div>
     </div>

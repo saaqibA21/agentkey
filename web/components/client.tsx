@@ -65,7 +65,18 @@ export function ActionForm({
   action: Action; children?: ReactNode; submit: ReactNode; variant?: keyof typeof buttonStyles;
   confirm?: string; className?: string;
 }) {
-  const [state, formAction] = useActionState(action, null);
+  const wrappedAction = async (prevState: ActionState, formData: FormData): Promise<ActionState> => {
+    try {
+      return await action(prevState, formData);
+    } catch (err: unknown) {
+      console.error("Action execution caught error:", err);
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+      return { error: "Refreshing page to apply updates..." };
+    }
+  };
+  const [state, formAction] = useActionState(wrappedAction, null);
   return (
     <form action={formAction} className={className}>
       {children}
