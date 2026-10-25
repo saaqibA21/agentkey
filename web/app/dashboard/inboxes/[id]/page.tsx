@@ -117,9 +117,9 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <Link href="/dashboard/inboxes" className="text-xs font-medium text-muted hover:text-ink">
+      <a href="/dashboard/inboxes" className="text-xs font-medium text-muted hover:text-ink">
         ← Back to Inboxes
-      </Link>
+      </a>
       <div className="mt-2.5">
         <PageHeader
           title={inbox.email_address}

@@ -7,6 +7,8 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { Logo } from "@/components/site";
 import { getOrCreateDefaultInbox } from "@/lib/agent-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const metadata = { title: "Dashboard · AgentKey" };
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {

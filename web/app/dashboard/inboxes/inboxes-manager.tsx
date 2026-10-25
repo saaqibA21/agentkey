@@ -262,13 +262,12 @@ export function InboxesManager({
               <Badge tone="good">Active</Badge>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Link
+                  <a
                     href={`/dashboard/inboxes/${inbox.id}`}
-                    prefetch={false}
                     className="font-mono text-sm font-semibold hover:underline text-ink"
                   >
                     {inbox.email_address}
-                  </Link>
+                  </a>
                   {inbox.owner_name && (
                     <Badge tone="purple">
                       OD-ID: {inbox.owner_name}
