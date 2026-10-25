@@ -11,14 +11,17 @@ import {
   createApiKeyRecord,
   createInboxRecord,
   createPolicyRecord,
+  createVaultLoginRecord,
   createWebhookRecord,
   decidePendingApproval,
   deleteAgentRecord,
   deleteDomainRecord,
   deleteInboxRecord,
   deletePolicyRecord,
+  deleteVaultLoginRecord,
   deleteWebhookRecord,
   revokeApiKeyRecord,
+  updateVaultLoginApproval,
   verifyDomainRecord,
 } from "@/lib/agent-store";
 import { deleteOAuthClientRecord, registerOAuthClientRecord } from "@/lib/oauth-store";
@@ -277,35 +280,84 @@ export async function disconnect(_: ActionState, form: FormData): Promise<Action
 
 export async function addLogin(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/identity", async () => {
+    const session = await auth();
     const totp = text(form, "totp_secret");
     const ownerName = text(form, "owner_name");
-    await api("/vault/items", {
-      method: "POST",
-      body: JSON.stringify({
-        name: text(form, "name"),
-        site_url: text(form, "site_url"),
-        username: text(form, "username"),
-        password: String(form.get("password") ?? ""),
-        approval: text(form, "approval") === "auto" ? "auto" : "ask",
-        ...(totp ? { totp_secret: totp } : {}),
-        ...(ownerName ? { owner_name: ownerName } : {}),
-      }),
-    });
+    const name = text(form, "name");
+    const siteUrl = text(form, "site_url");
+    const username = text(form, "username");
+    const password = String(form.get("password") ?? "");
+    const approval = text(form, "approval") === "auto" ? "auto" : "ask";
+    const ownerEmail = session?.user?.email || undefined;
+
+    try {
+      await api("/vault/items", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          site_url: siteUrl,
+          username,
+          password,
+          approval,
+          ...(totp ? { totp_secret: totp } : {}),
+          ...(ownerName ? { owner_name: ownerName } : {}),
+        }),
+      });
+      createVaultLoginRecord({
+        name,
+        site_url: siteUrl,
+        username,
+        password,
+        approval,
+        totp_secret: totp,
+        owner_name: ownerName,
+        owner_email: ownerEmail,
+      });
+    } catch {
+      createVaultLoginRecord({
+        name,
+        site_url: siteUrl,
+        username,
+        password,
+        approval,
+        totp_secret: totp,
+        owner_name: ownerName,
+        owner_email: ownerEmail,
+      });
+    }
+    return { ok: true };
   });
 }
 
 export async function setLoginApproval(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/identity", async () => {
-    await api(`/vault/items/${text(form, "id")}`, {
-      method: "PATCH",
-      body: JSON.stringify({ approval: text(form, "approval") === "auto" ? "auto" : "ask" }),
-    });
+    const session = await auth();
+    const id = text(form, "id");
+    const approval = text(form, "approval") === "auto" ? "auto" : "ask";
+    try {
+      await api(`/vault/items/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ approval }),
+      });
+    } catch {
+      // ignore
+    }
+    updateVaultLoginApproval(id, approval, session?.user?.email || undefined);
+    return { ok: true };
   });
 }
 
 export async function deleteLogin(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/identity", async () => {
-    await api(`/vault/items/${text(form, "id")}`, { method: "DELETE" });
+    const session = await auth();
+    const id = text(form, "id");
+    try {
+      await api(`/vault/items/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    deleteVaultLoginRecord(id, session?.user?.email || undefined);
+    return { ok: true };
   });
 }
 

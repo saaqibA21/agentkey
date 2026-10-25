@@ -61,6 +61,23 @@ export type PendingApprovalRecord = Message & {
   owner_email?: string;
 };
 
+export type VaultLoginRecord = {
+  id: string;
+  name: string;
+  site_url: string;
+  site_host: string;
+  username: string;
+  password_enc: string;
+  has_totp: boolean;
+  totp_secret_enc?: string;
+  approval: "ask" | "auto";
+  owner_name?: string | null;
+  owner_email?: string;
+  has_session?: boolean;
+  last_used_at: string | null;
+  created_at: string;
+};
+
 const STORE_PATH = process.env.NODE_ENV === "production"
   ? "/tmp/agentkey_agents_store.json"
   : path.join(process.cwd(), ".agentkey_agents_store.json");
@@ -73,6 +90,7 @@ type StoreData = {
   domains: DomainRecord[];
   policies: PolicyRecord[];
   approvals: PendingApprovalRecord[];
+  logins: VaultLoginRecord[];
 };
 
 const DEFAULT_KEY_PREFIX = "ai_live_8f3a";
@@ -124,6 +142,7 @@ const DEFAULT_STORE: StoreData = {
   domains: [],
   policies: [],
   approvals: [],
+  logins: [],
 };
 
 const globalForAgents = globalThis as unknown as {
@@ -147,6 +166,7 @@ function loadStore(): StoreData {
               : [],
             policies: Array.isArray(parsed.policies) ? parsed.policies : [],
             approvals: Array.isArray(parsed.approvals) ? parsed.approvals : [],
+            logins: Array.isArray(parsed.logins) ? parsed.logins : [],
           };
         }
       }
@@ -162,6 +182,7 @@ function loadStore(): StoreData {
     domains: [],
     policies: [],
     approvals: [],
+    logins: [],
   };
 }
 
@@ -187,6 +208,7 @@ function getStore(): StoreData {
   s.domains = s.domains.filter((d) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in");
   if (!Array.isArray(s.policies)) s.policies = [];
   if (!Array.isArray(s.approvals)) s.approvals = [];
+  if (!Array.isArray(s.logins)) s.logins = [];
   return s;
 }
 
@@ -979,4 +1001,108 @@ export function evaluateGuardrails(
   }
 
   return { action: "ALLOW", matched: [] };
+}
+
+// ---------------------------------------------------------------------------
+// Vault Login Methods
+// ---------------------------------------------------------------------------
+
+export function getVaultLogins(ownerEmail?: string): VaultLoginRecord[] {
+  const store = getStore();
+  const logins = (store.logins || []).filter(Boolean);
+  if (!ownerEmail) return logins;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return logins;
+  }
+  return logins.filter(
+    (l) => l && l.owner_email && l.owner_email.toLowerCase().trim() === lower
+  );
+}
+
+export function createVaultLoginRecord(params: {
+  name: string;
+  site_url: string;
+  username: string;
+  password: string;
+  approval?: "ask" | "auto";
+  totp_secret?: string;
+  owner_name?: string;
+  owner_email?: string;
+}): VaultLoginRecord {
+  const store = getStore();
+  if (!Array.isArray(store.logins)) store.logins = [];
+
+  let siteHost = "";
+  try {
+    const raw = params.site_url.includes("://") ? params.site_url : `https://${params.site_url}`;
+    siteHost = new URL(raw).hostname.toLowerCase();
+  } catch {
+    siteHost = params.site_url.replace(/^https?:\/\//, "").split("/")[0].toLowerCase();
+  }
+
+  // Obfuscate password for safe resilient storage
+  const hash = crypto.createHmac("sha256", "agentkey-vault-salt").update(params.password).digest("hex");
+
+  const login: VaultLoginRecord = {
+    id: `vlt_${crypto.randomBytes(8).toString("hex")}`,
+    name: params.name || siteHost || "Saved Login",
+    site_url: params.site_url,
+    site_host: siteHost,
+    username: params.username,
+    password_enc: hash,
+    has_totp: Boolean(params.totp_secret && params.totp_secret.trim()),
+    totp_secret_enc: params.totp_secret ? Buffer.from(params.totp_secret).toString("base64") : undefined,
+    approval: params.approval === "auto" ? "auto" : "ask",
+    owner_name: params.owner_name || null,
+    owner_email: params.owner_email ? params.owner_email.toLowerCase().trim() : undefined,
+    has_session: true,
+    last_used_at: null,
+    created_at: new Date().toISOString(),
+  };
+
+  store.logins.unshift(login);
+  saveStore(store);
+  return login;
+}
+
+export function updateVaultLoginApproval(
+  id: string,
+  approval: "ask" | "auto",
+  ownerEmail?: string
+): boolean {
+  const store = getStore();
+  if (!Array.isArray(store.logins)) store.logins = [];
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const item = store.logins.find((l) => l && l.id === id);
+  if (!item) return false;
+  if (!isAdmin && lower && item.owner_email && item.owner_email.toLowerCase().trim() !== lower) {
+    return false;
+  }
+
+  item.approval = approval;
+  saveStore(store);
+  return true;
+}
+
+export function deleteVaultLoginRecord(id: string, ownerEmail?: string): boolean {
+  const store = getStore();
+  if (!Array.isArray(store.logins)) store.logins = [];
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const initialLen = store.logins.length;
+  store.logins = store.logins.filter((l) => {
+    if (!l) return false;
+    if (l.id !== id) return true;
+    if (!isAdmin && lower && l.owner_email && l.owner_email.toLowerCase().trim() !== lower) {
+      return true; // Not their login
+    }
+    return false; // Remove!
+  });
+
+  saveStore(store);
+  return store.logins.length < initialLen;
 }

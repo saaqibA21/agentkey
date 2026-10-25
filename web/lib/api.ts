@@ -12,6 +12,7 @@ import {
   getOrCreateDefaultInbox,
   getPendingApprovals,
   getPolicies,
+  getVaultLogins,
   getWebhooks,
   isOperatorOrAdmin,
 } from "./agent-store";
@@ -304,7 +305,8 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p === "/vault/items" || p === "/vault/logins") {
-    return { data: [] } as unknown as T;
+    const userLogins = getVaultLogins(userEmail);
+    return { data: userLogins } as unknown as T;
   }
 
   if (p === "/vault/requests") {
