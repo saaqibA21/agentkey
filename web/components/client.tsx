@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { ActionState } from "@/app/dashboard/actions";
@@ -115,15 +114,8 @@ export function ActionForm({
   );
 }
 
-/** Re-fetch the server-rendered page on an interval so new mail appears without a manual reload. */
+/** Visual pulse indicator. */
 export function AutoRefresh({ seconds = 5 }: { seconds?: number }) {
-  const router = useRouter();
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") router.refresh();
-    }, seconds * 1000);
-    return () => clearInterval(id);
-  }, [router, seconds]);
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted">
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> Live

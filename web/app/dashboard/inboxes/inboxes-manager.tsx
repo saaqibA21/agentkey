@@ -73,9 +73,6 @@ export function InboxesManager({
         setOwnerName("");
         setDisplayTitle("");
         setPhoneNumber("");
-        startTransition(() => {
-          router.refresh();
-        });
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Network error. Please try again.";
@@ -100,10 +97,6 @@ export function InboxesManager({
         window.location.href = "/login";
         return;
       }
-
-      startTransition(() => {
-        router.refresh();
-      });
     } catch (err) {
       console.error("Error deleting inbox:", err);
     } finally {

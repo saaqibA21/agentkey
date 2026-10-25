@@ -71,9 +71,6 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
       if (json.domain) {
         setDomains((prev) => [json.domain, ...prev.filter((d) => d && d.id !== json.domain.id)]);
         setName("");
-        startTransition(() => {
-          router.refresh();
-        });
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Network error. Please try again.";
@@ -102,9 +99,6 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
         setDomains((prev) =>
           prev.map((d) => (d.id === id ? { ...d, ...json.domain } : d))
         );
-        startTransition(() => {
-          router.refresh();
-        });
       }
     } catch (err) {
       console.error("Error verifying domain:", err);
@@ -131,10 +125,6 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
         window.location.href = "/login";
         return;
       }
-
-      startTransition(() => {
-        router.refresh();
-      });
     } catch (err) {
       console.error("Error deleting domain:", err);
     } finally {
