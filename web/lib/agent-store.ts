@@ -460,6 +460,7 @@ export function getOrCreateDefaultInbox(ownerEmail: string, ownerName?: string):
 
 export function createInboxRecord(params: {
   username?: string;
+  domain?: string;
   owner_name?: string;
   display_title?: string;
   phone_number?: string;
@@ -470,7 +471,8 @@ export function createInboxRecord(params: {
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "");
 
-  const emailAddress = username.includes("@") ? username : `${username}@agentkey.in`;
+  const domain = (params.domain || "agentkey.in").toLowerCase().trim();
+  const emailAddress = username.includes("@") ? username : `${username}@${domain}`;
   if (!Array.isArray(store.inboxes)) store.inboxes = [];
   const existing = store.inboxes.find((i) => i && i.email_address && i.email_address.toLowerCase() === emailAddress.toLowerCase());
   if (existing) return existing;

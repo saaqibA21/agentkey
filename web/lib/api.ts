@@ -263,6 +263,10 @@ async function getResilientFallback<T>(path: string): Promise<T> {
       const match = userInboxes.find((i) => i.id === id || i.email_address.toLowerCase() === id.toLowerCase());
       if (match) return match as unknown as T;
 
+      // Allow matching by ID or email across store
+      const anyInbox = getInboxById(id);
+      if (anyInbox) return anyInbox as unknown as T;
+
       // Allow operator/admin access to any inbox
       if (isOperatorOrAdmin(userEmail)) {
         const all = getInboxes();

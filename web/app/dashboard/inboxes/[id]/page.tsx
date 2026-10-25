@@ -18,8 +18,8 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
     if (fetched && fetched.id) {
       inbox = fetched;
     }
-  } catch (err) {
-    if (err instanceof ApiError && (err.status === 404 || err.status === 422)) notFound();
+  } catch {
+    // Fall back to local store
   }
 
   if (!inbox) {
