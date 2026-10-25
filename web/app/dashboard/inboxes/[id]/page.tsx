@@ -107,7 +107,9 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
 
   let messages = { data: [] as Message[] };
   try {
-    const messagesRaw = await api<{ data: Message[] }>(`/inboxes/${id}/messages?limit=50`);
+    const messagesRaw = await api<{ data: Message[] }>(
+      `/inboxes/${inbox.id}/messages?limit=50&recipient=${encodeURIComponent(inbox.email_address)}`
+    );
     if (messagesRaw && Array.isArray(messagesRaw.data)) {
       messages = messagesRaw;
     }
@@ -162,7 +164,11 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
         </Card>
       )}
 
-      <InboxMessageList initialMessages={messages.data} inboxId={inbox.id} />
+      <InboxMessageList
+        initialMessages={messages.data}
+        inboxId={inbox.id}
+        inboxEmail={inbox.email_address}
+      />
     </>
   );
 }

@@ -11,10 +11,11 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 }
 
 export function PageHeader({ title, lead, aside }: { title: string; lead?: string; aside?: ReactNode }) {
+  const isEmail = typeof title === "string" && title.includes("@");
   return (
     <div className="mb-8 flex flex-col gap-4 border-b border-[#E5DEC9] pb-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1.5">
-        <h1 className="text-2xl font-bold tracking-tight text-[#18191B] sm:text-3xl capitalize">{title}</h1>
+        <h1 className={`text-2xl font-bold tracking-tight text-[#18191B] sm:text-3xl ${isEmail ? "lowercase" : "capitalize"}`}>{title}</h1>
         {lead && <p className="max-w-3xl text-sm leading-relaxed text-[#64646A]">{lead}</p>}
       </div>
       {aside && <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-auto">{aside}</div>}

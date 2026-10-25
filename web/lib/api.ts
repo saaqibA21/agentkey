@@ -210,8 +210,20 @@ async function getResilientFallback<T>(path: string): Promise<T> {
         inboxId = userInboxes[0]?.id || "inbox_primary_agent";
       }
 
+      // Check for recipient override in original query
+      let paramRecipient = "";
+      try {
+        const queryStr = path.includes("?") ? path.split("?")[1] : "";
+        if (queryStr) {
+          const qParams = new URLSearchParams(queryStr);
+          paramRecipient = (qParams.get("recipient") || qParams.get("email") || "").toLowerCase().trim();
+        }
+      } catch {
+        // ignore
+      }
+
       const inbox = getInboxById(inboxId);
-      const targetEmail = inbox ? inbox.email_address.toLowerCase().trim() : "";
+      const targetEmail = paramRecipient || (inbox ? inbox.email_address.toLowerCase().trim() : "");
 
       let workerMessages: Message[] = [];
       try {

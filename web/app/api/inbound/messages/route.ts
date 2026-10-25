@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getInboxById, getInboxes, isOperatorOrAdmin, validateApiKey } from "@/lib/agent-store";
+import { createInboxRecord, getInboxById, getInboxes, isOperatorOrAdmin, validateApiKey } from "@/lib/agent-store";
 import { getMessagesForInbox } from "@/lib/inbox-store";
 import type { Message } from "@/lib/api";
 
@@ -23,10 +23,38 @@ export async function GET(req: NextRequest) {
   const userEmail = (session?.user?.email || apiKeyAuth?.ownerEmail || "").toLowerCase().trim();
   const isAdmin = isOperatorOrAdmin(userEmail);
 
+  // Prime local container store from user cookie for cross-container consistency
+  const cookieHeader = req.cookies.get("ak_user_inboxes")?.value;
+  if (cookieHeader) {
+    try {
+      const fromCookie = JSON.parse(decodeURIComponent(cookieHeader));
+      if (Array.isArray(fromCookie)) {
+        for (const item of fromCookie) {
+          if (item && item.email_address) {
+            createInboxRecord({
+              username: item.email_address.split("@")[0],
+              domain: item.email_address.split("@")[1],
+              owner_name: item.owner_name,
+              display_title: item.display_title,
+              phone_number: item.phone_number,
+              owner_email: item.owner_email || userEmail,
+            });
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const searchParams = req.nextUrl.searchParams;
   const inboxId = searchParams.get("inbox_id") || searchParams.get("inbox");
+  const reqRecipient = (searchParams.get("recipient") || searchParams.get("email") || "").toLowerCase().trim();
 
   let targetInbox = inboxId ? getInboxById(inboxId) : undefined;
+  if (!targetInbox && reqRecipient) {
+    targetInbox = getInboxById(reqRecipient);
+  }
 
   // Tenant authorization check
   if (targetInbox && targetInbox.owner_email && !isAdmin) {
@@ -39,19 +67,24 @@ export async function GET(req: NextRequest) {
   }
 
   const userInboxes = getInboxes(userEmail);
+  const targetEmail = targetInbox
+    ? targetInbox.email_address.toLowerCase().trim()
+    : reqRecipient || "";
+
   const allowedEmails = targetInbox
     ? [targetInbox.email_address.toLowerCase().trim()]
+    : targetEmail
+    ? [targetEmail, ...userInboxes.map((i) => i.email_address.toLowerCase().trim())]
     : userInboxes.map((i) => i.email_address.toLowerCase().trim());
 
   let workerMessages: Message[] = [];
   try {
-    const targetEmail = targetInbox ? targetInbox.email_address.toLowerCase().trim() : "";
     const workerQuery = targetEmail ? `?recipient=${encodeURIComponent(targetEmail)}` : "";
     const workerUrl = `https://agentkey-email-worker.saaqibheroindia.workers.dev/messages${workerQuery}`;
     const res = await fetch(workerUrl, {
       cache: "no-store",
       headers: { "Cache-Control": "no-cache" },
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(3500),
     });
     if (res.ok) {
       const json = await res.json();
@@ -67,7 +100,13 @@ export async function GET(req: NextRequest) {
   const filteredWorker = workerMessages.filter((m: Message) => {
     if (!m) return false;
     const recipient = (m.recipient || "").toLowerCase().trim();
+    if (targetEmail && recipient.includes(targetEmail)) {
+      return true;
+    }
     if (allowedEmails.some((allowed) => recipient.includes(allowed))) {
+      return true;
+    }
+    if (isAdmin) {
       return true;
     }
     if (targetInbox && targetInbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {

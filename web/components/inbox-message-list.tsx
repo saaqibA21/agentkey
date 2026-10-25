@@ -10,9 +10,11 @@ const statusTone = { PENDING_APPROVAL: "warn", REJECTED: "bad", FAILED: "bad", S
 export function InboxMessageList({
   initialMessages,
   inboxId,
+  inboxEmail,
 }: {
   initialMessages: Message[];
   inboxId: string;
+  inboxEmail?: string;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -22,6 +24,12 @@ export function InboxMessageList({
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
   const [resolvingUrl, setResolvingUrl] = useState<string | null>(null);
   const [resolvedSuccess, setResolvedSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (Array.isArray(initialMessages)) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages]);
 
   async function handleResolveLink(url: string) {
     setResolvingUrl(url);
@@ -45,7 +53,8 @@ export function InboxMessageList({
   async function fetchLatest() {
     try {
       setIsRefreshing(true);
-      const res = await fetch(`/api/inbound/messages?inbox_id=${encodeURIComponent(inboxId)}&t=${Date.now()}`, { cache: "no-store" });
+      const recipientParam = inboxEmail ? `&recipient=${encodeURIComponent(inboxEmail)}` : "";
+      const res = await fetch(`/api/inbound/messages?inbox_id=${encodeURIComponent(inboxId)}${recipientParam}&t=${Date.now()}`, { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data)) {
