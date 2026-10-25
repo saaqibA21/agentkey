@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import type { DnsRecord, Domain, Webhook } from "./api";
+import type { DnsRecord, Domain, Message, Policy, Webhook } from "./api";
 
 export type ApiKeyRecord = {
   id: string;
@@ -52,6 +52,15 @@ export type DomainRecord = Domain & {
   created_at: string;
 };
 
+export type PolicyRecord = Policy & {
+  owner_email?: string;
+  created_at: string;
+};
+
+export type PendingApprovalRecord = Message & {
+  owner_email?: string;
+};
+
 const STORE_PATH = process.env.NODE_ENV === "production"
   ? "/tmp/agentkey_agents_store.json"
   : path.join(process.cwd(), ".agentkey_agents_store.json");
@@ -62,6 +71,8 @@ type StoreData = {
   agents: AgentRecord[];
   webhooks: WebhookRecord[];
   domains: DomainRecord[];
+  policies: PolicyRecord[];
+  approvals: PendingApprovalRecord[];
 };
 
 const DEFAULT_KEY_PREFIX = "ai_live_8f3a";
@@ -111,6 +122,8 @@ const DEFAULT_STORE: StoreData = {
   ],
   webhooks: [],
   domains: [],
+  policies: [],
+  approvals: [],
 };
 
 const globalForAgents = globalThis as unknown as {
@@ -132,6 +145,8 @@ function loadStore(): StoreData {
             domains: Array.isArray(parsed.domains)
               ? parsed.domains.filter((d: DomainRecord) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in")
               : [],
+            policies: Array.isArray(parsed.policies) ? parsed.policies : [],
+            approvals: Array.isArray(parsed.approvals) ? parsed.approvals : [],
           };
         }
       }
@@ -145,6 +160,8 @@ function loadStore(): StoreData {
     agents: [...DEFAULT_STORE.agents],
     webhooks: [...DEFAULT_STORE.webhooks],
     domains: [],
+    policies: [],
+    approvals: [],
   };
 }
 
@@ -168,6 +185,8 @@ function getStore(): StoreData {
   if (!Array.isArray(s.domains)) s.domains = [];
   // Ensure legacy agentkey.in platform domain is purged so user accounts never see it
   s.domains = s.domains.filter((d) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in");
+  if (!Array.isArray(s.policies)) s.policies = [];
+  if (!Array.isArray(s.approvals)) s.approvals = [];
   return s;
 }
 
@@ -203,20 +222,24 @@ export function createApiKeyRecord(
 
 export function getApiKeys(ownerEmail?: string): ApiKeyRecord[] {
   const store = getStore();
-  const unrevoked = store.keys.filter((k) => !k.revoked_at);
+  const unrevoked = (store.keys || []).filter((k) => k && !k.revoked_at);
   if (!ownerEmail) return unrevoked;
-  const lower = ownerEmail.toLowerCase();
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return unrevoked;
+  }
   return unrevoked.filter(
-    (k) => !k.owner_email || k.owner_email.toLowerCase() === lower
+    (k) => k && k.owner_email && k.owner_email.toLowerCase().trim() === lower
   );
 }
 
 export function revokeApiKeyRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
-  const lower = ownerEmail ? ownerEmail.toLowerCase() : undefined;
-  const key = store.keys.find((k) => {
-    if (k.id !== id) return false;
-    if (lower && k.owner_email && k.owner_email.toLowerCase() !== lower) {
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+  const key = (store.keys || []).find((k) => {
+    if (!k || k.id !== id) return false;
+    if (!isAdmin && lower && k.owner_email && k.owner_email.toLowerCase().trim() !== lower) {
       return false; // Unauthorized: Key belongs to another tenant
     }
     return true;
@@ -770,4 +793,190 @@ export function deleteDomainRecord(id: string, ownerEmail?: string): boolean {
 
   saveStore(store);
   return store.domains.length < initialLen || target === "dom_agentkey_in" || target === "agentkey.in";
+}
+
+// ---------------------------------------------------------------------------
+// HITL Policy & Approval Methods
+// ---------------------------------------------------------------------------
+
+export function getPolicies(ownerEmail?: string): PolicyRecord[] {
+  const store = getStore();
+  const policies = (store.policies || []).filter(Boolean);
+  if (!ownerEmail) return policies;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return policies;
+  }
+  return policies.filter(
+    (p) => p && p.owner_email && p.owner_email.toLowerCase().trim() === lower
+  );
+}
+
+export function createPolicyRecord(
+  keywords: string[],
+  action: "HOLD_FOR_APPROVAL" | "NOTIFY_ONLY" = "HOLD_FOR_APPROVAL",
+  destination: string,
+  ownerEmail?: string
+): PolicyRecord {
+  const store = getStore();
+  if (!Array.isArray(store.policies)) store.policies = [];
+  const cleanKeywords = (keywords || []).map((k) => k.trim()).filter(Boolean);
+  if (cleanKeywords.length === 0) {
+    throw new Error("Trigger keywords cannot be empty");
+  }
+
+  const policy: PolicyRecord = {
+    id: `pol_${crypto.randomBytes(8).toString("hex")}`,
+    trigger_keywords: cleanKeywords,
+    action: action === "NOTIFY_ONLY" ? "NOTIFY_ONLY" : "HOLD_FOR_APPROVAL",
+    target_channel: "SLACK",
+    target_destination: destination || "",
+    owner_email: ownerEmail ? ownerEmail.toLowerCase().trim() : undefined,
+    created_at: new Date().toISOString(),
+  };
+
+  store.policies.unshift(policy);
+  saveStore(store);
+  return policy;
+}
+
+export function deletePolicyRecord(id: string, ownerEmail?: string): boolean {
+  const store = getStore();
+  if (!Array.isArray(store.policies)) store.policies = [];
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const initialLen = store.policies.length;
+  store.policies = store.policies.filter((p) => {
+    if (!p) return false;
+    if (p.id !== id) return true;
+    if (!isAdmin && lower && p.owner_email && p.owner_email.toLowerCase().trim() !== lower) {
+      return true; // Not their policy
+    }
+    return false; // Remove!
+  });
+
+  saveStore(store);
+  return store.policies.length < initialLen;
+}
+
+export function createPendingApproval(params: {
+  inbox_id?: string;
+  thread_id?: string | null;
+  channel?: string;
+  sender: string;
+  recipient: string;
+  subject: string | null;
+  body_text: string;
+  matched_rules: string[];
+  owner_email?: string;
+}): PendingApprovalRecord {
+  const store = getStore();
+  const heldMsg: PendingApprovalRecord = {
+    id: `msg_hitl_${crypto.randomBytes(8).toString("hex")}`,
+    inbox_id: params.inbox_id || "inbox_primary_agent",
+    thread_id: params.thread_id || null,
+    channel: params.channel || "EMAIL",
+    direction: "OUTBOUND",
+    sender: params.sender,
+    recipient: params.recipient,
+    subject: params.subject,
+    body_text: params.body_text,
+    status: "WAITING" as any,
+    created_at: new Date().toISOString(),
+    extracted_data: {
+      hitl: {
+        matched: params.matched_rules,
+        action: "HOLD_FOR_APPROVAL",
+      },
+    },
+    owner_email: params.owner_email,
+  };
+  if (!Array.isArray(store.approvals)) store.approvals = [];
+  store.approvals.unshift(heldMsg);
+  saveStore(store);
+  return heldMsg;
+}
+
+export function getPendingApprovals(ownerEmail?: string): PendingApprovalRecord[] {
+  const store = getStore();
+  const approvals = (store.approvals || []).filter(
+    (a) => a && (a.status === "PENDING_APPROVAL" || a.status === "WAITING")
+  );
+  if (!ownerEmail) return approvals;
+  const lower = ownerEmail.toLowerCase().trim();
+  if (isOperatorOrAdmin(lower)) {
+    return approvals;
+  }
+  return approvals.filter(
+    (a) => a && a.owner_email && a.owner_email.toLowerCase().trim() === lower
+  );
+}
+
+export function decidePendingApproval(
+  id: string,
+  verdict: "approve" | "reject",
+  ownerEmail?: string
+): boolean {
+  const store = getStore();
+  if (!Array.isArray(store.approvals)) store.approvals = [];
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const item = store.approvals.find((a) => a && a.id === id);
+  if (!item) return false;
+  if (!isAdmin && lower && item.owner_email && item.owner_email.toLowerCase().trim() !== lower) {
+    return false;
+  }
+
+  item.status = (verdict === "approve" ? "APPROVED" : "REJECTED") as any;
+  saveStore(store);
+
+  // If approved and Resend API key is available, deliver to recipient
+  if (verdict === "approve" && process.env.RESEND_API_KEY && item.recipient) {
+    fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: item.sender || "Agent-01 <agent-01@agentkey.in>",
+        to: [item.recipient],
+        subject: item.subject || "Message from AgentKey",
+        text: item.body_text,
+      }),
+    }).catch((err) => console.error("Failed delivering approved message:", err));
+  }
+
+  return true;
+}
+
+export function evaluateGuardrails(
+  text: string,
+  ownerEmail?: string
+): { action: "ALLOW" | "HOLD_FOR_APPROVAL" | "NOTIFY_ONLY"; matched: string[]; policy?: PolicyRecord } {
+  const policies = getPolicies(ownerEmail);
+  const normalizedText = (text || "").toLowerCase();
+
+  for (const policy of policies) {
+    const matched: string[] = [];
+    for (const keyword of policy.trigger_keywords || []) {
+      const kw = keyword.toLowerCase().trim();
+      if (!kw) continue;
+      // Whole-word match
+      const regex = new RegExp(`(?<!\\w)${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\w)`, "i");
+      if (regex.test(normalizedText)) {
+        matched.push(keyword);
+      }
+    }
+    if (matched.length > 0) {
+      if (policy.action === "HOLD_FOR_APPROVAL") {
+        return { action: "HOLD_FOR_APPROVAL", matched, policy };
+      }
+      return { action: "NOTIFY_ONLY", matched, policy };
+    }
+  }
+
+  return { action: "ALLOW", matched: [] };
 }

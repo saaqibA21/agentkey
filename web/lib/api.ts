@@ -10,6 +10,8 @@ import {
   getInboxById,
   getInboxes,
   getOrCreateDefaultInbox,
+  getPendingApprovals,
+  getPolicies,
   getWebhooks,
   isOperatorOrAdmin,
 } from "./agent-store";
@@ -167,6 +169,8 @@ async function getResilientFallback<T>(path: string): Promise<T> {
     const userDomains = getDomains(userEmail);
     const userAgents = getAgents(userEmail);
     const userWebhooks = getWebhooks(userEmail);
+    const userPolicies = getPolicies(userEmail);
+    const userPending = getPendingApprovals(userEmail);
 
     if (p === "/overview") {
       return {
@@ -184,7 +188,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
         counts: {
           inboxes: userInboxes.length,
           messages: 0,
-          pending_approvals: 0,
+          pending_approvals: userPending.length,
           api_keys: userKeys.length,
           verified_domains: (userDomains || []).filter((d) => d && d.status === "VERIFIED").length,
         },
@@ -312,11 +316,11 @@ async function getResilientFallback<T>(path: string): Promise<T> {
   }
 
   if (p.startsWith("/hitl/pending") || p.startsWith("/hitl/held")) {
-    return { data: [] } as unknown as T;
+    return { data: userPending } as unknown as T;
   }
 
   if (p === "/hitl/policies") {
-    return [] as unknown as T;
+    return userPolicies as unknown as T;
   }
 
   if (p === "/webhooks") {

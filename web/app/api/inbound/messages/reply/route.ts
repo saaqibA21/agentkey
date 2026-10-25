@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { storeMessage } from "@/lib/inbox-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { createPendingApproval, evaluateGuardrails } from "@/lib/agent-store";
 import type { Message } from "@/lib/api";
 
 export async function POST(req: NextRequest) {
@@ -46,6 +47,40 @@ export async function POST(req: NextRequest) {
     const replySubject = rawSubject.replace(/[\r\n]+/g, " ").slice(0, 250);
     const cleanText = String(text).slice(0, 100000);
     const sender = "Agent-01 <agent-01@agentkey.in>";
+
+    // Evaluate HITL Guardrails
+    const userEmail = session.user.email || undefined;
+    const guardrail = evaluateGuardrails(`${replySubject} ${cleanText}`, userEmail);
+
+    if (guardrail.action === "HOLD_FOR_APPROVAL") {
+      createPendingApproval({
+        inbox_id: "inbox_primary_agent",
+        thread_id: in_reply_to ? String(in_reply_to) : null,
+        channel: "EMAIL",
+        sender,
+        recipient,
+        subject: replySubject,
+        body_text: cleanText,
+        matched_rules: guardrail.matched,
+        owner_email: userEmail,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        held: true,
+        message: `Message held for human approval because it matched keyword rule: ${guardrail.matched.join(", ")}`,
+      });
+    }
+
+    if (guardrail.action === "NOTIFY_ONLY" && guardrail.policy?.target_destination) {
+      fetch(guardrail.policy.target_destination, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: `[AgentKey Alert] Outbound message to ${recipient} triggered policy: ${guardrail.matched.join(", ")}\nSubject: ${replySubject}`,
+        }),
+      }).catch(() => {});
+    }
 
     // Call Resend to deliver outbound email
     const resendResp = await fetch("https://api.resend.com/emails", {

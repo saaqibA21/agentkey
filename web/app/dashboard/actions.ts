@@ -10,10 +10,13 @@ import {
   createAgentRecord,
   createApiKeyRecord,
   createInboxRecord,
+  createPolicyRecord,
   createWebhookRecord,
+  decidePendingApproval,
   deleteAgentRecord,
   deleteDomainRecord,
   deleteInboxRecord,
+  deletePolicyRecord,
   deleteWebhookRecord,
   revokeApiKeyRecord,
   verifyDomainRecord,
@@ -126,13 +129,14 @@ export async function createKey(_: ActionState, form: FormData): Promise<ActionS
 
 export async function revokeKey(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/keys", async () => {
+    const session = await auth();
     const id = text(form, "id");
     try {
       await api(`/api-keys/${id}`, { method: "DELETE" });
     } catch {
       // ignore
     }
-    revokeApiKeyRecord(id);
+    revokeApiKeyRecord(id, session?.user?.email || undefined);
     return { ok: true };
   });
 }
@@ -188,30 +192,56 @@ export async function deleteDomain(_: ActionState, form: FormData): Promise<Acti
 
 export async function decide(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/approvals", async () => {
+    const session = await auth();
+    const id = text(form, "id");
     const verdict = text(form, "verdict") === "approve" ? "approve" : "reject";
-    await api(`/hitl/${verdict}/${text(form, "id")}`, { method: "POST" });
+    try {
+      await api(`/hitl/${verdict}/${id}`, { method: "POST" });
+    } catch {
+      // ignore
+    }
+    decidePendingApproval(id, verdict, session?.user?.email || undefined);
+    return { ok: true };
   });
 }
 
 export async function createPolicy(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/approvals", async () => {
+    const session = await auth();
     const keywords = text(form, "keywords").split(",").map((k) => k.trim()).filter(Boolean);
     if (keywords.length === 0) return { error: "Add at least one keyword." };
-    await api("/hitl/policies", {
-      method: "POST",
-      body: JSON.stringify({
-        trigger_keywords: keywords,
-        action: text(form, "action") || "HOLD_FOR_APPROVAL",
-        target_channel: "SLACK",
-        target_destination: text(form, "destination"),
-      }),
-    });
+    const action = text(form, "action") === "NOTIFY_ONLY" ? "NOTIFY_ONLY" : "HOLD_FOR_APPROVAL";
+    const destination = text(form, "destination");
+
+    try {
+      await api("/hitl/policies", {
+        method: "POST",
+        body: JSON.stringify({
+          trigger_keywords: keywords,
+          action,
+          target_channel: "SLACK",
+          target_destination: destination,
+        }),
+      });
+    } catch {
+      createPolicyRecord(keywords, action, destination, session?.user?.email || undefined);
+    }
+    return { ok: true };
   });
 }
 
 export async function deletePolicy(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/approvals", async () => {
-    await api(`/hitl/policies/${text(form, "id")}`, { method: "DELETE" });
+    const session = await auth();
+    const id = text(form, "id");
+    if (!id) return { error: "Rule ID is missing" };
+    try {
+      await api(`/hitl/policies/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    deletePolicyRecord(id, session?.user?.email || undefined);
+    return { ok: true };
   });
 }
 

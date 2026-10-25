@@ -80,7 +80,7 @@ export default async function ApprovalsPage() {
                 ))}
               </p>
               <p className="mt-1 truncate text-xs text-muted">
-                {p.action === "HOLD_FOR_APPROVAL" ? "Hold for approval" : "Notify only"} · {p.target_channel.toLowerCase()}
+                {p.action === "HOLD_FOR_APPROVAL" ? "Hold for approval" : "Notify only"} · {(p.target_channel || "slack").toLowerCase()}
               </p>
             </div>
             <ActionForm action={deletePolicy} submit="Remove" variant="danger" confirm="Remove this rule?">
