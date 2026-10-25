@@ -28,19 +28,52 @@ export function InboxesManager({
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
+  // Keep state in sync with server initial data
   useEffect(() => {
     if (Array.isArray(initialInboxes)) {
       setInboxes(initialInboxes);
     }
   }, [initialInboxes]);
 
+  // Sync with client localStorage on mount for resilience
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("ak_custom_inboxes");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setInboxes((prev) => {
+            const seen = new Set(prev.map((i) => i.id));
+            const seenEmails = new Set(prev.map((i) => i.email_address?.toLowerCase()));
+            const toAdd = parsed.filter(
+              (i: Inbox) => i && i.id && !seen.has(i.id) && !seenEmails.has(i.email_address?.toLowerCase())
+            );
+            return toAdd.length > 0 ? [...toAdd, ...prev] : prev;
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const verifiedDomains = (domains || []).filter((d) => d && d.status === "VERIFIED");
   const maxInboxes = overview?.workspace?.max_inboxes ?? 50;
   const atLimit = inboxes.length >= maxInboxes;
 
+  const handleGenerateName = () => {
+    const prefixes = ["triage", "support", "sales", "agent", "ops", "research", "verify", "connect"];
+    const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const randomHex = Math.random().toString(36).substring(2, 6);
+    setUsername(`${randomPrefix}-${randomHex}`);
+    if (error) setError(null);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
 
     setIsSubmitting(true);
     try {
@@ -48,7 +81,7 @@ export function InboxesManager({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: username.trim(),
+          username: cleanUser || undefined,
           domain: domain.trim() || undefined,
           owner_name: ownerName.trim() || undefined,
           display_title: displayTitle.trim() || undefined,
@@ -68,7 +101,15 @@ export function InboxesManager({
       }
 
       if (json.inbox) {
-        setInboxes((prev) => [json.inbox, ...prev.filter((i) => i.id !== json.inbox.id)]);
+        setInboxes((prev) => {
+          const updated = [json.inbox, ...prev.filter((i) => i.id !== json.inbox.id)];
+          try {
+            localStorage.setItem("ak_custom_inboxes", JSON.stringify(updated.slice(0, 25)));
+          } catch {
+            // ignore
+          }
+          return updated;
+        });
         setUsername("");
         setOwnerName("");
         setDisplayTitle("");
@@ -86,8 +127,16 @@ export function InboxesManager({
     if (!window.confirm(`Delete inbox ${inbox.email_address}?`)) return;
     setDeletingId(inbox.id);
     try {
-      // Optimistically remove from state
-      setInboxes((prev) => prev.filter((i) => i.id !== inbox.id));
+      // Optimistically remove from state and local storage
+      setInboxes((prev) => {
+        const updated = prev.filter((i) => i.id !== inbox.id);
+        try {
+          localStorage.setItem("ak_custom_inboxes", JSON.stringify(updated.slice(0, 25)));
+        } catch {
+          // ignore
+        }
+        return updated;
+      });
 
       const res = await fetch(`/api/inboxes?id=${encodeURIComponent(inbox.id)}`, {
         method: "DELETE",
@@ -113,13 +162,24 @@ export function InboxesManager({
             <input
               name="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                const clean = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+                setUsername(clean);
+                if (error) setError(null);
+              }}
               disabled={isSubmitting || atLimit}
-              placeholder="agent-name (e.g. triage-bot)"
-              pattern="[a-z0-9][a-z0-9._\-]{1,62}[a-z0-9]"
-              title="3 to 64 lowercase letters, digits, dots, dashes or underscores"
-              className={`w-56 ${inputClass}`}
+              placeholder="agent-name (or leave blank for auto)"
+              className={`w-64 ${inputClass}`}
             />
+            <button
+              type="button"
+              onClick={handleGenerateName}
+              disabled={isSubmitting || atLimit}
+              className="rounded-xl border border-line bg-card/60 px-2.5 py-2 text-xs font-medium text-muted hover:text-ink hover:bg-card active:scale-95 transition-all"
+              title="Suggest a random name"
+            >
+              🎲 Suggest
+            </button>
             <span className="text-muted">@</span>
             <select
               name="domain"
@@ -173,9 +233,10 @@ export function InboxesManager({
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-rose-600 font-medium">
-              {error}
-            </p>
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-400 font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
           )}
         </form>
 
@@ -204,7 +265,7 @@ export function InboxesManager({
                   <Link
                     href={`/dashboard/inboxes/${inbox.id}`}
                     prefetch={false}
-                    className="font-mono text-sm font-semibold hover:underline"
+                    className="font-mono text-sm font-semibold hover:underline text-ink"
                   >
                     {inbox.email_address}
                   </Link>

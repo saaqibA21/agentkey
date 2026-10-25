@@ -438,12 +438,16 @@ export function getOrCreateDefaultInbox(ownerEmail: string, ownerName?: string):
   const rawPrefix = (lower.split("@")[0] || "agent").replace(/[^a-z0-9_-]/g, "");
   const baseUsername = rawPrefix.slice(0, 18) || "agent";
 
-  // Check if candidate email is already taken
+  // Ensure candidate email is never taken
   let candidateUsername = `${baseUsername}-bot`;
-  const isTaken = (u: string) =>
-    inboxes.some((i) => i && i.email_address && i.email_address.toLowerCase() === `${u}@agentkey.in`.toLowerCase());
-
-  if (isTaken(candidateUsername)) {
+  while (
+    inboxes.some(
+      (i) =>
+        i &&
+        i.email_address &&
+        i.email_address.toLowerCase() === `${candidateUsername}@agentkey.in`.toLowerCase()
+    )
+  ) {
     candidateUsername = `${baseUsername}-${crypto.randomBytes(2).toString("hex")}`;
   }
 
@@ -467,21 +471,52 @@ export function createInboxRecord(params: {
   owner_email?: string;
 }): InboxRecord {
   const store = getStore();
-  const username = (params.username || `agent-${crypto.randomBytes(3).toString("hex")}`)
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]/g, "");
-
-  const domain = (params.domain || "agentkey.in").toLowerCase().trim();
-  const emailAddress = username.includes("@") ? username : `${username}@${domain}`;
   if (!Array.isArray(store.inboxes)) store.inboxes = [];
-  const existing = store.inboxes.find((i) => i && i.email_address && i.email_address.toLowerCase() === emailAddress.toLowerCase());
-  if (existing) return existing;
+
+  const rawUsername = (params.username || "").toLowerCase().trim().replace(/[^a-z0-9._-]/g, "");
+  const domain = (params.domain || "agentkey.in").toLowerCase().trim();
+
+  let username = rawUsername;
+  if (!username) {
+    // Generate guaranteed-unique agent username
+    do {
+      username = `agent-${crypto.randomBytes(3).toString("hex")}`;
+    } while (
+      store.inboxes.some(
+        (i) =>
+          i &&
+          i.email_address &&
+          i.email_address.toLowerCase() === `${username}@${domain}`.toLowerCase()
+      )
+    );
+  }
+
+  const emailAddress = username.includes("@") ? username : `${username}@${domain}`;
+  const existing = store.inboxes.find(
+    (i) => i && i.email_address && i.email_address.toLowerCase() === emailAddress.toLowerCase()
+  );
+
+  if (existing) {
+    const newOwner = params.owner_email ? params.owner_email.toLowerCase().trim() : undefined;
+    const existingOwner = existing.owner_email ? existing.owner_email.toLowerCase().trim() : undefined;
+    if (newOwner && existingOwner && existingOwner !== newOwner) {
+      throw new Error(`The address '${emailAddress}' is already in use. Please choose a different name.`);
+    }
+    return existing;
+  }
+
+  const deterministicHash = crypto
+    .createHash("sha256")
+    .update(emailAddress.toLowerCase())
+    .digest("hex")
+    .slice(0, 16);
+  const inboxId = `inbox_${deterministicHash}`;
 
   const inbox: InboxRecord = {
-    id: `inbox_${crypto.randomBytes(8).toString("hex")}`,
+    id: inboxId,
     email_address: emailAddress,
     status: "ACTIVE",
-    client_id: `cli_${username}`,
+    client_id: `cli_${username.replace(/[^a-z0-9_-]/g, "")}`,
     owner_name: params.owner_name || "Autonomous Agent",
     display_title: params.display_title || "Agent Mailbox",
     phone_number: params.phone_number || undefined,

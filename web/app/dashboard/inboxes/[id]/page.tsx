@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { CopyButton } from "@/components/client";
 import { Badge, Card, PageHeader } from "@/components/ui";
@@ -36,6 +37,42 @@ export default async function InboxPage({ params }: { params: Promise<{ id: stri
     const local = getInboxById(id);
     if (local) {
       inbox = local as unknown as Inbox;
+    }
+  }
+
+  // Check user cookie for cross-container consistency
+  if (!inbox) {
+    try {
+      const cookieStore = await cookies();
+      const cookieVal = cookieStore.get("ak_user_inboxes")?.value;
+      if (cookieVal) {
+        const fromCookie = JSON.parse(decodeURIComponent(cookieVal));
+        if (Array.isArray(fromCookie)) {
+          const match = fromCookie.find(
+            (i: any) =>
+              i &&
+              (i.id === id ||
+                (i.email_address && i.email_address.toLowerCase() === id.toLowerCase()))
+          );
+          if (match) {
+            inbox = match as unknown as Inbox;
+            try {
+              createInboxRecord({
+                username: match.email_address?.split("@")[0],
+                domain: match.email_address?.split("@")[1],
+                owner_name: match.owner_name,
+                display_title: match.display_title,
+                phone_number: match.phone_number,
+                owner_email: userEmail,
+              });
+            } catch {
+              // ignore
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore
     }
   }
 

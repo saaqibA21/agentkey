@@ -275,7 +275,8 @@ async function getResilientFallback<T>(path: string): Promise<T> {
       }
 
       if (userInboxes.length > 0) return userInboxes[0] as unknown as T;
-      throw new ApiError(404, "Inbox not found");
+      const fallbackInbox = getOrCreateDefaultInbox(userEmail || "operator@agentkey.in", me.name);
+      return fallbackInbox as unknown as T;
     }
     return userInboxes as unknown as T;
   }
