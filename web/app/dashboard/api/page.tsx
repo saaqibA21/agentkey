@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { AgentAvatar } from "@/components/agent-avatar";
-import { AvatarPicker } from "@/components/avatar-picker";
-import { ActionForm, CopyButton } from "@/components/client";
-import { Badge, Card, Empty, inputClass, PageHeader, timeAgo } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { api, publicApiUrl } from "@/lib/api";
+import { getAgents } from "@/lib/agent-store";
+import { ApiManager } from "./api-manager";
 
-import { createAgent, deleteAgent, updateAgentAvatar } from "../actions";
+export const metadata = { title: "API & Passports · AgentKey" };
 
 type Agent = {
   id: string;
@@ -33,14 +32,16 @@ export default async function ApiPage() {
   const ownerEmail = session?.user?.email ?? "";
   const ownerName = session?.user?.name || (ownerEmail ? ownerEmail.split("@")[0] : "Owner");
 
-  let agents = { data: [] as Agent[] };
+  let agents: Agent[] = [];
   try {
     const agentsRaw = await api<{ data: Agent[] }>("/agents");
     if (agentsRaw && Array.isArray(agentsRaw.data)) {
-      agents = agentsRaw;
+      agents = agentsRaw.data;
+    } else {
+      agents = getAgents(ownerEmail) as unknown as Agent[];
     }
   } catch {
-    agents = { data: [] };
+    agents = getAgents(ownerEmail) as unknown as Agent[];
   }
 
   return (
@@ -82,224 +83,12 @@ export default async function ApiPage() {
         </Link>
       </div>
 
-
-
-
-      {/* Create Agent Drawer */}
-      <details className="group">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-[#18191B] border border-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black [&::-webkit-details-marker]:hidden">
-          <span className="transition group-open:rotate-45">+</span> Create API &amp; Agent
-        </summary>
-        <Card className="mt-4 max-w-2xl">
-          <ActionForm action={createAgent} submit="Create API" className="space-y-4">
-            <label className="block text-sm">
-              <span className="font-medium">Agent name</span>
-              <input
-                name="agent_name"
-                required
-                maxLength={64}
-                placeholder="Enter agent name, e.g. Sales Bot"
-                className={`mt-1.5 w-full ${inputClass}`}
-              />
-              <span className="mt-1 block text-xs text-muted">The agent&apos;s email address is generated from this name.</span>
-            </label>
-
-            {/* Interactive Unique Avatar Picker */}
-            <AvatarPicker />
-
-            <label className="block text-sm">
-              <span className="font-medium">Owner name</span>
-              <input
-                name="owner_name"
-                required
-                maxLength={255}
-                defaultValue={ownerName}
-                placeholder="Your name"
-                className={`mt-1.5 w-full ${inputClass}`}
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="font-medium">Owner email</span>
-              <input
-                value={ownerEmail}
-                readOnly
-                aria-readonly
-                className={`mt-1.5 w-full cursor-not-allowed opacity-70 ${inputClass}`}
-              />
-              <span className="mt-1 block text-xs text-muted">Taken from the authenticated account.</span>
-            </label>
-          </ActionForm>
-        </Card>
-      </details>
-
-      <h2 className="mb-3 mt-10 font-semibold">Your agents</h2>
-      <div className="space-y-4">
-        {agents.data.length === 0 && (
-          <Empty title="No agents yet">Press Create API to issue your first agent passport.</Empty>
-        )}
-        {agents.data.map((a) => {
-          const verifySnippet = `// Third-Party Website Integration
-const res = await fetch("${publicApiUrl}/v1/auth/agent/verify", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ passport: "${a.passport ?? ""}" })
-});
-const { verified, agent, owner, trust_score } = await res.json();`;
-
-          return (
-            <Card key={a.id} className="!p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0 flex-1">
-                  {/* Unique Agent Avatar */}
-                  <AgentAvatar
-                    seed={a.avatar_seed}
-                    url={a.avatar_url}
-                    name={a.agent_name}
-                    size="lg"
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-[#18191B]">{a.agent_name}</p>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
-                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <path d="m9 12 2 2 4-4" />
-                        </svg>
-                        99.0 Verified
-                      </span>
-                      {a.avatar_seed && (
-                        <span className="hidden sm:inline-flex items-center rounded-md border border-[#DDD4C2] bg-white px-2 py-0.5 text-[10px] font-mono text-[#57534E]">
-                          id: {a.avatar_seed}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <code className="truncate font-mono text-sm text-sky-800 font-semibold">{a.email_address}</code>
-                      <CopyButton value={a.email_address} />
-                    </div>
-                    <p className="mt-1 text-xs text-[#57534E]">
-                      Owner {a.owner_name} ({a.owner_email}) · key {a.api_key_prefix}… · created {timeAgo(a.created_at)}
-                    </p>
-                  </div>
-
-
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    {((a.scopes as string[]) ?? []).map((s) => (
-                      <Badge key={s} tone={s === "send" ? "warn" : "neutral"}>
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                  <a
-                    href={a.inbox_id ? `/dashboard/inboxes/${a.inbox_id}` : "/dashboard/inboxes"}
-                    className="rounded-xl border border-[#DDD4C2] bg-white px-3.5 py-2 text-sm font-medium text-[#18191B] hover:bg-[#FAF5EE] shadow-xs"
-                  >
-                    Open inbox
-                  </a>
-                  <ActionForm
-                    action={deleteAgent}
-                    submit="Delete"
-                    variant="danger"
-                    confirm={`Delete ${a.agent_name}? Its passport & API key will be revoked immediately.`}
-                  >
-                    <input type="hidden" name="id" value={a.id} />
-                  </ActionForm>
-                </div>
-              </div>
-
-              {/* Verifiable Agent Passport & Third-Party Integration Drawer */}
-              {a.passport && (
-                <details className="group mt-4 border-t border-line/60 pt-3">
-                  <summary className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-sky-400 hover:underline [&::-webkit-details-marker]:hidden">
-                    <svg className="h-3.5 w-3.5 transition group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                    Verifiable Passport &amp; Integration Snippet
-                  </summary>
-
-                  <div className="mt-3 space-y-3 rounded-xl border border-[#2E3038] bg-[#1A1B21] p-4 text-[#F2ECE1]">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
-                          Cryptographic Passport Token (HMAC-SHA256)
-                        </span>
-                        <CopyButton value={a.passport} />
-                      </div>
-                      <div className="mt-1.5 overflow-x-auto rounded-lg border border-[#2E3038] bg-[#141518] p-2.5 font-mono text-xs text-sky-300">
-                        {a.passport}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-4 text-xs">
-                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
-                        <span className="text-[#8C8A94] block">Accountability</span>
-                        <span className="font-medium text-[#FAF5EE]">VERIFIED_HUMAN_OPERATOR</span>
-                      </div>
-                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
-                        <span className="text-[#8C8A94] block">Trust Score</span>
-                        <span className="font-semibold text-sky-400">99.0 / 100</span>
-                      </div>
-                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
-                        <span className="text-[#8C8A94] block">Unique Avatar</span>
-                        <a
-                          href={a.avatar_url ?? `/v1/agents/${a.id}/avatar.svg`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium text-sky-400 hover:underline truncate block"
-                        >
-                          View Vector SVG
-                        </a>
-                      </div>
-                      <div className="rounded-lg border border-[#2E3038] bg-white/[0.04] p-2.5">
-                        <span className="text-[#8C8A94] block">Public Attestation</span>
-                        <a
-                          href={`/v1/auth/agent/verify/${a.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium text-sky-400 hover:underline"
-                        >
-                          View Live Badge
-                        </a>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
-                          OAuth 2.1 &amp; OpenID Connect UserInfo URL
-                        </span>
-                        <CopyButton value={`${publicApiUrl}/oauth/userinfo`} />
-                      </div>
-                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#2E3038] bg-[#141518] p-2.5 font-mono text-xs text-sky-300">
-                        <span>GET {publicApiUrl}/oauth/userinfo</span>
-                        <Link href="/dashboard/oauth" className="text-xs text-sky-400 underline hover:text-sky-300">
-                          Register Client ID &amp; OAuth Portal →
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#8C8A94] uppercase tracking-wider">
-                          Third-Party Website Middleware (Node.js / Express)
-                        </span>
-                        <CopyButton value={verifySnippet} />
-                      </div>
-                      <pre className="mt-1.5 overflow-x-auto rounded-lg border border-[#2E3038] bg-[#141518] p-3 font-mono text-xs text-[#8C8A94]">
-                        {verifySnippet}
-                      </pre>
-                    </div>
-                  </div>
-                </details>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+      <ApiManager
+        initialAgents={agents}
+        ownerEmail={ownerEmail}
+        ownerName={ownerName}
+        publicApiUrl={publicApiUrl}
+      />
     </>
   );
 }

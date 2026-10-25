@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { ActionForm } from "@/components/client";
-import { Badge, Card, Empty, PageHeader, StatCard, timeAgo } from "@/components/ui";
+import { Badge, Empty, PageHeader, StatCard, timeAgo } from "@/components/ui";
 import { adminApi, AdminStats, AuditLogEntry, Workspace } from "@/lib/api";
-import { adminUpdateWorkspace } from "../actions";
+import { AdminWorkspacesManager } from "./admin-workspaces-manager";
 
 export const metadata = { title: "Admin Console · AgentKey" };
 
@@ -110,66 +109,7 @@ export default async function AdminPage() {
       </section>
 
       {/* Workspace Controls */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Tenant Workspaces</h2>
-            <p className="text-sm text-muted">Manage tenant outbound permissions, limits, and DPDP privacy settings.</p>
-          </div>
-          <Badge tone="neutral">{workspaces.length} total</Badge>
-        </div>
-
-        {workspaces.length === 0 ? (
-          <Empty title="No workspaces found" />
-        ) : (
-          <div className="space-y-3">
-            {workspaces.map((ws) => (
-              <Card key={ws.id} className="transition-all hover:border-line/80">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="font-semibold text-ink">{ws.name}</h3>
-                      <Badge tone={ws.outbound_enabled ? "good" : "warn"}>
-                        {ws.outbound_enabled ? "Outbound Live" : "Inbound Only"}
-                      </Badge>
-                      <Badge tone={ws.pii_masking_enabled ? "accent" : "neutral"}>
-                        {ws.pii_masking_enabled ? "DPDP PII Active" : "PII Unmasked"}
-                      </Badge>
-                    </div>
-                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                      <span>ID: <code className="font-mono">{ws.id.slice(0, 8)}...</code></span>
-                      <span>Plan: <b className="capitalize text-ink">{ws.plan}</b></span>
-                      <span>Max Inboxes: <b className="text-ink">{ws.max_inboxes}</b></span>
-                      <span>Daily Send Quota: <b className="text-ink">{ws.daily_send_limit}</b>/day</span>
-                    </div>
-                  </div>
-
-                  {/* Operator Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ActionForm
-                      action={adminUpdateWorkspace}
-                      submit={ws.outbound_enabled ? "Revoke Send" : "Grant Send"}
-                      variant={ws.outbound_enabled ? "secondary" : "primary"}
-                    >
-                      <input type="hidden" name="workspace_id" value={ws.id} />
-                      <input type="hidden" name="outbound_enabled" value={ws.outbound_enabled ? "false" : "true"} />
-                    </ActionForm>
-
-                    <ActionForm
-                      action={adminUpdateWorkspace}
-                      submit={ws.pii_masking_enabled ? "Disable PII Shield" : "Enable PII Shield"}
-                      variant="secondary"
-                    >
-                      <input type="hidden" name="workspace_id" value={ws.id} />
-                      <input type="hidden" name="pii_masking_enabled" value={ws.pii_masking_enabled ? "false" : "true"} />
-                    </ActionForm>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
+      <AdminWorkspacesManager initialWorkspaces={workspaces} />
 
       {/* Security Audit Trail */}
       <section className="space-y-4">

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { DashboardNav } from "@/components/nav";
+import { SignOutButton } from "@/components/sign-out-button";
 import { Logo } from "@/components/site";
 import { getOrCreateDefaultInbox } from "@/lib/agent-store";
 
@@ -118,16 +119,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 <span className="font-mono text-[10px] uppercase tracking-wider text-[#8C8A94]">
                   {isAdmin ? "WORKSPACE: ADMIN" : "WORKSPACE: OWNER"}
                 </span>
-                <form
-                  action={async () => {
-                    "use server";
-                    await signOut({ redirectTo: "/" });
-                  }}
-                >
-                  <button className="text-[#64646A] text-xs transition hover:text-rose-600 font-medium">
-                    Sign out
-                  </button>
-                </form>
+                <SignOutButton />
               </div>
             </div>
 
