@@ -210,6 +210,7 @@ export function InboxesManager({
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/dashboard/inboxes/${inbox.id}`}
+                    prefetch={false}
                     className="font-mono text-sm font-semibold hover:underline"
                   >
                     {inbox.email_address}
