@@ -87,6 +87,7 @@ export function InboxMessageList({
       const emailMatch = m.sender.match(/<([^>]+)>/);
       const recipientEmail = emailMatch ? emailMatch[1] : m.sender;
 
+      const fromAddr = inboxEmail || m.recipient;
       const res = await fetch("/api/inbound/messages/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,12 +96,14 @@ export function InboxMessageList({
           subject: m.subject || "Re: Your message",
           text: replyText,
           in_reply_to: m.id,
+          inbox_id: inboxId,
+          from_email: fromAddr,
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSendSuccess(`Delivered reply to ${recipientEmail}!`);
+        setSendSuccess(`Delivered reply to ${recipientEmail} from ${fromAddr}!`);
         setReplyText("");
         setTimeout(() => {
           setActiveReplyId(null);
@@ -280,7 +283,9 @@ export function InboxMessageList({
                   ) : (
                     <div className="space-y-2 rounded-lg border border-line bg-subtle/50 p-3">
                       <div className="flex items-center justify-between text-xs text-muted">
-                        <span>Replying to <b className="text-ink">{m.sender}</b></span>
+                        <span>
+                          Replying from <b className="text-ink font-mono">{inboxEmail || m.recipient}</b> to <b className="text-ink">{m.sender}</b>
+                        </span>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleAutoDraft(m)}
@@ -330,7 +335,9 @@ export function InboxMessageList({
                           </svg>
                           {isSending ? "Sending via Resend..." : "Send Reply"}
                         </button>
-                        <span className="text-xs text-muted">Delivered from agent-01@agentkey.in</span>
+                        <span className="text-xs text-muted">
+                          Delivered from <span className="font-mono text-ink/80">{inboxEmail || m.recipient}</span>
+                        </span>
                       </div>
                     </div>
                   )}

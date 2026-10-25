@@ -402,6 +402,7 @@ export async function POST(
         },
         body: JSON.stringify({
           from: `${inbox.owner_name} <${inbox.email_address}>`,
+          reply_to: inbox.email_address,
           to: [to],
           subject,
           text,
@@ -489,6 +490,7 @@ export async function POST(
         },
         body: JSON.stringify({
           from: fromAddress,
+          reply_to: inbox.email_address,
           to: recipients,
           subject: cleanSubject,
           text: text ? String(text).slice(0, 100000) : undefined,

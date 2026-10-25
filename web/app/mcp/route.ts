@@ -199,6 +199,14 @@ export async function POST(req: NextRequest) {
         const cleanSubject = String(args.subject || "Message from AgentKey").replace(/[\r\n]+/g, " ").slice(0, 250);
         const cleanText = String(args.text || "").slice(0, 100000);
 
+        const inboxId = String(args.inbox_id || "inbox_primary_agent");
+        const inbox = getInboxById(inboxId);
+        const rawSenderEmail = inbox?.email_address || (String(args.from || "").includes("@") ? String(args.from) : "agent-01@agentkey.in");
+        const cleanSenderEmail = rawSenderEmail.toLowerCase().trim().replace(/[\r\n<>"]+/g, "");
+        const rawSenderName = inbox?.owner_name || args.from_name || "AgentKey";
+        const cleanSenderName = String(rawSenderName).replace(/[\r\n<>"]+/g, " ").trim().slice(0, 80);
+        const senderHeader = `${cleanSenderName} <${cleanSenderEmail}>`;
+
         const resendResp = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -206,7 +214,8 @@ export async function POST(req: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "AgentKey <agent-01@agentkey.in>",
+            from: senderHeader,
+            reply_to: cleanSenderEmail,
             to: [to],
             subject: cleanSubject,
             text: cleanText,
@@ -219,11 +228,11 @@ export async function POST(req: NextRequest) {
 
         const outboundMsg: Message = {
           id: resendData.id || `msg_${Date.now()}`,
-          inbox_id: "inbox_primary_agent",
+          inbox_id: inbox?.id || inboxId,
           thread_id: `thr_${Date.now()}`,
           channel: "EMAIL",
           direction: "OUTBOUND",
-          sender: "agent-01@agentkey.in",
+          sender: cleanSenderEmail,
           recipient: to,
           subject: cleanSubject,
           body_text: cleanText,
@@ -232,7 +241,7 @@ export async function POST(req: NextRequest) {
           extracted_data: {},
         };
         storeMessage(outboundMsg);
-        resultText = JSON.stringify({ status: "SENT", email_id: outboundMsg.id });
+        resultText = JSON.stringify({ status: "SENT", email_id: outboundMsg.id, from: cleanSenderEmail, to });
       } else {
         return NextResponse.json({
           jsonrpc: "2.0",
