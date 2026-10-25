@@ -110,22 +110,7 @@ const DEFAULT_STORE: StoreData = {
     },
   ],
   webhooks: [],
-  domains: [
-    {
-      id: "dom_agentkey_in",
-      name: "agentkey.in",
-      status: "VERIFIED",
-      checks: { ownership: true, mx: true, spf: true, dkim: true, dmarc: true },
-      records: [
-        { purpose: "ownership", type: "TXT", name: "@", value: "agentkey-verification=prod-live-9c383", required: true },
-        { purpose: "mx", type: "MX", name: "@", value: "route1.mx.cloudflare.net", priority: 10, required: true },
-        { purpose: "spf", type: "TXT", name: "@", value: "v=spf1 include:_spf.mx.cloudflare.net include:resend.com ~all", required: true },
-        { purpose: "dkim", type: "CNAME", name: "resend._domainkey", value: "dkim.resend.com", required: true },
-        { purpose: "dmarc", type: "TXT", name: "_dmarc", value: "v=DMARC1; p=none;", required: false },
-      ],
-      created_at: new Date().toISOString(),
-    },
-  ],
+  domains: [],
 };
 
 const globalForAgents = globalThis as unknown as {
@@ -144,7 +129,9 @@ function loadStore(): StoreData {
             inboxes: Array.isArray(parsed.inboxes) ? parsed.inboxes : [...DEFAULT_STORE.inboxes],
             agents: Array.isArray(parsed.agents) ? parsed.agents : [...DEFAULT_STORE.agents],
             webhooks: Array.isArray(parsed.webhooks) ? parsed.webhooks : [],
-            domains: Array.isArray(parsed.domains) ? parsed.domains : [...DEFAULT_STORE.domains],
+            domains: Array.isArray(parsed.domains)
+              ? parsed.domains.filter((d: DomainRecord) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in")
+              : [],
           };
         }
       }
@@ -157,7 +144,7 @@ function loadStore(): StoreData {
     inboxes: [...DEFAULT_STORE.inboxes],
     agents: [...DEFAULT_STORE.agents],
     webhooks: [...DEFAULT_STORE.webhooks],
-    domains: [...DEFAULT_STORE.domains],
+    domains: [],
   };
 }
 
@@ -178,7 +165,9 @@ function getStore(): StoreData {
   if (!Array.isArray(s.inboxes)) s.inboxes = [...DEFAULT_STORE.inboxes];
   if (!Array.isArray(s.agents)) s.agents = [...DEFAULT_STORE.agents];
   if (!Array.isArray(s.webhooks)) s.webhooks = [];
-  if (!Array.isArray(s.domains)) s.domains = [...DEFAULT_STORE.domains];
+  if (!Array.isArray(s.domains)) s.domains = [];
+  // Ensure legacy agentkey.in platform domain is purged so user accounts never see it
+  s.domains = s.domains.filter((d) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in");
   return s;
 }
 
@@ -665,14 +654,17 @@ export async function dispatchWebhooks(event: string, payload: any) {
 
 export function getDomains(ownerEmail?: string): Domain[] {
   const store = getStore();
-  const domains = (store.domains || []).filter(Boolean);
+  // Strip out any legacy agentkey.in platform domain so users only see their own custom domains
+  const domains = (store.domains || []).filter(
+    (d) => d && d.id !== "dom_agentkey_in" && d.name !== "agentkey.in"
+  );
   if (!ownerEmail) return domains;
   const lower = ownerEmail.toLowerCase().trim();
   if (isOperatorOrAdmin(lower)) {
     return domains;
   }
   return domains.filter(
-    (d) => d && (d.id === "dom_agentkey_in" || (d.owner_email && d.owner_email.toLowerCase().trim() === lower))
+    (d) => d && d.owner_email && d.owner_email.toLowerCase().trim() === lower
   );
 }
 
@@ -682,7 +674,7 @@ export function addDomainRecord(name: string, ownerEmail?: string): Domain {
   if (!cleanName) {
     throw new Error("Domain name cannot be empty");
   }
-  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
+  if (!Array.isArray(store.domains)) store.domains = [];
   const existing = store.domains.find((d) => d && d.name === cleanName);
   if (existing) return existing;
 
@@ -741,8 +733,8 @@ export function addDomainRecord(name: string, ownerEmail?: string): Domain {
 
 export function verifyDomainRecord(id: string): Domain | undefined {
   const store = getStore();
-  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
-  const domain = store.domains.find((d) => d && d.id === id);
+  if (!Array.isArray(store.domains)) store.domains = [];
+  const domain = store.domains.find((d) => d && (d.id === id || d.name === id));
   if (domain) {
     // Mark as verified
     domain.status = "VERIFIED";
@@ -753,13 +745,29 @@ export function verifyDomainRecord(id: string): Domain | undefined {
   return undefined;
 }
 
-export function deleteDomainRecord(id: string): boolean {
+export function deleteDomainRecord(id: string, ownerEmail?: string): boolean {
   const store = getStore();
-  // Don't delete the primary agentkey.in domain
-  if (id === "dom_agentkey_in") return false;
-  if (!Array.isArray(store.domains)) store.domains = [...DEFAULT_STORE.domains];
+  if (!Array.isArray(store.domains)) store.domains = [];
+  const lower = ownerEmail ? ownerEmail.toLowerCase().trim() : undefined;
+  const isAdmin = lower ? isOperatorOrAdmin(lower) : true;
+
+  const target = String(id || "").trim().toLowerCase();
   const initialLen = store.domains.length;
-  store.domains = store.domains.filter((d) => d && d.id !== id);
+
+  store.domains = store.domains.filter((d) => {
+    if (!d) return false;
+    const matches =
+      d.id === id ||
+      d.name === id ||
+      d.name.toLowerCase() === target ||
+      (d.id && d.id.toLowerCase() === target);
+    if (!matches) return true;
+    if (!isAdmin && lower && d.owner_email && d.owner_email.toLowerCase().trim() !== lower) {
+      return true; // Not their domain
+    }
+    return false; // Delete match
+  });
+
   saveStore(store);
-  return store.domains.length < initialLen;
+  return store.domains.length < initialLen || target === "dom_agentkey_in" || target === "agentkey.in";
 }

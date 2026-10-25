@@ -171,6 +171,7 @@ export async function verifyDomain(_: ActionState, form: FormData): Promise<Acti
 
 export async function deleteDomain(_: ActionState, form: FormData): Promise<ActionState> {
   return run("/dashboard/domains", async () => {
+    const session = await auth();
     const id = text(form, "id");
     if (!id) return { error: "Domain ID is missing" };
     try {
@@ -178,7 +179,8 @@ export async function deleteDomain(_: ActionState, form: FormData): Promise<Acti
     } catch {
       // ignore
     }
-    deleteDomainRecord(id);
+    deleteDomainRecord(id, session?.user?.email || undefined);
+    return { ok: true };
   });
 }
 

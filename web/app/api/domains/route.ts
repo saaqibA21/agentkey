@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Domain ID is missing" }, { status: 400 });
     }
-    const success = deleteDomainRecord(id);
+    const success = deleteDomainRecord(id, session.user.email);
     return NextResponse.json({ ok: success });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to delete domain";

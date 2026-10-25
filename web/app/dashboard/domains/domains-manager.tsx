@@ -115,9 +115,15 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
 
   const handleDelete = async (domain: Domain) => {
     if (!window.confirm(`Remove ${domain.name}?`)) return;
-    setDeletingId(domain.id);
+    const targetId = domain.id || domain.name;
+    setDeletingId(targetId);
     try {
-      const res = await fetch(`/api/domains?id=${encodeURIComponent(domain.id)}`, {
+      // Optimistically remove immediately from local state
+      setDomains((prev) =>
+        prev.filter((d) => d && d.id !== targetId && d.name !== targetId && d.name !== domain.name)
+      );
+
+      const res = await fetch(`/api/domains?id=${encodeURIComponent(targetId)}`, {
         method: "DELETE",
       });
 
@@ -126,12 +132,9 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
         return;
       }
 
-      if (res.ok) {
-        setDomains((prev) => prev.filter((d) => d && d.id !== domain.id));
-        startTransition(() => {
-          router.refresh();
-        });
-      }
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (err) {
       console.error("Error deleting domain:", err);
     } finally {
@@ -173,14 +176,16 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
 
       <div className="mt-4 space-y-4">
         {domains.length === 0 && (
-          <Empty title="No domains connected">Receiving works without one. You only need a domain to send.</Empty>
+          <Empty title="No custom domains connected">
+            Your agents currently send and receive email using your included <strong className="font-semibold text-ink">@agentkey.in</strong> inbox address. Connect your own custom domain above if you want your agents to email clients from your company&apos;s brand.
+          </Empty>
         )}
         {domains.filter(Boolean).map((d) => {
           const verified = d.status === "VERIFIED";
           const records = Array.isArray(d.records) ? d.records : [];
           const checks = d.checks || ({} as Record<string, boolean>);
           const isVerifying = verifyingId === d.id;
-          const isDeleting = deletingId === d.id;
+          const isDeleting = deletingId === (d.id || d.name);
 
           return (
             <Card key={d.id || d.name}>
@@ -196,16 +201,14 @@ export function DomainsManager({ initialDomains = [] }: { initialDomains: Domain
                   >
                     {isVerifying ? "Checking…" : "Check DNS now"}
                   </button>
-                  {d.id !== "dom_agentkey_in" && (
-                    <button
-                      type="button"
-                      disabled={isDeleting}
-                      onClick={() => handleDelete(d)}
-                      className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
-                    >
-                      {isDeleting ? "Removing…" : "Remove"}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={() => handleDelete(d)}
+                    className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                  >
+                    {isDeleting ? "Removing…" : "Remove"}
+                  </button>
                 </div>
               </div>
               <p className="mt-2 text-sm text-muted">
