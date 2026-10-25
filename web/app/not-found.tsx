@@ -12,6 +12,8 @@ export default function NotFound() {
           <img
             src="/images/mascot/agentkey-404.png"
             alt="AgentKey 404 Lost Agent Mascot"
+            loading="lazy"
+            decoding="async"
             className="w-56 sm:w-64 md:w-72 h-auto drop-shadow-[0_20px_40px_rgba(40,30,20,0.15)] transition-transform duration-500 hover:scale-105"
           />
         </div>

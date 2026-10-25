@@ -115,6 +115,8 @@ export default function Docs() {
               <img
                 src="/images/mascot/agentkey-docs.png"
                 alt="AgentKey Developer Docs Mascot"
+                loading="lazy"
+                decoding="async"
                 className="w-32 sm:w-40 h-auto drop-shadow-[0_15px_30px_rgba(40,30,20,0.12)] transition-transform duration-500 hover:scale-105"
               />
             </div>

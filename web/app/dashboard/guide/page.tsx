@@ -98,6 +98,8 @@ curl -X POST "${publicApiUrl}/v1/inboxes/INBOX_ID/messages/send" \\
               <img
                 src="/images/mascot/agentkey-docs.png"
                 alt="AgentKey Guide Mascot"
+                loading="lazy"
+                decoding="async"
                 className="w-24 lg:w-28 h-auto drop-shadow-[0_10px_20px_rgba(40,30,20,0.18)]"
               />
             </div>

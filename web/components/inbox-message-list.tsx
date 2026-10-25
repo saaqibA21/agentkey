@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge, Card, Empty, timeAgo } from "@/components/ui";
-import { CopyButton, ActionForm } from "@/components/client";
-import { resolveInboxLink } from "@/app/dashboard/actions";
+import { CopyButton } from "@/components/client";
 import type { Message } from "@/lib/api";
 
 const statusTone = { PENDING_APPROVAL: "warn", REJECTED: "bad", FAILED: "bad", SENT: "good" } as const;
@@ -21,6 +20,27 @@ export function InboxMessageList({
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+  const [resolvingUrl, setResolvingUrl] = useState<string | null>(null);
+  const [resolvedSuccess, setResolvedSuccess] = useState<string | null>(null);
+
+  async function handleResolveLink(url: string) {
+    setResolvingUrl(url);
+    try {
+      const res = await fetch("/api/inboxes/resolve-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inbox_id: inboxId, url }),
+      });
+      if (res.ok) {
+        setResolvedSuccess(url);
+        setTimeout(() => setResolvedSuccess(null), 3000);
+      }
+    } catch (err) {
+      console.error("Resolve link error:", err);
+    } finally {
+      setResolvingUrl(null);
+    }
+  }
 
   async function fetchLatest() {
     try {
@@ -205,10 +225,18 @@ export function InboxMessageList({
                         {x.magic_link}
                       </code>
                       <CopyButton value={x.magic_link} />
-                      <ActionForm action={resolveInboxLink} submit="Resolve & Save to Vault" variant="primary">
-                        <input type="hidden" name="inbox_id" value={inboxId} />
-                        <input type="hidden" name="url" value={x.magic_link} />
-                      </ActionForm>
+                      <button
+                        type="button"
+                        disabled={resolvingUrl === x.magic_link}
+                        onClick={() => handleResolveLink(x.magic_link!)}
+                        className="rounded-lg bg-teal-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-teal-500 transition-colors disabled:opacity-50"
+                      >
+                        {resolvingUrl === x.magic_link
+                          ? "Resolving…"
+                          : resolvedSuccess === x.magic_link
+                          ? "Saved to Vault!"
+                          : "Resolve & Save to Vault"}
+                      </button>
                     </div>
                   )}
                 </div>
