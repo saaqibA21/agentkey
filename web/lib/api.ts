@@ -244,8 +244,9 @@ async function getResilientFallback<T>(path: string): Promise<T> {
       const filteredWorker = workerMessages.filter((m: Message) => {
         if (!m) return false;
         const recipient = (m.recipient || "").toLowerCase().trim();
+        const sender = (m.sender || "").toLowerCase().trim();
         if (targetEmail) {
-          return recipient.includes(targetEmail);
+          return recipient.includes(targetEmail) || sender.includes(targetEmail);
         }
         if (inbox && inbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {
           return recipient.includes("agent-01@agentkey.in");
@@ -253,7 +254,7 @@ async function getResilientFallback<T>(path: string): Promise<T> {
         return false;
       });
 
-      const localMessages = getMessagesForInbox(inboxId);
+      const localMessages = getMessagesForInbox(inboxId, 50, targetEmail);
 
       // Merge and deduplicate by ID
       const seenIds = new Set<string>();

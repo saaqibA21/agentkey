@@ -39,26 +39,25 @@ export function getAllMessages(): Message[] {
   return globalForStore._agentKeyMessages;
 }
 
-export function getMessagesForInbox(inboxId: string, limit = 50): Message[] {
+export function getMessagesForInbox(inboxId: string, limit = 50, explicitEmail?: string): Message[] {
   const all = getAllMessages();
   const lowerId = inboxId.toLowerCase().trim();
   const inbox = getInboxById(inboxId);
-  const targetEmail = inbox ? inbox.email_address.toLowerCase().trim() : (lowerId.includes("@") ? lowerId : "");
+  const targetEmail = (explicitEmail || (inbox ? inbox.email_address : (lowerId.includes("@") ? lowerId : ""))).toLowerCase().trim();
 
-  // Match strictly by recipient address or validated inbox_id
+  // Match strictly by recipient address or sender address for this specific inbox
   const filtered = all.filter((m) => {
     if (!m) return false;
     const recipient = (m.recipient || "").toLowerCase().trim();
+    const sender = (m.sender || "").toLowerCase().trim();
 
     if (targetEmail) {
       if (recipient.includes(targetEmail)) return true;
-      if (inbox && m.inbox_id === inbox.id && targetEmail === "agent-01@agentkey.in") {
-        return recipient.includes("agent-01@agentkey.in");
-      }
+      if (sender.includes(targetEmail)) return true;
       return false;
     }
 
-    if (m.inbox_id === inboxId) return true;
+    if (inboxId && m.inbox_id === inboxId) return true;
     return recipient.includes(lowerId);
   });
   return filtered.slice(0, limit);

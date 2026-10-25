@@ -160,7 +160,7 @@ export async function GET(
       // ignore network errors
     }
 
-    const messages = getMessagesForInbox(inbox.id, 50);
+    const messages = getMessagesForInbox(inbox.id, 50, inbox.email_address);
     return NextResponse.json({ data: messages });
   }
 

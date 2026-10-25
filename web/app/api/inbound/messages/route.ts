@@ -51,9 +51,18 @@ export async function GET(req: NextRequest) {
   const inboxId = searchParams.get("inbox_id") || searchParams.get("inbox");
   const reqRecipient = (searchParams.get("recipient") || searchParams.get("email") || "").toLowerCase().trim();
 
+  const userInboxes = getInboxes(userEmail);
+
   let targetInbox = inboxId ? getInboxById(inboxId) : undefined;
+  if (!targetInbox && inboxId) {
+    targetInbox = userInboxes.find(
+      (i) => i.id === inboxId || i.email_address.toLowerCase() === inboxId.toLowerCase()
+    );
+  }
   if (!targetInbox && reqRecipient) {
-    targetInbox = getInboxById(reqRecipient);
+    targetInbox = getInboxById(reqRecipient) || userInboxes.find(
+      (i) => i.email_address.toLowerCase() === reqRecipient.toLowerCase()
+    );
   }
 
   // Tenant authorization check
@@ -66,15 +75,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const userInboxes = getInboxes(userEmail);
   const targetEmail = targetInbox
     ? targetInbox.email_address.toLowerCase().trim()
-    : reqRecipient || "";
+    : reqRecipient || (inboxId && inboxId.includes("@") ? inboxId.toLowerCase().trim() : "");
 
-  const allowedEmails = targetInbox
-    ? [targetInbox.email_address.toLowerCase().trim()]
-    : targetEmail
-    ? [targetEmail, ...userInboxes.map((i) => i.email_address.toLowerCase().trim())]
+  const allowedEmails = targetEmail
+    ? [targetEmail]
     : userInboxes.map((i) => i.email_address.toLowerCase().trim());
 
   let workerMessages: Message[] = [];
@@ -96,29 +102,25 @@ export async function GET(req: NextRequest) {
     console.error("Worker fetch failed:", err);
   }
 
-  // Filter worker messages strictly against allowed tenant inboxes
+  // Filter worker messages strictly
   const filteredWorker = workerMessages.filter((m: Message) => {
     if (!m) return false;
     const recipient = (m.recipient || "").toLowerCase().trim();
-    if (targetEmail && recipient.includes(targetEmail)) {
-      return true;
+    const sender = (m.sender || "").toLowerCase().trim();
+
+    if (targetEmail) {
+      // When a specific inbox is requested, only return messages addressed to or sent from this inbox
+      return recipient.includes(targetEmail) || sender.includes(targetEmail);
     }
-    if (allowedEmails.some((allowed) => recipient.includes(allowed))) {
-      return true;
-    }
-    if (isAdmin) {
-      return true;
-    }
-    if (targetInbox && targetInbox.id === "inbox_primary_agent" && m.inbox_id === "inbox_primary_agent") {
-      return recipient.includes("agent-01@agentkey.in");
-    }
-    return false;
+
+    // Overview mode (no specific inbox requested): only return messages for inboxes owned by this user
+    return allowedEmails.some((allowed) => recipient.includes(allowed) || sender.includes(allowed));
   });
 
   // Get locally stored messages for target inbox or user inboxes
-  const localMessages: Message[] = targetInbox
-    ? getMessagesForInbox(targetInbox.id)
-    : userInboxes.flatMap((i) => getMessagesForInbox(i.id));
+  const localMessages: Message[] = targetEmail
+    ? getMessagesForInbox(targetInbox?.id || inboxId || "", 50, targetEmail)
+    : userInboxes.flatMap((i) => getMessagesForInbox(i.id, 50, i.email_address));
 
   // Merge and deduplicate by message ID
   const seenIds = new Set<string>();

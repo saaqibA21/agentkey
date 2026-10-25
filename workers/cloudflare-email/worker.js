@@ -101,13 +101,12 @@ export default {
       }
 
       // Filter by recipient or inbox if query param supplied
-      const reqRecipient = url.searchParams.get("recipient") || url.searchParams.get("to");
-      const reqInboxId = url.searchParams.get("inbox_id");
+      const reqRecipient = (url.searchParams.get("recipient") || url.searchParams.get("to") || "").toLowerCase().trim();
+      const reqInboxId = (url.searchParams.get("inbox_id") || "").toLowerCase().trim();
       if (reqRecipient) {
-        const lower = reqRecipient.toLowerCase().trim();
-        messages = messages.filter((m) => m.recipient && m.recipient.toLowerCase().includes(lower));
+        messages = messages.filter((m) => m.recipient && m.recipient.toLowerCase().includes(reqRecipient));
       } else if (reqInboxId) {
-        messages = messages.filter((m) => m.inbox_id === reqInboxId);
+        messages = messages.filter((m) => (m.inbox_id && m.inbox_id.toLowerCase() === reqInboxId) || (m.recipient && m.recipient.toLowerCase().includes(reqInboxId)));
       }
 
       return new Response(JSON.stringify({ data: messages }), {

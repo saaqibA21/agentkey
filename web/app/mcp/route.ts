@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
         ) {
           resultText = JSON.stringify({ error: "Forbidden: You do not own this inbox." });
         } else {
-          const messages = getMessagesForInbox(inboxId, args.limit || 20);
+          const messages = getMessagesForInbox(inboxId, args.limit || 20, inbox?.email_address);
           resultText = JSON.stringify({ count: messages.length, messages }, null, 2);
         }
       } else if (name === "inbox_wait_otp") {
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
           let foundOtp: string | null = null;
 
           while (Date.now() <= deadline) {
-            const messages = getMessagesForInbox(inboxId, 10);
+            const messages = getMessagesForInbox(inboxId, 10, inbox?.email_address);
             for (const msg of messages) {
               const otp =
                 msg.extracted_data?.otp_code ||
